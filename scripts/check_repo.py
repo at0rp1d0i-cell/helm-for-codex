@@ -6,13 +6,27 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def required_paths() -> list[Path]:
     return [
-        ROOT / "docs" / "project",
-        ROOT / "docs" / "plans",
+        ROOT / "AGENTS.md",
+        ROOT / "docs" / "project" / "PROJECT_BRIEF.md",
+        ROOT / "docs" / "project" / "ROADMAP.md",
+        ROOT / "docs" / "project" / "ARCHITECTURE.md",
+        ROOT / "docs" / "project" / "QUALITY_BAR.md",
+        ROOT / "docs" / "status" / "EXECUTION_BOARD.md",
         ROOT / "docs" / "status" / "MODULE_CONTRACTS",
+        ROOT / "docs" / "plans",
         ROOT / "docs" / "decisions",
-        ROOT / "ops" / "templates",
-        ROOT / "ops" / "checks",
-        ROOT / "skills" / "team-lead",
+        ROOT / "ops" / "templates" / "task-brief.md",
+        ROOT / "ops" / "checks" / "check_docs_freshness.py",
+        ROOT / "skills" / "team-lead" / "SKILL.md",
+        ROOT / "skills" / "team-lead" / "agents" / "openai.yaml",
+        ROOT / "skills" / "product-discovery" / "SKILL.md",
+        ROOT / "skills" / "architecture-review" / "SKILL.md",
+        ROOT / "skills" / "implementation-worker" / "SKILL.md",
+        ROOT / "skills" / "code-reviewer" / "SKILL.md",
+        ROOT / "skills" / "qa-runner" / "SKILL.md",
+        ROOT / "skills" / "docs-sync" / "SKILL.md",
+        ROOT / "skills" / "refactor-planner" / "SKILL.md",
+        ROOT / "skills" / "release-manager" / "SKILL.md",
     ]
 
 
