@@ -1,6 +1,11 @@
 # Codex-Native AI Team Orchestration Phase 2 Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+<execution_handoff>
+  <executor>codex</executor>
+  <primary_mode>subagent-driven-development</primary_mode>
+  <alternate_mode>executing-plans</alternate_mode>
+  <rule>Execute task-by-task with verification after each task.</rule>
+</execution_handoff>
 
 **Goal:** Turn the bootstrap skeleton into a minimally executable orchestration layer by codifying the lead workflow, internal role output contracts, and repository-backed state update scripts.
 

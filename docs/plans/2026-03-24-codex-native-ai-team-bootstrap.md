@@ -1,6 +1,11 @@
 # Codex-Native AI Team Bootstrap Implementation Plan
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+<execution_handoff>
+  <executor>codex</executor>
+  <primary_mode>subagent-driven-development</primary_mode>
+  <alternate_mode>executing-plans</alternate_mode>
+  <rule>Execute task-by-task with verification after each task.</rule>
+</execution_handoff>
 
 **Goal:** Bootstrap the first working repository skeleton for a Codex-native AI team system with a single-entry lead, canonical project-state docs, internal role skills, and basic repo validation.
 
