@@ -219,6 +219,40 @@ def test_review_packet_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Writeback Target" in content
 
 
+def test_review_result_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "review-result",
+        "--output",
+        "docs/plans/review-results/product.md",
+        "--title",
+        "Product result",
+        "--role",
+        "Product",
+        "--focus",
+        "Milestone fit and scope coherence",
+        "--finding",
+        "Scope is coherent for this tranche",
+        "--auto-decision",
+        "Keep current milestone focus",
+        "--taste-decision",
+        "Decide whether to widen discovery in this sprint",
+        "--recommendation",
+        "Proceed after milestone sync",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "review-results" / "product.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Review Result: Product result" in content
+    assert "## Role" in content
+    assert "## Focus" in content
+    assert "## Findings" in content
+    assert "## Auto Decisions" in content
+    assert "## Taste Decisions" in content
+    assert "## Recommendation" in content
+
+
 def test_decision_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

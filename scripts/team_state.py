@@ -161,6 +161,35 @@ def cmd_review_pass(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_review_result(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    findings = "\n".join(f"- {item}" for item in args.finding)
+    auto_decisions = "\n".join(f"- {item}" for item in args.auto_decision)
+    taste_decisions = (
+        "\n".join(f"- {item}" for item in args.taste_decision)
+        if args.taste_decision
+        else "- none"
+    )
+    content = (
+        f"# Review Result: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Focus\n\n"
+        f"{args.focus}\n\n"
+        "## Findings\n\n"
+        f"{findings}\n\n"
+        "## Auto Decisions\n\n"
+        f"{auto_decisions}\n\n"
+        "## Taste Decisions\n\n"
+        f"{taste_decisions}\n\n"
+        "## Recommendation\n\n"
+        f"{args.recommendation}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_packet(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     canonical_sources = "\n".join(f"- {item}" for item in args.canonical_source)
@@ -288,6 +317,20 @@ def build_parser() -> argparse.ArgumentParser:
     review_pass.add_argument("--taste-decision", action="append", default=[])
     review_pass.add_argument("--recommendation", required=True)
     review_pass.set_defaults(func=cmd_review_pass)
+
+    review_result = subparsers.add_parser(
+        "review-result",
+        help="Create review result markdown",
+    )
+    review_result.add_argument("--output", required=True)
+    review_result.add_argument("--title", required=True)
+    review_result.add_argument("--role", required=True)
+    review_result.add_argument("--focus", required=True)
+    review_result.add_argument("--finding", action="append", default=[], required=True)
+    review_result.add_argument("--auto-decision", action="append", default=[], required=True)
+    review_result.add_argument("--taste-decision", action="append", default=[])
+    review_result.add_argument("--recommendation", required=True)
+    review_result.set_defaults(func=cmd_review_result)
 
     review_packet = subparsers.add_parser(
         "review-packet",
