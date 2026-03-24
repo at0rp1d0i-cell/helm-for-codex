@@ -96,6 +96,35 @@ def cmd_plan_brief(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_review_gate(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    review_passes = "\n".join(f"- {item}" for item in args.review_pass)
+    auto_decisions = "\n".join(f"- {item}" for item in args.auto_decision)
+    taste_decisions = (
+        "\n".join(f"- {item}" for item in args.taste_decision)
+        if args.taste_decision
+        else "- none"
+    )
+    content = (
+        f"# Review Gate: {args.title}\n\n"
+        "## Inputs\n\n"
+        f"{args.input_summary}\n\n"
+        "## Review Passes\n\n"
+        f"{review_passes}\n\n"
+        "## Auto Decisions\n\n"
+        f"{auto_decisions}\n\n"
+        "## Taste Decisions\n\n"
+        f"{taste_decisions}\n\n"
+        "## Recommendation\n\n"
+        f"{args.recommendation}\n\n"
+        "## Approval Target\n\n"
+        f"{args.approval_target}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_decision(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     consequence_lines = "\n".join(f"- {item}" for item in args.consequence)
@@ -178,6 +207,17 @@ def build_parser() -> argparse.ArgumentParser:
     plan_brief.add_argument("--exit-criteria", required=True, dest="exit_criteria")
     plan_brief.add_argument("--writeback", required=True)
     plan_brief.set_defaults(func=cmd_plan_brief)
+
+    review_gate = subparsers.add_parser("review-gate", help="Create review gate markdown")
+    review_gate.add_argument("--output", required=True)
+    review_gate.add_argument("--title", required=True)
+    review_gate.add_argument("--input-summary", required=True, dest="input_summary")
+    review_gate.add_argument("--review-pass", action="append", default=[], required=True)
+    review_gate.add_argument("--auto-decision", action="append", default=[], required=True)
+    review_gate.add_argument("--taste-decision", action="append", default=[])
+    review_gate.add_argument("--recommendation", required=True)
+    review_gate.add_argument("--approval-target", required=True, dest="approval_target")
+    review_gate.set_defaults(func=cmd_review_gate)
 
     decision = subparsers.add_parser("decision", help="Create decision markdown")
     decision.add_argument("--output", required=True)

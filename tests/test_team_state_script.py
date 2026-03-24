@@ -110,6 +110,42 @@ def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Writeback Target" in content
 
 
+def test_review_gate_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "review-gate",
+        "--output",
+        "docs/plans/review-gate-demo.md",
+        "--title",
+        "Phase 5 review gate",
+        "--input-summary",
+        "Plan brief and architecture context were reviewed",
+        "--review-pass",
+        "Product: scope holds after discovery",
+        "--review-pass",
+        "Architecture: module boundaries are acceptable",
+        "--auto-decision",
+        "Keep the current module split",
+        "--taste-decision",
+        "Decide whether to run design review before build",
+        "--recommendation",
+        "Proceed after user resolves the remaining taste decision",
+        "--approval-target",
+        "user",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "review-gate-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Review Gate: Phase 5 review gate" in content
+    assert "## Inputs" in content
+    assert "## Review Passes" in content
+    assert "## Auto Decisions" in content
+    assert "## Taste Decisions" in content
+    assert "## Recommendation" in content
+    assert "## Approval Target" in content
+
+
 def test_decision_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
