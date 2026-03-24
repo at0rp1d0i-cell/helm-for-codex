@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for live role-driven review orchestration
+- define next implementation tranche for true internal role-driven review execution
 
 ## Completed
 
@@ -34,3 +34,6 @@ evolve
 - add review pass artifacts
 - aggregate multi-role review passes
 - wire multi-role review passes into the contracts
+- add role review runner
+- add live role-driven review orchestration
+- wire live role review execution into the lead contract
