@@ -10,6 +10,7 @@ def expected_headings(root: Path) -> dict[Path, list[str]]:
         root / "docs" / "project" / "PROJECT_BRIEF.md": [
             "# Project Brief",
             "## Problem",
+            "## Current Goal",
             "## Success Criteria",
         ],
         root / "docs" / "project" / "ROADMAP.md": [

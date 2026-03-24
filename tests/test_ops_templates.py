@@ -51,7 +51,7 @@ def test_check_docs_freshness_rejects_board_without_preamble(tmp_path: Path) -> 
     (tmp_path / "docs" / "status").mkdir(parents=True)
 
     files = {
-        "docs/project/PROJECT_BRIEF.md": "# Project Brief\n\n## Problem\n\nx\n\n## Success Criteria\n\ny\n",
+        "docs/project/PROJECT_BRIEF.md": "# Project Brief\n\n## Problem\n\nx\n\n## Current Goal\n\nship phase 3\n\n## Success Criteria\n\ny\n",
         "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
         "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
         "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
@@ -65,3 +65,45 @@ def test_check_docs_freshness_rejects_board_without_preamble(tmp_path: Path) -> 
     result = run_doc_check(tmp_path)
     assert result.returncode == 1
     assert "scripts/team_state.py board" in result.stdout
+
+
+def test_check_docs_freshness_rejects_board_without_completed_section(tmp_path: Path) -> None:
+    (tmp_path / "docs" / "project").mkdir(parents=True)
+    (tmp_path / "docs" / "status").mkdir(parents=True)
+
+    files = {
+        "docs/project/PROJECT_BRIEF.md": "# Project Brief\n\n## Problem\n\nx\n\n## Current Goal\n\nship phase 3\n\n## Success Criteria\n\ny\n",
+        "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
+        "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
+        "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n_This file can be updated manually or via `scripts/team_state.py board`._\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n",
+    }
+    for relpath, content in files.items():
+        path = tmp_path / relpath
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+
+    result = run_doc_check(tmp_path)
+    assert result.returncode == 1
+    assert "## Completed" in result.stdout
+
+
+def test_check_docs_freshness_rejects_project_brief_without_current_goal(tmp_path: Path) -> None:
+    (tmp_path / "docs" / "project").mkdir(parents=True)
+    (tmp_path / "docs" / "status").mkdir(parents=True)
+
+    files = {
+        "docs/project/PROJECT_BRIEF.md": "# Project Brief\n\n## Problem\n\nx\n\n## Success Criteria\n\ny\n",
+        "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
+        "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
+        "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n_This file can be updated manually or via `scripts/team_state.py board`._\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n\n## Completed\n\n- y\n",
+    }
+    for relpath, content in files.items():
+        path = tmp_path / relpath
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+
+    result = run_doc_check(tmp_path)
+    assert result.returncode == 1
+    assert "## Current Goal" in result.stdout

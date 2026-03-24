@@ -16,6 +16,7 @@ def test_required_top_level_paths_exist() -> None:
         ROOT / "skills" / "team-lead",
         ROOT / "scripts" / "check_repo.py",
         ROOT / "scripts" / "team_state.py",
+        ROOT / "scripts" / "lead_loop.py",
     ]
     missing = [str(path.relative_to(ROOT)) for path in required if not path.exists()]
     assert missing == []
@@ -54,6 +55,7 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/refactor-proposal.md",
         "ops/checks/check_docs_freshness.py",
         "scripts/team_state.py",
+        "scripts/lead_loop.py",
     ]
     actual = {str(path.relative_to(ROOT)) for path in module.required_paths()}
     assert set(expected).issubset(actual)
