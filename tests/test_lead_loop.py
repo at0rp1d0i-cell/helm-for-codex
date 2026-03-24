@@ -130,28 +130,87 @@ def test_plan_creates_plan_brief_and_updates_board(tmp_path: Path) -> None:
     assert "- Phase 4 orchestration slice" in board
 
 
-def test_review_creates_gate_and_moves_board_to_review_when_no_taste_decisions(
+def test_review_pass_creates_artifact_for_role(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "review-pass",
+        "--title",
+        "Product pass",
+        "--role",
+        "Product",
+        "--focus",
+        "Scope coherence",
+        "--finding",
+        "Scope is coherent",
+        "--auto-decision",
+        "Keep the current milestone boundary",
+        "--taste-decision",
+        "Decide whether to add design references",
+        "--recommendation",
+        "Proceed after the design reference call",
+        "--pass-path",
+        "docs/plans/review-pass-product.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    review_pass = tmp_path / "docs" / "plans" / "review-pass-product.md"
+    assert review_pass.exists()
+    assert "# Review Pass: Product pass" in review_pass.read_text()
+
+
+def test_review_aggregates_passes_and_moves_board_to_review_when_no_taste_decisions(
     tmp_path: Path,
 ) -> None:
     seed_repo_state(tmp_path)
+
+    run_lead_loop(
+        tmp_path,
+        "review-pass",
+        "--title",
+        "Product pass",
+        "--role",
+        "Product",
+        "--focus",
+        "Scope coherence",
+        "--finding",
+        "Scope is coherent",
+        "--auto-decision",
+        "Keep the milestone boundary",
+        "--recommendation",
+        "Proceed on scope",
+        "--pass-path",
+        "docs/plans/review-pass-product.md",
+    )
+    run_lead_loop(
+        tmp_path,
+        "review-pass",
+        "--title",
+        "Architect pass",
+        "--role",
+        "Architect",
+        "--focus",
+        "Module boundaries",
+        "--finding",
+        "Module split is acceptable",
+        "--auto-decision",
+        "Keep the current module split",
+        "--recommendation",
+        "Proceed on architecture",
+        "--pass-path",
+        "docs/plans/review-pass-architect.md",
+    )
 
     result = run_lead_loop(
         tmp_path,
         "review",
         "--title",
-        "Phase 5 review gate",
-        "--input-summary",
-        "Discovery and planning artifacts were reviewed",
-        "--review-pass",
-        "Product: scope is coherent",
-        "--review-pass",
-        "Architecture: module split is acceptable",
-        "--auto-decision",
-        "Keep the current milestone boundary",
-        "--recommendation",
-        "Proceed to build",
-        "--approval-target",
-        "lead",
+        "Phase 6 review gate",
+        "--pass-path",
+        "docs/plans/review-pass-product.md",
+        "--pass-path",
+        "docs/plans/review-pass-architect.md",
         "--review-path",
         "docs/plans/review-gate.md",
     )
@@ -159,43 +218,62 @@ def test_review_creates_gate_and_moves_board_to_review_when_no_taste_decisions(
     assert result.returncode == 0, result.stderr
     review_gate = tmp_path / "docs" / "plans" / "review-gate.md"
     assert review_gate.exists()
-    assert "# Review Gate: Phase 5 review gate" in review_gate.read_text()
+    gate_content = review_gate.read_text()
+    assert "# Review Gate: Phase 6 review gate" in gate_content
+    assert "Product: Proceed on scope" in gate_content
+    assert "Architect: Proceed on architecture" in gate_content
+    assert "- Keep the milestone boundary" in gate_content
+    assert "- Keep the current module split" in gate_content
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nreview" in board
-    assert "- Phase 5 review gate" in board
+    assert "- Phase 6 review gate" in board
 
 
-def test_review_moves_board_to_approval_needed_when_taste_decisions_exist(
+def test_review_aggregates_taste_decisions_and_moves_board_to_approval_needed(
     tmp_path: Path,
 ) -> None:
     seed_repo_state(tmp_path)
 
-    result = run_lead_loop(
+    run_lead_loop(
         tmp_path,
-        "review",
+        "review-pass",
         "--title",
-        "Phase 5 review gate",
-        "--input-summary",
-        "Discovery and planning artifacts were reviewed",
-        "--review-pass",
-        "Product: scope is coherent",
+        "Reviewer pass",
+        "--role",
+        "Reviewer",
+        "--focus",
+        "Completeness and regression risk",
+        "--finding",
+        "Implementation risk is low",
         "--auto-decision",
         "Keep the current milestone boundary",
         "--taste-decision",
         "Decide whether to add a design review pass before build",
         "--recommendation",
         "Pause for approval",
-        "--approval-target",
-        "user",
+        "--pass-path",
+        "docs/plans/review-pass-reviewer.md",
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "review",
+        "--title",
+        "Phase 6 review gate",
+        "--pass-path",
+        "docs/plans/review-pass-reviewer.md",
         "--review-path",
         "docs/plans/review-gate.md",
     )
 
     assert result.returncode == 0, result.stderr
+    gate_content = (tmp_path / "docs" / "plans" / "review-gate.md").read_text()
+    assert "- Decide whether to add a design review pass before build" in gate_content
+
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\napproval-needed" in board
-    assert "- Phase 5 review gate" in board
+    assert "- Phase 6 review gate" in board
 
 
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:

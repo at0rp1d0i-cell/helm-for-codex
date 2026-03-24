@@ -10,6 +10,7 @@ from team_state import (
     cmd_discovery_brief,
     cmd_plan_brief,
     cmd_review_gate,
+    cmd_review_pass as cmd_write_review_pass,
     cmd_task_brief,
 )
 
@@ -30,6 +31,21 @@ def _extract_section(content: str, heading: str) -> str:
     return content[start:next_header].strip()
 
 
+def _extract_list_section(content: str, heading: str) -> list[str]:
+    section = _extract_section(content, heading)
+    if not section:
+        return []
+    items: list[str] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("- "):
+            continue
+        value = stripped[2:].strip()
+        if value and value.lower() != "none":
+            items.append(value)
+    return items
+
+
 def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
     board_args = SimpleNamespace(
         root=root,
@@ -39,6 +55,21 @@ def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
         completed=[],
     )
     return cmd_board(board_args)
+
+
+def cmd_record_review_pass(args: argparse.Namespace) -> int:
+    pass_args = SimpleNamespace(
+        root=args.root,
+        output=args.pass_path,
+        title=args.title,
+        role=args.role,
+        focus=args.focus,
+        finding=args.finding,
+        auto_decision=args.auto_decision,
+        taste_decision=args.taste_decision,
+        recommendation=args.recommendation,
+    )
+    return cmd_write_review_pass(pass_args)
 
 
 def cmd_discover(args: argparse.Namespace) -> int:
@@ -94,22 +125,49 @@ def cmd_delegate(args: argparse.Namespace) -> int:
 
 
 def cmd_review(args: argparse.Namespace) -> int:
+    review_passes = args.review_pass
+    auto_decisions = args.auto_decision
+    taste_decisions = args.taste_decision
+    input_summary = args.input_summary
+    recommendation = args.recommendation
+    approval_target = args.approval_target
+
+    if args.pass_path:
+        review_passes = []
+        auto_decisions = []
+        taste_decisions = []
+        for relpath in args.pass_path:
+            content = _read(args.root / relpath)
+            role = _extract_section(content, "Role") or "Unknown"
+            role_recommendation = _extract_section(content, "Recommendation") or "No recommendation"
+            review_passes.append(f"{role}: {role_recommendation}")
+            auto_decisions.extend(_extract_list_section(content, "Auto Decisions"))
+            taste_decisions.extend(_extract_list_section(content, "Taste Decisions"))
+
+        input_summary = input_summary or f"Aggregated from {len(args.pass_path)} review passes"
+        recommendation = recommendation or (
+            "Resolve taste decisions before build"
+            if taste_decisions
+            else "Proceed to build"
+        )
+        approval_target = approval_target or ("user" if taste_decisions else "lead")
+
     review_args = SimpleNamespace(
         root=args.root,
         output=args.review_path,
         title=args.title,
-        input_summary=args.input_summary,
-        review_pass=args.review_pass,
-        auto_decision=args.auto_decision,
-        taste_decision=args.taste_decision,
-        recommendation=args.recommendation,
-        approval_target=args.approval_target,
+        input_summary=input_summary,
+        review_pass=review_passes,
+        auto_decision=auto_decisions,
+        taste_decision=taste_decisions,
+        recommendation=recommendation,
+        approval_target=approval_target,
     )
     rc = cmd_review_gate(review_args)
     if rc != 0:
         return rc
 
-    stage = "approval-needed" if args.taste_decision else "review"
+    stage = "approval-needed" if taste_decisions else "review"
     return _update_board(args.root, args.board_path, stage, [args.title])
 
 
@@ -189,14 +247,26 @@ def build_parser() -> argparse.ArgumentParser:
     delegate.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     delegate.set_defaults(func=cmd_delegate)
 
+    review_pass = subparsers.add_parser("review-pass", help="Create review pass artifact")
+    review_pass.add_argument("--title", required=True)
+    review_pass.add_argument("--role", required=True)
+    review_pass.add_argument("--focus", required=True)
+    review_pass.add_argument("--finding", action="append", default=[], required=True)
+    review_pass.add_argument("--auto-decision", action="append", default=[], required=True)
+    review_pass.add_argument("--taste-decision", action="append", default=[])
+    review_pass.add_argument("--recommendation", required=True)
+    review_pass.add_argument("--pass-path", required=True)
+    review_pass.set_defaults(func=cmd_record_review_pass)
+
     review = subparsers.add_parser("review", help="Create review gate and update board")
     review.add_argument("--title", required=True)
-    review.add_argument("--input-summary", required=True, dest="input_summary")
-    review.add_argument("--review-pass", action="append", default=[], required=True)
-    review.add_argument("--auto-decision", action="append", default=[], required=True)
+    review.add_argument("--input-summary", dest="input_summary")
+    review.add_argument("--review-pass", action="append", default=[])
+    review.add_argument("--auto-decision", action="append", default=[])
     review.add_argument("--taste-decision", action="append", default=[])
-    review.add_argument("--recommendation", required=True)
-    review.add_argument("--approval-target", required=True, dest="approval_target")
+    review.add_argument("--recommendation")
+    review.add_argument("--approval-target", dest="approval_target")
+    review.add_argument("--pass-path", action="append", default=[])
     review.add_argument("--review-path", required=True)
     review.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     review.set_defaults(func=cmd_review)
