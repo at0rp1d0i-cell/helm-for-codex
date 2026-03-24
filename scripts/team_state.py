@@ -125,6 +125,35 @@ def cmd_review_gate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_review_pass(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    findings = "\n".join(f"- {item}" for item in args.finding)
+    auto_decisions = "\n".join(f"- {item}" for item in args.auto_decision)
+    taste_decisions = (
+        "\n".join(f"- {item}" for item in args.taste_decision)
+        if args.taste_decision
+        else "- none"
+    )
+    content = (
+        f"# Review Pass: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Focus\n\n"
+        f"{args.focus}\n\n"
+        "## Findings\n\n"
+        f"{findings}\n\n"
+        "## Auto Decisions\n\n"
+        f"{auto_decisions}\n\n"
+        "## Taste Decisions\n\n"
+        f"{taste_decisions}\n\n"
+        "## Recommendation\n\n"
+        f"{args.recommendation}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_decision(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     consequence_lines = "\n".join(f"- {item}" for item in args.consequence)
@@ -218,6 +247,17 @@ def build_parser() -> argparse.ArgumentParser:
     review_gate.add_argument("--recommendation", required=True)
     review_gate.add_argument("--approval-target", required=True, dest="approval_target")
     review_gate.set_defaults(func=cmd_review_gate)
+
+    review_pass = subparsers.add_parser("review-pass", help="Create review pass markdown")
+    review_pass.add_argument("--output", required=True)
+    review_pass.add_argument("--title", required=True)
+    review_pass.add_argument("--role", required=True)
+    review_pass.add_argument("--focus", required=True)
+    review_pass.add_argument("--finding", action="append", default=[], required=True)
+    review_pass.add_argument("--auto-decision", action="append", default=[], required=True)
+    review_pass.add_argument("--taste-decision", action="append", default=[])
+    review_pass.add_argument("--recommendation", required=True)
+    review_pass.set_defaults(func=cmd_review_pass)
 
     decision = subparsers.add_parser("decision", help="Create decision markdown")
     decision.add_argument("--output", required=True)

@@ -146,6 +146,40 @@ def test_review_gate_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Approval Target" in content
 
 
+def test_review_pass_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "review-pass",
+        "--output",
+        "docs/plans/review-pass-product.md",
+        "--title",
+        "Product pass",
+        "--role",
+        "Product",
+        "--focus",
+        "Scope clarity and milestone fit",
+        "--finding",
+        "Current scope is coherent",
+        "--auto-decision",
+        "Keep the milestone boundary",
+        "--taste-decision",
+        "Decide whether to expand discovery to design references",
+        "--recommendation",
+        "Proceed if the design reference question is resolved",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "review-pass-product.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Review Pass: Product pass" in content
+    assert "## Role" in content
+    assert "## Focus" in content
+    assert "## Findings" in content
+    assert "## Auto Decisions" in content
+    assert "## Taste Decisions" in content
+    assert "## Recommendation" in content
+
+
 def test_decision_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
