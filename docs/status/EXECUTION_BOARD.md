@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for review pipeline orchestration
+- define next implementation tranche for multi-role review orchestration
 
 ## Completed
 
@@ -28,3 +28,6 @@ evolve
 - add repository-backed planning artifacts
 - extend lead loop through discovery, plan, and build
 - wire discovery and planning flow into the lead contract
+- add repository-backed review gate artifact
+- add review gate to the lead loop
+- wire review gate into the lead contract
