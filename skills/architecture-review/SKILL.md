@@ -23,6 +23,7 @@ Define and evaluate module boundaries, interfaces, constraints, and architectura
 <writeback>
 <target>docs/project/ARCHITECTURE.md</target>
 <target>docs/decisions/</target>
+<target>docs/plans/review-pass-*.md</target>
 </writeback>
 
 <non_goals>

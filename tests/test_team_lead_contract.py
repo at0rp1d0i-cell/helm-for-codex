@@ -63,6 +63,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "discover",
         "plan",
         "delegate",
+        "review-pass",
         "review",
         "status",
     ]
@@ -86,6 +87,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "repository-backed planning" in content.lower()
     assert "review gate" in content.lower()
     assert "taste decisions" in content.lower()
+    assert "multi-role review passes" in content.lower()
 
 
 def test_team_lead_openai_metadata_is_tight_and_explicit() -> None:

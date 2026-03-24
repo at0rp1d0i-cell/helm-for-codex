@@ -41,3 +41,16 @@ def test_internal_roles_use_xml_like_contracts() -> None:
         assert "ops/templates/" not in content, (
             f"{path.name} should write back to project state, not template paths"
         )
+
+
+def test_review_roles_can_write_structured_review_passes() -> None:
+    review_roles = {
+        ROOT / "skills" / "product-discovery" / "SKILL.md": "Product",
+        ROOT / "skills" / "architecture-review" / "SKILL.md": "Architect",
+        ROOT / "skills" / "code-reviewer" / "SKILL.md": "Reviewer",
+    }
+
+    for path, role in review_roles.items():
+        content = path.read_text()
+        assert "review-pass" in content.lower(), f"{role} contract should mention review pass output"
+        assert "docs/plans/" in content, f"{role} contract should allow repo-backed review pass writeback"

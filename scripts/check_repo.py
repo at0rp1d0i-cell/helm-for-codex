@@ -19,6 +19,7 @@ def required_paths() -> list[Path]:
         ROOT / "ops" / "templates" / "discovery-brief.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "review-gate.md",
+        ROOT / "ops" / "templates" / "review-pass.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",

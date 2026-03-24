@@ -23,6 +23,7 @@ Clarify product intent into scoped goals, milestones, tradeoffs, and discovery q
 <writeback>
 <target>docs/project/PROJECT_BRIEF.md</target>
 <target>docs/project/ROADMAP.md</target>
+<target>docs/plans/review-pass-*.md</target>
 </writeback>
 
 <non_goals>

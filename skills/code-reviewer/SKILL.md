@@ -22,6 +22,7 @@ Review changes for correctness, regression risk, and implementation completeness
 
 <writeback>
 <target>docs/status/EXECUTION_BOARD.md</target>
+<target>docs/plans/review-pass-*.md</target>
 </writeback>
 
 <non_goals>

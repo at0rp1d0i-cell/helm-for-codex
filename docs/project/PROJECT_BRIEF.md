@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Add a repository-backed review gate to the lead loop so planning decisions, auto-decisions, and taste decisions are captured before build.
+Add structured multi-role review passes so the lead can aggregate Product, Architect, and Reviewer feedback into the review gate before build.
 
 ## Success Criteria
 
