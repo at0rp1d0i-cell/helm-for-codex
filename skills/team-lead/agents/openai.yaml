@@ -1,3 +1,3 @@
 display_name: Team Lead
-description: Single-entry lead for the Codex-native AI team
+description: Single-entry lead that orchestrates internal roles, state updates, and approval gates
 allow_implicit_invocation: false
