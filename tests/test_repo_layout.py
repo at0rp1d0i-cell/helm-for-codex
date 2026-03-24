@@ -53,6 +53,7 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/task-brief.md",
         "ops/templates/discovery-brief.md",
         "ops/templates/plan-brief.md",
+        "ops/templates/review-packet.md",
         "ops/templates/review-gate.md",
         "ops/templates/review-pass.md",
         "ops/templates/review-report.md",
@@ -87,6 +88,7 @@ def test_team_lead_contract_is_visible_to_repo_validation() -> None:
         "<automation_hooks>",
         "<approval_triggers>",
         "scripts/team_state.py",
+        "review-prepare",
         "approval-needed",
     ]
     for token in required_tokens:

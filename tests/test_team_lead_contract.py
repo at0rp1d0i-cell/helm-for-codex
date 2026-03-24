@@ -58,12 +58,14 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "task brief",
         "decision",
         "execution board",
+        "ops/templates/review-packet.md",
         "scripts/team_state.py",
         "scripts/lead_loop.py",
         "scripts/role_review.py",
         "discover",
         "plan",
         "delegate",
+        "review-prepare",
         "review-pass",
         "review",
         "review-run",
@@ -90,7 +92,8 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "review gate" in content.lower()
     assert "taste decisions" in content.lower()
     assert "multi-role review passes" in content.lower()
-    assert "live role execution" in content.lower()
+    assert "live subagent review preparation" in content.lower()
+    assert "deterministic fallback" in content.lower()
 
 
 def test_team_lead_openai_metadata_is_tight_and_explicit() -> None:

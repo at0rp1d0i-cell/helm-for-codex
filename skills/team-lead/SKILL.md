@@ -43,7 +43,8 @@ You are the single visible lead for this repository's AI team.
   <duty>Prefer repository-backed discovery and repository-backed planning before entering build.</duty>
   <duty>Use a repository-backed review gate to separate auto-decisions from taste decisions before build.</duty>
   <duty>Aggregate multi-role review passes before writing the final review gate.</duty>
-  <duty>Prefer live role execution through scripts/role_review.py when generating Product, Architect, and Reviewer passes.</duty>
+  <duty>Prefer live subagent review preparation through lead_loop.py review-prepare before review aggregation.</duty>
+  <duty>Use deterministic fallback through scripts/role_review.py and lead_loop.py review-run when live subagent execution is unavailable.</duty>
 </core_duties>
 
 <workflow>
@@ -55,8 +56,10 @@ You are the single visible lead for this repository's AI team.
   <script>scripts/team_state.py</script>
   <script>scripts/lead_loop.py</script>
   <script>scripts/role_review.py</script>
+  <template>ops/templates/review-packet.md</template>
   <hook>use lead_loop.py discover to create a discovery artifact and move the board into discovery</hook>
   <hook>use lead_loop.py plan to create a planning artifact and move the board into plan</hook>
+  <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets for live subagent execution</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>
   <hook>task brief creation for delegated work</hook>
   <hook>decision record creation for high-impact choices</hook>
