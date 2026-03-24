@@ -130,6 +130,74 @@ def test_plan_creates_plan_brief_and_updates_board(tmp_path: Path) -> None:
     assert "- Phase 4 orchestration slice" in board
 
 
+def test_review_creates_gate_and_moves_board_to_review_when_no_taste_decisions(
+    tmp_path: Path,
+) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "review",
+        "--title",
+        "Phase 5 review gate",
+        "--input-summary",
+        "Discovery and planning artifacts were reviewed",
+        "--review-pass",
+        "Product: scope is coherent",
+        "--review-pass",
+        "Architecture: module split is acceptable",
+        "--auto-decision",
+        "Keep the current milestone boundary",
+        "--recommendation",
+        "Proceed to build",
+        "--approval-target",
+        "lead",
+        "--review-path",
+        "docs/plans/review-gate.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    review_gate = tmp_path / "docs" / "plans" / "review-gate.md"
+    assert review_gate.exists()
+    assert "# Review Gate: Phase 5 review gate" in review_gate.read_text()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 5 review gate" in board
+
+
+def test_review_moves_board_to_approval_needed_when_taste_decisions_exist(
+    tmp_path: Path,
+) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "review",
+        "--title",
+        "Phase 5 review gate",
+        "--input-summary",
+        "Discovery and planning artifacts were reviewed",
+        "--review-pass",
+        "Product: scope is coherent",
+        "--auto-decision",
+        "Keep the current milestone boundary",
+        "--taste-decision",
+        "Decide whether to add a design review pass before build",
+        "--recommendation",
+        "Pause for approval",
+        "--approval-target",
+        "user",
+        "--review-path",
+        "docs/plans/review-gate.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\napproval-needed" in board
+    assert "- Phase 5 review gate" in board
+
+
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

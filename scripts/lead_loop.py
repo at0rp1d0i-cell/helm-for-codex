@@ -9,6 +9,7 @@ from team_state import (
     cmd_decision,
     cmd_discovery_brief,
     cmd_plan_brief,
+    cmd_review_gate,
     cmd_task_brief,
 )
 
@@ -92,6 +93,26 @@ def cmd_delegate(args: argparse.Namespace) -> int:
     return _update_board(args.root, args.board_path, "build", [args.title])
 
 
+def cmd_review(args: argparse.Namespace) -> int:
+    review_args = SimpleNamespace(
+        root=args.root,
+        output=args.review_path,
+        title=args.title,
+        input_summary=args.input_summary,
+        review_pass=args.review_pass,
+        auto_decision=args.auto_decision,
+        taste_decision=args.taste_decision,
+        recommendation=args.recommendation,
+        approval_target=args.approval_target,
+    )
+    rc = cmd_review_gate(review_args)
+    if rc != 0:
+        return rc
+
+    stage = "approval-needed" if args.taste_decision else "review"
+    return _update_board(args.root, args.board_path, stage, [args.title])
+
+
 def cmd_record_decision(args: argparse.Namespace) -> int:
     decision_args = SimpleNamespace(
         root=args.root,
@@ -167,6 +188,18 @@ def build_parser() -> argparse.ArgumentParser:
     delegate.add_argument("--task-path", required=True)
     delegate.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     delegate.set_defaults(func=cmd_delegate)
+
+    review = subparsers.add_parser("review", help="Create review gate and update board")
+    review.add_argument("--title", required=True)
+    review.add_argument("--input-summary", required=True, dest="input_summary")
+    review.add_argument("--review-pass", action="append", default=[], required=True)
+    review.add_argument("--auto-decision", action="append", default=[], required=True)
+    review.add_argument("--taste-decision", action="append", default=[])
+    review.add_argument("--recommendation", required=True)
+    review.add_argument("--approval-target", required=True, dest="approval_target")
+    review.add_argument("--review-path", required=True)
+    review.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    review.set_defaults(func=cmd_review)
 
     decision = subparsers.add_parser("decision", help="Record decision and optionally gate progress")
     decision.add_argument("--title", required=True)
