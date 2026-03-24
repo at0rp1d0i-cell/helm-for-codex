@@ -1,5 +1,7 @@
 # Execution Board
 
+_This file can be updated manually or via `scripts/team_state.py board`._
+
 ## Current Stage
 
 evolve
