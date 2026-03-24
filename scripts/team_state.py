@@ -58,6 +58,44 @@ def cmd_task_brief(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_discovery_brief(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Discovery Brief: {args.title}\n\n"
+        "## Problem Signal\n\n"
+        f"{args.problem}\n\n"
+        "## Research Scope\n\n"
+        f"{args.research_scope}\n\n"
+        "## Open Questions\n\n"
+        f"{args.open_questions}\n\n"
+        "## Recommendation Target\n\n"
+        f"{args.recommendation_target}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_plan_brief(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Plan Brief: {args.title}\n\n"
+        "## Goal\n\n"
+        f"{args.goal}\n\n"
+        "## Milestone\n\n"
+        f"{args.milestone}\n\n"
+        "## Modules In Scope\n\n"
+        f"{args.modules}\n\n"
+        "## Exit Criteria\n\n"
+        f"{args.exit_criteria}\n\n"
+        "## Writeback Target\n\n"
+        f"{args.writeback}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_decision(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     consequence_lines = "\n".join(f"- {item}" for item in args.consequence)
@@ -114,6 +152,32 @@ def build_parser() -> argparse.ArgumentParser:
     task_brief.add_argument("--expected-output", required=True, dest="expected_output")
     task_brief.add_argument("--writeback", required=True)
     task_brief.set_defaults(func=cmd_task_brief)
+
+    discovery_brief = subparsers.add_parser(
+        "discovery-brief",
+        help="Create discovery brief markdown",
+    )
+    discovery_brief.add_argument("--output", required=True)
+    discovery_brief.add_argument("--title", required=True)
+    discovery_brief.add_argument("--problem", required=True)
+    discovery_brief.add_argument("--research-scope", required=True, dest="research_scope")
+    discovery_brief.add_argument("--open-questions", required=True, dest="open_questions")
+    discovery_brief.add_argument(
+        "--recommendation-target",
+        required=True,
+        dest="recommendation_target",
+    )
+    discovery_brief.set_defaults(func=cmd_discovery_brief)
+
+    plan_brief = subparsers.add_parser("plan-brief", help="Create plan brief markdown")
+    plan_brief.add_argument("--output", required=True)
+    plan_brief.add_argument("--title", required=True)
+    plan_brief.add_argument("--goal", required=True)
+    plan_brief.add_argument("--milestone", required=True)
+    plan_brief.add_argument("--modules", required=True)
+    plan_brief.add_argument("--exit-criteria", required=True, dest="exit_criteria")
+    plan_brief.add_argument("--writeback", required=True)
+    plan_brief.set_defaults(func=cmd_plan_brief)
 
     decision = subparsers.add_parser("decision", help="Create decision markdown")
     decision.add_argument("--output", required=True)

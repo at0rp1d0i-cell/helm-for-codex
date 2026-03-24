@@ -51,6 +51,65 @@ def test_task_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Writeback Target" in content
 
 
+def test_discovery_brief_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "discovery-brief",
+        "--output",
+        "docs/plans/discovery-demo.md",
+        "--title",
+        "Daily briefing research",
+        "--problem",
+        "The project needs a sharper discovery artifact",
+        "--research-scope",
+        "Look at product references and technical references",
+        "--open-questions",
+        "What should be built now versus later?",
+        "--recommendation-target",
+        "docs/project/PROJECT_BRIEF.md",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "discovery-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Discovery Brief: Daily briefing research" in content
+    assert "## Problem Signal" in content
+    assert "## Research Scope" in content
+    assert "## Open Questions" in content
+    assert "## Recommendation Target" in content
+
+
+def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "plan-brief",
+        "--output",
+        "docs/plans/plan-demo.md",
+        "--title",
+        "Phase 4 orchestration slice",
+        "--goal",
+        "Move from discovery into execution",
+        "--milestone",
+        "Phase 4",
+        "--modules",
+        "scripts/team_state.py, scripts/lead_loop.py, skills/team-lead/SKILL.md",
+        "--exit-criteria",
+        "Discovery and plan artifacts are repo-backed and tested",
+        "--writeback",
+        "docs/status/EXECUTION_BOARD.md",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "plan-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Plan Brief: Phase 4 orchestration slice" in content
+    assert "## Goal" in content
+    assert "## Milestone" in content
+    assert "## Modules In Scope" in content
+    assert "## Exit Criteria" in content
+    assert "## Writeback Target" in content
+
+
 def test_decision_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
