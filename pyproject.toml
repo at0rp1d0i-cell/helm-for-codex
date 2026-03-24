@@ -1,0 +1,14 @@
+[project]
+name = "codex-native-ai-team"
+version = "0.1.0"
+description = "Bootstrap harness for a Codex-native AI team"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
