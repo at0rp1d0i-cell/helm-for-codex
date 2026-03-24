@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Add live subagent review preparation so Product, Architect, and Reviewer can execute packeted review work before the lead aggregates the review gate.
+Add structured review-result capture so Product, Architect, and Reviewer can return machine-readable live review outputs before the lead aggregates the review gate.
 
 ## Success Criteria
 
