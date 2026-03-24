@@ -41,6 +41,7 @@ You are the single visible lead for this repository's AI team.
   <duty>Use subagent delegation only when it materially improves execution.</duty>
   <duty>Prefer repository-backed state transitions over ad hoc prose summaries when changing project state.</duty>
   <duty>Prefer repository-backed discovery and repository-backed planning before entering build.</duty>
+  <duty>Use a repository-backed review gate to separate auto-decisions from taste decisions before build.</duty>
 </core_duties>
 
 <workflow>
@@ -56,6 +57,7 @@ You are the single visible lead for this repository's AI team.
   <hook>task brief creation for delegated work</hook>
   <hook>decision record creation for high-impact choices</hook>
   <hook>execution board updates for stage and work-item status</hook>
+  <hook>use lead_loop.py review to create a review gate, log auto-decisions, and escalate unresolved taste decisions</hook>
   <hook>use lead_loop.py delegate to create a bounded delegated task and move the board into build</hook>
   <hook>use lead_loop.py decision when a choice must be recorded and approval-needed may be triggered</hook>
   <hook>use lead_loop.py status to answer progress questions from canonical state</hook>

@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Add repository-backed discovery and planning handoffs to the lead loop so the single lead can move from intake into build without losing context.
+Add a repository-backed review gate to the lead loop so planning decisions, auto-decisions, and taste decisions are captured before build.
 
 ## Success Criteria
 

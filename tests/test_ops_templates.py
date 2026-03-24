@@ -22,6 +22,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "task-brief.md",
         ROOT / "ops" / "templates" / "discovery-brief.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
+        ROOT / "ops" / "templates" / "review-gate.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
@@ -44,6 +45,12 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "# Plan Brief: <title>" in plan_brief
     assert "<modules_in_scope>" in plan_brief
     assert "<writeback_target>" in plan_brief
+
+    review_gate = (ROOT / "ops" / "templates" / "review-gate.md").read_text()
+    assert "# Review Gate: <title>" in review_gate
+    assert "<review_passes>" in review_gate
+    assert "<taste_decisions>" in review_gate
+    assert "<approval_target>" in review_gate
 
     refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
     assert "# Refactor Proposal" in refactor

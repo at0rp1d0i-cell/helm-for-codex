@@ -52,6 +52,7 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/task-brief.md",
         "ops/templates/discovery-brief.md",
         "ops/templates/plan-brief.md",
+        "ops/templates/review-gate.md",
         "ops/templates/review-report.md",
         "ops/templates/qa-report.md",
         "ops/templates/refactor-proposal.md",
