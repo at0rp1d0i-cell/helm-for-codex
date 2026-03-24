@@ -2,10 +2,16 @@
 
 ## Current Stage
 
-plan
+evolve
 
 ## Active Work
 
-- bootstrap repository skeleton
-- create internal role skills
-- add validation harness
+- define next implementation tranche for richer orchestration
+
+## Completed
+
+- canonical project-state docs
+- team lead skill
+- internal role skills
+- ops templates
+- baseline repo checks
