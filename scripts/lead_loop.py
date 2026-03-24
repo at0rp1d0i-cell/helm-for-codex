@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from types import SimpleNamespace
 
+import role_review
 from team_state import (
     cmd_board,
     cmd_decision,
@@ -70,6 +71,43 @@ def cmd_record_review_pass(args: argparse.Namespace) -> int:
         recommendation=args.recommendation,
     )
     return cmd_write_review_pass(pass_args)
+
+
+def cmd_review_run(args: argparse.Namespace) -> int:
+    review_dir = args.root / args.review_dir
+    review_dir.mkdir(parents=True, exist_ok=True)
+    pass_paths: list[str] = []
+    for role_name, filename in [
+        ("Product", "product.md"),
+        ("Architect", "architect.md"),
+        ("Reviewer", "reviewer.md"),
+    ]:
+        output_rel = str(Path(args.review_dir) / filename)
+        role_args = SimpleNamespace(
+            root=args.root,
+            role=role_name,
+            plan_path=args.plan_path,
+            output=output_rel,
+        )
+        rc = role_review.main_from_args(role_args)
+        if rc != 0:
+            return rc
+        pass_paths.append(output_rel)
+
+    review_args = SimpleNamespace(
+        root=args.root,
+        title=args.title,
+        input_summary=None,
+        review_pass=[],
+        auto_decision=[],
+        taste_decision=[],
+        recommendation=None,
+        approval_target=None,
+        pass_path=pass_paths,
+        review_path=args.review_path,
+        board_path=args.board_path,
+    )
+    return cmd_review(review_args)
 
 
 def cmd_discover(args: argparse.Namespace) -> int:
@@ -257,6 +295,17 @@ def build_parser() -> argparse.ArgumentParser:
     review_pass.add_argument("--recommendation", required=True)
     review_pass.add_argument("--pass-path", required=True)
     review_pass.set_defaults(func=cmd_record_review_pass)
+
+    review_run = subparsers.add_parser(
+        "review-run",
+        help="Run Product, Architect, and Reviewer passes and aggregate the review gate",
+    )
+    review_run.add_argument("--title", required=True)
+    review_run.add_argument("--plan-path", required=True)
+    review_run.add_argument("--review-dir", required=True)
+    review_run.add_argument("--review-path", required=True)
+    review_run.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    review_run.set_defaults(func=cmd_review_run)
 
     review = subparsers.add_parser("review", help="Create review gate and update board")
     review.add_argument("--title", required=True)

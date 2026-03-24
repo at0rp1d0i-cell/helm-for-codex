@@ -276,6 +276,50 @@ def test_review_aggregates_taste_decisions_and_moves_board_to_approval_needed(
     assert "- Phase 6 review gate" in board
 
 
+def test_review_run_executes_roles_and_aggregates_review_gate(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(
+        "# Roadmap\n\n## Current Milestone\n\nPhase 7\n\n## Later Milestones\n\n- more automation\n"
+    )
+    (tmp_path / "docs" / "project" / "ARCHITECTURE.md").write_text(
+        "# Architecture\n\n## Layers\n\n- Lead layer\n- Ops layer\n- Worker layer\n\n## Modules\n\n- canonical docs\n- skills\n- ops templates\n- repo checks\n\n## Constraints\n\n- single visible lead\n- repo as memory\n"
+    )
+    (tmp_path / "docs" / "project" / "QUALITY_BAR.md").write_text(
+        "# Quality Bar\n\n## Code\n\nPrefer modular, bounded, readable implementations.\n\n## Tests\n\nEvery structural rule added to the repo should have a validation check or test.\n\n## Docs\n\nCanonical project-state files must stay current when state changes.\n"
+    )
+    (tmp_path / "docs" / "plans" / "phase7-plan-brief.md").write_text(
+        "# Plan Brief: Phase 7 orchestration slice\n\n## Goal\n\nRun Product, Architect, and Reviewer passes from canonical state.\n\n## Milestone\n\nPhase 7\n\n## Modules In Scope\n\nscripts/role_review.py, scripts/lead_loop.py, skills/team-lead/SKILL.md\n\n## Exit Criteria\n\nLive role review execution exists with tests and docs updates.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "review-run",
+        "--title",
+        "Phase 7 review gate",
+        "--plan-path",
+        "docs/plans/phase7-plan-brief.md",
+        "--review-dir",
+        "docs/plans/review-passes",
+        "--review-path",
+        "docs/plans/review-gate.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    review_dir = tmp_path / "docs" / "plans" / "review-passes"
+    assert (review_dir / "product.md").exists()
+    assert (review_dir / "architect.md").exists()
+    assert (review_dir / "reviewer.md").exists()
+
+    gate_content = (tmp_path / "docs" / "plans" / "review-gate.md").read_text()
+    assert "Product: Proceed on scope" in gate_content
+    assert "Architect: Proceed on architecture" in gate_content
+    assert "Reviewer: Proceed on review" in gate_content
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 7 review gate" in board
+
+
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

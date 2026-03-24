@@ -100,12 +100,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> int:
-    parser = build_parser()
-    args = parser.parse_args()
+def main_from_args(args: argparse.Namespace) -> int:
     args.root = args.root.resolve()
     pass_args = _resolve_role_pass(args)
     return cmd_review_pass(pass_args)
+
+
+def main() -> int:
+    parser = build_parser()
+    args = parser.parse_args()
+    return main_from_args(args)
 
 
 if __name__ == "__main__":
