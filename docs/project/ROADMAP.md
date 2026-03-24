@@ -2,10 +2,10 @@
 
 ## Current Milestone
 
-Phase 2 baseline complete: the repository now has a richer lead contract, internal role protocols, state update automation, and tighter orchestration checks.
+Phase 3 baseline complete: the repository now has a runnable lead loop, repository-backed delegation and decision flow, and stronger orchestration baseline checks.
 
 ## Later Milestones
 
-- add runtime orchestration loops that use the role contracts in real task flow
-- automate more canonical state updates and handoff generation
+- turn the minimal lead loop into a real discovery -> plan -> build orchestration flow
+- automate more canonical state updates, handoff generation, and decision gating
 - expand validation from structural checks into behavior-aware orchestration checks

@@ -21,3 +21,6 @@ evolve
 - codify internal role protocols
 - automate team state updates
 - tighten orchestration repo validation
+- add runnable lead loop
+- add repository-backed delegation and decision flow
+- strengthen lead loop baseline checks
