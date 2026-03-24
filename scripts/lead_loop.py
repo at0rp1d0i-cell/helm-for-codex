@@ -1,10 +1,16 @@
 from __future__ import annotations
 
 import argparse
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
 
-from team_state import cmd_board, cmd_decision, cmd_task_brief
+from team_state import (
+    cmd_board,
+    cmd_decision,
+    cmd_discovery_brief,
+    cmd_plan_brief,
+    cmd_task_brief,
+)
 
 
 def _read(path: Path) -> str:
@@ -23,6 +29,50 @@ def _extract_section(content: str, heading: str) -> str:
     return content[start:next_header].strip()
 
 
+def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
+    board_args = SimpleNamespace(
+        root=root,
+        path=path,
+        stage=stage,
+        active=active,
+        completed=[],
+    )
+    return cmd_board(board_args)
+
+
+def cmd_discover(args: argparse.Namespace) -> int:
+    discovery_args = SimpleNamespace(
+        root=args.root,
+        output=args.discovery_path,
+        title=args.title,
+        problem=args.problem,
+        research_scope=args.research_scope,
+        open_questions=args.open_questions,
+        recommendation_target=args.recommendation_target,
+    )
+    rc = cmd_discovery_brief(discovery_args)
+    if rc != 0:
+        return rc
+    return _update_board(args.root, args.board_path, "discovery", [args.title])
+
+
+def cmd_plan(args: argparse.Namespace) -> int:
+    plan_args = SimpleNamespace(
+        root=args.root,
+        output=args.plan_path,
+        title=args.title,
+        goal=args.goal,
+        milestone=args.milestone,
+        modules=args.modules,
+        exit_criteria=args.exit_criteria,
+        writeback=args.writeback,
+    )
+    rc = cmd_plan_brief(plan_args)
+    if rc != 0:
+        return rc
+    return _update_board(args.root, args.board_path, "plan", [args.title])
+
+
 def cmd_delegate(args: argparse.Namespace) -> int:
     task_args = SimpleNamespace(
         root=args.root,
@@ -39,14 +89,7 @@ def cmd_delegate(args: argparse.Namespace) -> int:
     if rc != 0:
         return rc
 
-    board_args = SimpleNamespace(
-        root=args.root,
-        path=args.board_path,
-        stage="build",
-        active=[args.title],
-        completed=[],
-    )
-    return cmd_board(board_args)
+    return _update_board(args.root, args.board_path, "build", [args.title])
 
 
 def cmd_record_decision(args: argparse.Namespace) -> int:
@@ -62,14 +105,7 @@ def cmd_record_decision(args: argparse.Namespace) -> int:
     if rc != 0 or not args.approval_needed:
         return rc
 
-    board_args = SimpleNamespace(
-        root=args.root,
-        path=args.board_path,
-        stage="approval-needed",
-        active=[],
-        completed=[],
-    )
-    return cmd_board(board_args)
+    return _update_board(args.root, args.board_path, "approval-needed", [])
 
 
 def cmd_status(args: argparse.Namespace) -> int:
@@ -91,6 +127,34 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Minimal lead orchestration loop")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    discover = subparsers.add_parser(
+        "discover",
+        help="Create discovery brief and move board to discovery",
+    )
+    discover.add_argument("--title", required=True)
+    discover.add_argument("--problem", required=True)
+    discover.add_argument("--research-scope", required=True, dest="research_scope")
+    discover.add_argument("--open-questions", required=True, dest="open_questions")
+    discover.add_argument(
+        "--recommendation-target",
+        required=True,
+        dest="recommendation_target",
+    )
+    discover.add_argument("--discovery-path", required=True)
+    discover.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    discover.set_defaults(func=cmd_discover)
+
+    plan = subparsers.add_parser("plan", help="Create plan brief and move board to plan")
+    plan.add_argument("--title", required=True)
+    plan.add_argument("--goal", required=True)
+    plan.add_argument("--milestone", required=True)
+    plan.add_argument("--modules", required=True)
+    plan.add_argument("--exit-criteria", required=True, dest="exit_criteria")
+    plan.add_argument("--writeback", required=True)
+    plan.add_argument("--plan-path", required=True)
+    plan.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    plan.set_defaults(func=cmd_plan)
 
     delegate = subparsers.add_parser("delegate", help="Create task brief and move board to build")
     delegate.add_argument("--title", required=True)

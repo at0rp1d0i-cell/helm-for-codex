@@ -68,6 +68,68 @@ def test_delegate_creates_task_brief_and_updates_board(tmp_path: Path) -> None:
     assert "- Implement lead loop" in board
 
 
+def test_discover_creates_discovery_brief_and_updates_board(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "discover",
+        "--title",
+        "Research upstream gstack",
+        "--problem",
+        "Need a repository-backed discovery handoff",
+        "--research-scope",
+        "Read gstack workflow skills and extract reusable patterns",
+        "--open-questions",
+        "Which upstream conventions should be adapted or rejected?",
+        "--recommendation-target",
+        "docs/project/PROJECT_BRIEF.md",
+        "--discovery-path",
+        "docs/plans/discovery-brief.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    discovery = tmp_path / "docs" / "plans" / "discovery-brief.md"
+    assert discovery.exists()
+    assert "# Discovery Brief: Research upstream gstack" in discovery.read_text()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\ndiscovery" in board
+    assert "- Research upstream gstack" in board
+
+
+def test_plan_creates_plan_brief_and_updates_board(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "plan",
+        "--title",
+        "Phase 4 orchestration slice",
+        "--goal",
+        "Move from discovery into execution",
+        "--milestone",
+        "Phase 4",
+        "--modules",
+        "scripts/team_state.py, scripts/lead_loop.py",
+        "--exit-criteria",
+        "Discovery and planning are repo-backed",
+        "--writeback",
+        "docs/status/EXECUTION_BOARD.md",
+        "--plan-path",
+        "docs/plans/phase4-plan-brief.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    plan = tmp_path / "docs" / "plans" / "phase4-plan-brief.md"
+    assert plan.exists()
+    assert "# Plan Brief: Phase 4 orchestration slice" in plan.read_text()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- Phase 4 orchestration slice" in board
+
+
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 
