@@ -1,4 +1,5 @@
 gstack/
+# Commit uv.lock as reproducible project state.
 .venv/
 .pytest_cache/
 __pycache__/

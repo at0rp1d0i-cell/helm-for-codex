@@ -48,6 +48,9 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "skills/refactor-planner/SKILL.md",
         "skills/release-manager/SKILL.md",
         "ops/templates/task-brief.md",
+        "ops/templates/review-report.md",
+        "ops/templates/qa-report.md",
+        "ops/templates/refactor-proposal.md",
         "ops/checks/check_docs_freshness.py",
     ]
     actual = {str(path.relative_to(ROOT)) for path in module.required_paths()}
