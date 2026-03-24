@@ -4,6 +4,17 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DOC_CHECK = ROOT / "ops" / "checks" / "check_docs_freshness.py"
+
+
+def run_doc_check(root: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(DOC_CHECK), "--root", str(root)],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=ROOT,
+    )
 
 
 def test_ops_templates_and_checks_exist() -> None:
@@ -17,15 +28,40 @@ def test_ops_templates_and_checks_exist() -> None:
     missing = [str(path.relative_to(ROOT)) for path in required if not path.exists()]
     assert missing == []
 
+    task_brief = (ROOT / "ops" / "templates" / "task-brief.md").read_text()
+    assert "# Task Brief: <title>" in task_brief
+    assert "<objective>" in task_brief
+    assert "<writeback_target>" in task_brief
+
+    refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
+    assert "# Refactor Proposal" in refactor
+    assert "<problem_scope>" in refactor
+    assert "<minimum_intervention>" in refactor
+
 
 def test_check_docs_freshness_validates_structure() -> None:
-    result = subprocess.run(
-        [sys.executable, str(ROOT / "ops" / "checks" / "check_docs_freshness.py")],
-        capture_output=True,
-        text=True,
-        check=False,
-        cwd=ROOT,
-    )
+    result = run_doc_check(ROOT)
     assert result.returncode == 0
     assert "docs structure ok" in result.stdout
     assert "docs freshness baseline ok" not in result.stdout
+
+
+def test_check_docs_freshness_rejects_board_without_preamble(tmp_path: Path) -> None:
+    (tmp_path / "docs" / "project").mkdir(parents=True)
+    (tmp_path / "docs" / "status").mkdir(parents=True)
+
+    files = {
+        "docs/project/PROJECT_BRIEF.md": "# Project Brief\n\n## Problem\n\nx\n\n## Success Criteria\n\ny\n",
+        "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
+        "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
+        "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n\n## Completed\n\n- y\n",
+    }
+    for relpath, content in files.items():
+        path = tmp_path / relpath
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+
+    result = run_doc_check(tmp_path)
+    assert result.returncode == 1
+    assert "scripts/team_state.py board" in result.stdout

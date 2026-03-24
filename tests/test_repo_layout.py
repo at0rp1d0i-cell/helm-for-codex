@@ -15,6 +15,7 @@ def test_required_top_level_paths_exist() -> None:
         ROOT / "ops" / "checks",
         ROOT / "skills" / "team-lead",
         ROOT / "scripts" / "check_repo.py",
+        ROOT / "scripts" / "team_state.py",
     ]
     missing = [str(path.relative_to(ROOT)) for path in required if not path.exists()]
     assert missing == []
@@ -52,6 +53,7 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/qa-report.md",
         "ops/templates/refactor-proposal.md",
         "ops/checks/check_docs_freshness.py",
+        "scripts/team_state.py",
     ]
     actual = {str(path.relative_to(ROOT)) for path in module.required_paths()}
     assert set(expected).issubset(actual)
@@ -67,3 +69,17 @@ def test_gitignore_covers_python_artifacts() -> None:
     ]
     for pattern in expected:
         assert pattern in content
+
+
+def test_team_lead_contract_is_visible_to_repo_validation() -> None:
+    content = (ROOT / "skills" / "team-lead" / "SKILL.md").read_text()
+    required_tokens = [
+        "<canonical_state>",
+        "<workflow>",
+        "<automation_hooks>",
+        "<approval_triggers>",
+        "scripts/team_state.py",
+        "approval-needed",
+    ]
+    for token in required_tokens:
+        assert token in content

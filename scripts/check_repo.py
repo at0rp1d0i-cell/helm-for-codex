@@ -20,6 +20,7 @@ def required_paths() -> list[Path]:
         ROOT / "ops" / "templates" / "qa-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
         ROOT / "ops" / "checks" / "check_docs_freshness.py",
+        ROOT / "scripts" / "team_state.py",
         ROOT / "skills" / "team-lead" / "SKILL.md",
         ROOT / "skills" / "team-lead" / "agents" / "openai.yaml",
         ROOT / "skills" / "product-discovery" / "SKILL.md",
