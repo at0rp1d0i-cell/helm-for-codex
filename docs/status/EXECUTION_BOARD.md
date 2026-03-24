@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for true internal role-driven review execution
+- define next implementation tranche for direct internal role result capture
 
 ## Completed
 
@@ -37,3 +37,7 @@ evolve
 - add role review runner
 - add live role-driven review orchestration
 - wire live role review execution into the lead contract
+- add review packet artifacts
+- add live subagent review preparation
+- wire live subagent review preparation into the lead contract
+- normalize preserved board items

@@ -11,6 +11,8 @@
 - canonical docs
 - skills
 - ops templates
+- review packets
+- review passes
 - repo checks
 
 ## Constraints
@@ -18,3 +20,4 @@
 - single visible lead
 - small active concurrency
 - repo as memory
+- deterministic fallback remains available when live subagent review is unavailable
