@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for runtime orchestration
+- define next implementation tranche for review pipeline orchestration
 
 ## Completed
 
@@ -24,3 +24,7 @@ evolve
 - add runnable lead loop
 - add repository-backed delegation and decision flow
 - strengthen lead loop baseline checks
+- add repository-backed discovery artifacts
+- add repository-backed planning artifacts
+- extend lead loop through discovery, plan, and build
+- wire discovery and planning flow into the lead contract
