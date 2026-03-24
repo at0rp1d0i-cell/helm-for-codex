@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for richer orchestration
+- define next implementation tranche for runtime orchestration
 
 ## Completed
 
@@ -17,3 +17,7 @@ evolve
 - internal role skills
 - ops templates
 - baseline repo checks
+- codify team lead workflow contract
+- codify internal role protocols
+- automate team state updates
+- tighten orchestration repo validation
