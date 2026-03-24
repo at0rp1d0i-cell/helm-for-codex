@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for direct internal role result capture
+- define next implementation tranche for direct internal role-owned writeback
 
 ## Completed
 
@@ -41,3 +41,6 @@ evolve
 - add live subagent review preparation
 - wire live subagent review preparation into the lead contract
 - normalize preserved board items
+- add review result artifacts
+- add live review result collection
+- wire review result capture into the lead contract
