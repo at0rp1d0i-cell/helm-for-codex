@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Bootstrap the repository skeleton and operating harness.
+Add a runnable lead loop that can delegate work, record decisions, and answer progress from canonical state.
 
 ## Success Criteria
 
