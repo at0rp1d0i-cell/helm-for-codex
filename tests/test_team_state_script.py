@@ -306,5 +306,36 @@ def test_board_command_preserves_existing_sections_when_not_overridden(tmp_path:
 
     content = board_path.read_text()
     assert "## Current Stage\n\nqa" in content
-    assert "- keep me" in content
-    assert "- keep done" in content
+    assert "## Active Work\n\n- keep me" in content
+    assert "## Completed\n\n- keep done" in content
+    assert "- - keep me" not in content
+    assert "- - keep done" not in content
+
+
+def test_board_command_normalizes_historically_double_prefixed_items(tmp_path: Path) -> None:
+    board_path = tmp_path / "docs" / "status" / "EXECUTION_BOARD.md"
+    board_path.parent.mkdir(parents=True, exist_ok=True)
+    board_path.write_text(
+        "# Execution Board\n\n"
+        "_This file can be updated manually or via `scripts/team_state.py board`._\n\n"
+        "## Current Stage\n\nreview\n\n"
+        "## Active Work\n\n- - duplicated task\n\n"
+        "## Completed\n\n- - duplicated done\n"
+    )
+
+    result = run_team_state(
+        tmp_path,
+        "board",
+        "--path",
+        "docs/status/EXECUTION_BOARD.md",
+        "--stage",
+        "qa",
+    )
+    assert result.returncode == 0, result.stderr
+
+    content = board_path.read_text()
+    assert "## Current Stage\n\nqa" in content
+    assert "## Active Work\n\n- duplicated task" in content
+    assert "## Completed\n\n- duplicated done" in content
+    assert "- - duplicated task" not in content
+    assert "- - duplicated done" not in content

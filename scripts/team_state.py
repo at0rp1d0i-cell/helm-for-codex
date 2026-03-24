@@ -32,8 +32,15 @@ def _extract_board_section(content: str, header: str) -> list[str]:
     else:
         section = content[start:next_header]
 
-    lines = [line for line in section.strip().splitlines() if line.strip()]
-    return lines
+    items: list[str] = []
+    for line in section.strip().splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        while stripped.startswith("- "):
+            stripped = stripped[2:].strip()
+        items.append(stripped)
+    return items
 
 
 def cmd_task_brief(args: argparse.Namespace) -> int:
