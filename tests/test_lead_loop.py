@@ -346,6 +346,8 @@ def test_review_prepare_generates_live_review_packets_and_moves_board(tmp_path: 
         "docs/plans/review-packets",
         "--pass-dir",
         "docs/plans/review-passes",
+        "--result-dir",
+        "docs/plans/review-results",
     )
 
     assert result.returncode == 0, result.stderr
@@ -361,11 +363,59 @@ def test_review_prepare_generates_live_review_packets_and_moves_board(tmp_path: 
     assert "docs/project/ARCHITECTURE.md" in product_packet
     assert "docs/project/QUALITY_BAR.md" in product_packet
     assert "docs/plans/phase8-plan-brief.md" in product_packet
-    assert "docs/plans/review-passes/product.md" in product_packet
+    assert "Return a review-result with Role, Focus, Findings, Auto Decisions, Taste Decisions, Recommendation" in product_packet
+    assert "docs/plans/review-results/product.md" in product_packet
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nreview" in board
     assert "- Phase 8 review preparation" in board
+
+
+def test_review_collect_converts_results_into_passes_and_gate(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "review-results").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "docs" / "plans" / "review-results" / "product.md").write_text(
+        "# Review Result: Product\n\n## Role\n\nProduct\n\n## Focus\n\nScope coherence\n\n## Findings\n\n- Scope is coherent\n\n## Auto Decisions\n\n- Keep the milestone boundary\n\n## Taste Decisions\n\n- none\n\n## Recommendation\n\nProceed on scope\n"
+    )
+    (tmp_path / "docs" / "plans" / "review-results" / "architect.md").write_text(
+        "# Review Result: Architect\n\n## Role\n\nArchitect\n\n## Focus\n\nModule boundaries\n\n## Findings\n\n- Module split is acceptable\n\n## Auto Decisions\n\n- Keep the current module split\n\n## Taste Decisions\n\n- none\n\n## Recommendation\n\nProceed on architecture\n"
+    )
+    (tmp_path / "docs" / "plans" / "review-results" / "reviewer.md").write_text(
+        "# Review Result: Reviewer\n\n## Role\n\nReviewer\n\n## Focus\n\nVerification readiness\n\n## Findings\n\n- Verification scope is acceptable\n\n## Auto Decisions\n\n- Require verification before build\n\n## Taste Decisions\n\n- none\n\n## Recommendation\n\nProceed on review\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "review-collect",
+        "--title",
+        "Phase 9 review gate",
+        "--result-path",
+        "docs/plans/review-results/product.md",
+        "--result-path",
+        "docs/plans/review-results/architect.md",
+        "--result-path",
+        "docs/plans/review-results/reviewer.md",
+        "--pass-dir",
+        "docs/plans/review-passes",
+        "--review-path",
+        "docs/plans/review-gate.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    pass_dir = tmp_path / "docs" / "plans" / "review-passes"
+    assert (pass_dir / "product.md").exists()
+    assert (pass_dir / "architect.md").exists()
+    assert (pass_dir / "reviewer.md").exists()
+
+    gate_content = (tmp_path / "docs" / "plans" / "review-gate.md").read_text()
+    assert "Product: Proceed on scope" in gate_content
+    assert "Architect: Proceed on architecture" in gate_content
+    assert "Reviewer: Proceed on review" in gate_content
+    assert "- Require verification before build" in gate_content
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 9 review gate" in board
 
 
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:

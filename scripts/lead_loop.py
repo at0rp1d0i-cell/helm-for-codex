@@ -77,6 +77,7 @@ def cmd_record_review_pass(args: argparse.Namespace) -> int:
 def cmd_review_prepare(args: argparse.Namespace) -> int:
     review_dir = args.root / args.review_dir
     review_dir.mkdir(parents=True, exist_ok=True)
+    target_dir = args.result_dir or args.pass_dir
     for role_name, filename, objective in [
         ("Product", "product.md", "Assess milestone fit and scope pressure before build."),
         ("Architect", "architect.md", "Assess module boundaries and architecture fit before build."),
@@ -95,14 +96,65 @@ def cmd_review_prepare(args: argparse.Namespace) -> int:
                 "docs/project/QUALITY_BAR.md",
             ],
             plan_brief=args.plan_path,
-            expected_output="Findings, auto decisions, taste decisions, recommendation",
-            writeback=str(Path(args.pass_dir) / filename),
+            expected_output=(
+                "Return a review-result with Role, Focus, Findings, Auto Decisions, "
+                "Taste Decisions, Recommendation"
+            ),
+            writeback=str(Path(target_dir) / filename),
         )
         rc = cmd_review_packet(packet_args)
         if rc != 0:
             return rc
 
     return _update_board(args.root, args.board_path, "review", [args.title])
+
+
+def cmd_review_collect(args: argparse.Namespace) -> int:
+    pass_dir = args.root / args.pass_dir
+    pass_dir.mkdir(parents=True, exist_ok=True)
+    pass_paths: list[str] = []
+
+    for relpath in args.result_path:
+        result_path = args.root / relpath
+        content = _read(result_path)
+        role = _extract_section(content, "Role") or result_path.stem.title()
+        focus = _extract_section(content, "Focus") or "No focus provided"
+        findings = _extract_list_section(content, "Findings")
+        auto_decisions = _extract_list_section(content, "Auto Decisions")
+        taste_decisions = _extract_list_section(content, "Taste Decisions")
+        recommendation = _extract_section(content, "Recommendation") or "No recommendation"
+
+        pass_rel = str(Path(args.pass_dir) / result_path.name)
+        pass_args = SimpleNamespace(
+            root=args.root,
+            pass_path=pass_rel,
+            title=f"{role} collected pass",
+            role=role,
+            focus=focus,
+            finding=findings or ["No findings provided"],
+            auto_decision=auto_decisions or ["No auto decisions recorded"],
+            taste_decision=taste_decisions,
+            recommendation=recommendation,
+        )
+        rc = cmd_record_review_pass(pass_args)
+        if rc != 0:
+            return rc
+        pass_paths.append(pass_rel)
+
+    review_args = SimpleNamespace(
+        root=args.root,
+        title=args.title,
+        input_summary=None,
+        review_pass=[],
+        auto_decision=[],
+        taste_decision=[],
+        recommendation=None,
+        approval_target=None,
+        pass_path=pass_paths,
+        review_path=args.review_path,
+        board_path=args.board_path,
+    )
+    return cmd_review(review_args)
 
 
 def cmd_review_run(args: argparse.Namespace) -> int:
@@ -336,8 +388,20 @@ def build_parser() -> argparse.ArgumentParser:
     review_prepare.add_argument("--plan-path", required=True)
     review_prepare.add_argument("--review-dir", required=True)
     review_prepare.add_argument("--pass-dir", required=True)
+    review_prepare.add_argument("--result-dir")
     review_prepare.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     review_prepare.set_defaults(func=cmd_review_prepare)
+
+    review_collect = subparsers.add_parser(
+        "review-collect",
+        help="Collect Product, Architect, and Reviewer review results into passes and a review gate",
+    )
+    review_collect.add_argument("--title", required=True)
+    review_collect.add_argument("--result-path", action="append", default=[], required=True)
+    review_collect.add_argument("--pass-dir", required=True)
+    review_collect.add_argument("--review-path", required=True)
+    review_collect.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    review_collect.set_defaults(func=cmd_review_collect)
 
     review_run = subparsers.add_parser(
         "review-run",
