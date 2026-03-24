@@ -320,6 +320,54 @@ def test_review_run_executes_roles_and_aggregates_review_gate(tmp_path: Path) ->
     assert "- Phase 7 review gate" in board
 
 
+def test_review_prepare_generates_live_review_packets_and_moves_board(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(
+        "# Roadmap\n\n## Current Milestone\n\nPhase 8\n\n## Later Milestones\n\n- more automation\n"
+    )
+    (tmp_path / "docs" / "project" / "ARCHITECTURE.md").write_text(
+        "# Architecture\n\n## Layers\n\n- Lead layer\n- Ops layer\n- Worker layer\n\n## Modules\n\n- canonical docs\n- skills\n- ops templates\n- repo checks\n\n## Constraints\n\n- single visible lead\n- repo as memory\n"
+    )
+    (tmp_path / "docs" / "project" / "QUALITY_BAR.md").write_text(
+        "# Quality Bar\n\n## Code\n\nPrefer modular, bounded, readable implementations.\n\n## Tests\n\nEvery structural rule added to the repo should have a validation check or test.\n\n## Docs\n\nCanonical project-state files must stay current when state changes.\n"
+    )
+    (tmp_path / "docs" / "plans" / "phase8-plan-brief.md").write_text(
+        "# Plan Brief: Phase 8 orchestration slice\n\n## Goal\n\nPrepare live subagent review packets.\n\n## Milestone\n\nPhase 8\n\n## Modules In Scope\n\nscripts/team_state.py, scripts/lead_loop.py, skills/team-lead/SKILL.md\n\n## Exit Criteria\n\nReview packets exist and lead-managed preparation is tested.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "review-prepare",
+        "--title",
+        "Phase 8 review preparation",
+        "--plan-path",
+        "docs/plans/phase8-plan-brief.md",
+        "--review-dir",
+        "docs/plans/review-packets",
+        "--pass-dir",
+        "docs/plans/review-passes",
+    )
+
+    assert result.returncode == 0, result.stderr
+    review_dir = tmp_path / "docs" / "plans" / "review-packets"
+    assert (review_dir / "product.md").exists()
+    assert (review_dir / "architect.md").exists()
+    assert (review_dir / "reviewer.md").exists()
+
+    product_packet = (review_dir / "product.md").read_text()
+    assert "# Review Packet: Product review packet" in product_packet
+    assert "docs/project/PROJECT_BRIEF.md" in product_packet
+    assert "docs/project/ROADMAP.md" in product_packet
+    assert "docs/project/ARCHITECTURE.md" in product_packet
+    assert "docs/project/QUALITY_BAR.md" in product_packet
+    assert "docs/plans/phase8-plan-brief.md" in product_packet
+    assert "docs/plans/review-passes/product.md" in product_packet
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 8 review preparation" in board
+
+
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

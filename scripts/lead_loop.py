@@ -11,6 +11,7 @@ from team_state import (
     cmd_discovery_brief,
     cmd_plan_brief,
     cmd_review_gate,
+    cmd_review_packet,
     cmd_review_pass as cmd_write_review_pass,
     cmd_task_brief,
 )
@@ -71,6 +72,37 @@ def cmd_record_review_pass(args: argparse.Namespace) -> int:
         recommendation=args.recommendation,
     )
     return cmd_write_review_pass(pass_args)
+
+
+def cmd_review_prepare(args: argparse.Namespace) -> int:
+    review_dir = args.root / args.review_dir
+    review_dir.mkdir(parents=True, exist_ok=True)
+    for role_name, filename, objective in [
+        ("Product", "product.md", "Assess milestone fit and scope pressure before build."),
+        ("Architect", "architect.md", "Assess module boundaries and architecture fit before build."),
+        ("Reviewer", "reviewer.md", "Assess quality expectations and verification readiness before build."),
+    ]:
+        packet_args = SimpleNamespace(
+            root=args.root,
+            output=str(Path(args.review_dir) / filename),
+            title=f"{role_name} review packet",
+            role=role_name,
+            objective=objective,
+            canonical_source=[
+                "docs/project/PROJECT_BRIEF.md",
+                "docs/project/ROADMAP.md",
+                "docs/project/ARCHITECTURE.md",
+                "docs/project/QUALITY_BAR.md",
+            ],
+            plan_brief=args.plan_path,
+            expected_output="Findings, auto decisions, taste decisions, recommendation",
+            writeback=str(Path(args.pass_dir) / filename),
+        )
+        rc = cmd_review_packet(packet_args)
+        if rc != 0:
+            return rc
+
+    return _update_board(args.root, args.board_path, "review", [args.title])
 
 
 def cmd_review_run(args: argparse.Namespace) -> int:
@@ -295,6 +327,17 @@ def build_parser() -> argparse.ArgumentParser:
     review_pass.add_argument("--recommendation", required=True)
     review_pass.add_argument("--pass-path", required=True)
     review_pass.set_defaults(func=cmd_record_review_pass)
+
+    review_prepare = subparsers.add_parser(
+        "review-prepare",
+        help="Create Product, Architect, and Reviewer packets for live subagent review",
+    )
+    review_prepare.add_argument("--title", required=True)
+    review_prepare.add_argument("--plan-path", required=True)
+    review_prepare.add_argument("--review-dir", required=True)
+    review_prepare.add_argument("--pass-dir", required=True)
+    review_prepare.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    review_prepare.set_defaults(func=cmd_review_prepare)
 
     review_run = subparsers.add_parser(
         "review-run",
