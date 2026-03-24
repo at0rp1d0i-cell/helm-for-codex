@@ -24,6 +24,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "review-gate.md",
         ROOT / "ops" / "templates" / "review-pass.md",
+        ROOT / "ops" / "templates" / "review-packet.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
@@ -58,6 +59,15 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<role>" in review_pass
     assert "<auto_decisions>" in review_pass
     assert "<taste_decisions>" in review_pass
+
+    review_packet = (ROOT / "ops" / "templates" / "review-packet.md").read_text()
+    assert "# Review Packet: <title>" in review_packet
+    assert "<role>" in review_packet
+    assert "<objective>" in review_packet
+    assert "<canonical_sources>" in review_packet
+    assert "<plan_brief_path>" in review_packet
+    assert "<expected_output>" in review_packet
+    assert "<writeback_target>" in review_packet
 
     refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
     assert "# Refactor Proposal" in refactor

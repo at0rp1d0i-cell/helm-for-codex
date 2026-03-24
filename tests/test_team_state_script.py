@@ -180,6 +180,45 @@ def test_review_pass_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Recommendation" in content
 
 
+def test_review_packet_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "review-packet",
+        "--output",
+        "docs/plans/review-packets/product.md",
+        "--title",
+        "Product packet",
+        "--role",
+        "Product",
+        "--objective",
+        "Assess milestone fit and scope pressure",
+        "--canonical-source",
+        "docs/project/PROJECT_BRIEF.md",
+        "--canonical-source",
+        "docs/project/ROADMAP.md",
+        "--plan-brief",
+        "docs/plans/phase8-plan-brief.md",
+        "--expected-output",
+        "Findings, auto decisions, taste decisions, recommendation",
+        "--writeback",
+        "docs/plans/review-pass-product.md",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "review-packets" / "product.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Review Packet: Product packet" in content
+    assert "## Role" in content
+    assert "## Objective" in content
+    assert "## Canonical Sources" in content
+    assert "- docs/project/PROJECT_BRIEF.md" in content
+    assert "- docs/project/ROADMAP.md" in content
+    assert "## Plan Brief" in content
+    assert "docs/plans/phase8-plan-brief.md" in content
+    assert "## Expected Output" in content
+    assert "## Writeback Target" in content
+
+
 def test_decision_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

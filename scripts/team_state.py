@@ -154,6 +154,29 @@ def cmd_review_pass(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_review_packet(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    canonical_sources = "\n".join(f"- {item}" for item in args.canonical_source)
+    content = (
+        f"# Review Packet: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Objective\n\n"
+        f"{args.objective}\n\n"
+        "## Canonical Sources\n\n"
+        f"{canonical_sources}\n\n"
+        "## Plan Brief\n\n"
+        f"{args.plan_brief}\n\n"
+        "## Expected Output\n\n"
+        f"{args.expected_output}\n\n"
+        "## Writeback Target\n\n"
+        f"{args.writeback}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_decision(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     consequence_lines = "\n".join(f"- {item}" for item in args.consequence)
@@ -258,6 +281,26 @@ def build_parser() -> argparse.ArgumentParser:
     review_pass.add_argument("--taste-decision", action="append", default=[])
     review_pass.add_argument("--recommendation", required=True)
     review_pass.set_defaults(func=cmd_review_pass)
+
+    review_packet = subparsers.add_parser(
+        "review-packet",
+        help="Create review packet markdown",
+    )
+    review_packet.add_argument("--output", required=True)
+    review_packet.add_argument("--title", required=True)
+    review_packet.add_argument("--role", required=True)
+    review_packet.add_argument("--objective", required=True)
+    review_packet.add_argument(
+        "--canonical-source",
+        action="append",
+        default=[],
+        required=True,
+        dest="canonical_source",
+    )
+    review_packet.add_argument("--plan-brief", required=True, dest="plan_brief")
+    review_packet.add_argument("--expected-output", required=True, dest="expected_output")
+    review_packet.add_argument("--writeback", required=True)
+    review_packet.set_defaults(func=cmd_review_packet)
 
     decision = subparsers.add_parser("decision", help="Create decision markdown")
     decision.add_argument("--output", required=True)
