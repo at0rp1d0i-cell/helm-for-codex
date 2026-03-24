@@ -60,6 +60,8 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "execution board",
         "scripts/team_state.py",
         "scripts/lead_loop.py",
+        "discover",
+        "plan",
         "delegate",
         "status",
     ]
@@ -79,6 +81,8 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         assert trigger in content.lower()
 
     assert "repository-backed state transitions" in content.lower()
+    assert "repository-backed discovery" in content.lower()
+    assert "repository-backed planning" in content.lower()
 
 
 def test_team_lead_openai_metadata_is_tight_and_explicit() -> None:

@@ -20,6 +20,8 @@ def run_doc_check(root: Path) -> subprocess.CompletedProcess[str]:
 def test_ops_templates_and_checks_exist() -> None:
     required = [
         ROOT / "ops" / "templates" / "task-brief.md",
+        ROOT / "ops" / "templates" / "discovery-brief.md",
+        ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
@@ -32,6 +34,16 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "# Task Brief: <title>" in task_brief
     assert "<objective>" in task_brief
     assert "<writeback_target>" in task_brief
+
+    discovery_brief = (ROOT / "ops" / "templates" / "discovery-brief.md").read_text()
+    assert "# Discovery Brief: <title>" in discovery_brief
+    assert "<problem_signal>" in discovery_brief
+    assert "<recommendation_target>" in discovery_brief
+
+    plan_brief = (ROOT / "ops" / "templates" / "plan-brief.md").read_text()
+    assert "# Plan Brief: <title>" in plan_brief
+    assert "<modules_in_scope>" in plan_brief
+    assert "<writeback_target>" in plan_brief
 
     refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
     assert "# Refactor Proposal" in refactor
