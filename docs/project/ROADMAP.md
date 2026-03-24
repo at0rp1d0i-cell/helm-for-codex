@@ -2,10 +2,10 @@
 
 ## Current Milestone
 
-Phase 5 baseline complete: the repository now has a repository-backed review gate, automatic versus taste-decision separation, and a lead-managed gate between plan and build.
+Phase 6 baseline complete: the repository now has structured multi-role review pass artifacts and a review gate that aggregates Product, Architect, and Reviewer feedback before build.
 
 ## Later Milestones
 
-- connect the review gate to real multi-role review passes instead of manual summaries
+- connect structured review passes to real role execution instead of only scripted artifacts
 - automate more canonical state updates, handoff generation, and decision gating
 - expand validation from structural checks into behavior-aware orchestration checks

@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for multi-role review orchestration
+- define next implementation tranche for live role-driven review orchestration
 
 ## Completed
 
@@ -31,3 +31,6 @@ evolve
 - add repository-backed review gate artifact
 - add review gate to the lead loop
 - wire review gate into the lead contract
+- add review pass artifacts
+- aggregate multi-role review passes
+- wire multi-role review passes into the contracts
