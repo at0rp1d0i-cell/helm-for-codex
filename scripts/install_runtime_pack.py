@@ -48,6 +48,8 @@ def _bootstrap_file(src: Path, dst: Path) -> None:
 
 
 def _copy_dir(src: Path, dst: Path) -> None:
+    if src.resolve() == dst.resolve():
+        return
     shutil.copytree(src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".git", "*.pyc"))
 
 

@@ -2,6 +2,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import importlib.util
+
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "install_runtime_pack.py"
@@ -83,3 +85,23 @@ def test_installer_preserves_existing_canonical_state(tmp_path: Path) -> None:
     assert project_brief.read_text() == "# Project Brief\n\ncustom project state\n"
     assert onboarding_state.read_text() == "# Onboarding State: Custom\n\nmanual state\n"
     assert agents.read_text() == "# Project AGENTS\n\ncustom guidance\n"
+
+
+def test_copy_dir_is_noop_when_source_equals_destination(tmp_path: Path) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "install_runtime_pack",
+        SCRIPT,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    ops_dir = tmp_path / "ops" / "templates"
+    ops_dir.mkdir(parents=True)
+    marker = ops_dir / "marker.md"
+    marker.write_text("present\n")
+
+    module._copy_dir(ops_dir, ops_dir)
+
+    assert marker.read_text() == "present\n"
