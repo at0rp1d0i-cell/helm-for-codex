@@ -22,6 +22,8 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "task-brief.md",
         ROOT / "ops" / "templates" / "discovery-brief.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
+        ROOT / "ops" / "templates" / "sprint-contract.md",
+        ROOT / "ops" / "templates" / "implementation-report.md",
         ROOT / "ops" / "templates" / "onboarding-state.md",
         ROOT / "ops" / "templates" / "onboarding-report.md",
         ROOT / "ops" / "templates" / "deep-scan-plan.md",
@@ -31,6 +33,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "review-result.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
+        ROOT / "ops" / "templates" / "docs-sync-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
         ROOT / "ops" / "checks" / "check_docs_freshness.py",
     ]
@@ -51,6 +54,19 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "# Plan Brief: <title>" in plan_brief
     assert "<modules_in_scope>" in plan_brief
     assert "<writeback_target>" in plan_brief
+
+    sprint_contract = (ROOT / "ops" / "templates" / "sprint-contract.md").read_text()
+    assert "# Sprint Contract: <title>" in sprint_contract
+    assert "<planner_role>" in sprint_contract
+    assert "<generator_role>" in sprint_contract
+    assert "<evaluator_role>" in sprint_contract
+    assert "<acceptance_criteria>" in sprint_contract
+
+    implementation_report = (ROOT / "ops" / "templates" / "implementation-report.md").read_text()
+    assert "# Implementation Report: <title>" in implementation_report
+    assert "<sprint_contract_path>" in implementation_report
+    assert "<files_touched>" in implementation_report
+    assert "<tests_run>" in implementation_report
 
     review_gate = (ROOT / "ops" / "templates" / "review-gate.md").read_text()
     assert "# Review Gate: <title>" in review_gate
@@ -105,6 +121,18 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<hypotheses>" in deep_scan_plan
     assert "<probes>" in deep_scan_plan
     assert "<evidence>" in deep_scan_plan
+
+    qa_report = (ROOT / "ops" / "templates" / "qa-report.md").read_text()
+    assert "# QA Report" in qa_report
+    assert "<sprint_contract_path>" in qa_report
+    assert "<implementation_report_path>" in qa_report
+    assert "<verification_status>" in qa_report
+
+    docs_sync_report = (ROOT / "ops" / "templates" / "docs-sync-report.md").read_text()
+    assert "# Docs Sync Report: <title>" in docs_sync_report
+    assert "<implementation_report_path>" in docs_sync_report
+    assert "<qa_report_path>" in docs_sync_report
+    assert "<canonical_writeback_target>" in docs_sync_report
 
     refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
     assert "# Refactor Proposal" in refactor

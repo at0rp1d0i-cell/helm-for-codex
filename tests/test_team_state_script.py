@@ -110,6 +110,102 @@ def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Writeback Target" in content
 
 
+def test_sprint_contract_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "sprint-contract",
+        "--output",
+        "docs/plans/sprint-contract-demo.md",
+        "--title",
+        "Task 1 builder kickoff",
+        "--planner",
+        "Lead defines the bounded handoff and acceptance criteria",
+        "--generator",
+        "Builder implements only the artifact writers and templates",
+        "--evaluator",
+        "QA and Docs consume the artifact chain before board advancement",
+        "--scope",
+        "team_state artifact writers and matching templates only",
+        "--acceptance",
+        "Sprint contract, implementation report, qa report template, and docs sync report are repo-backed",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "sprint-contract-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Sprint Contract: Task 1 builder kickoff" in content
+    assert "## Planner" in content
+    assert "## Generator" in content
+    assert "## Evaluator" in content
+    assert "## Scope" in content
+    assert "## Acceptance Criteria" in content
+
+
+def test_implementation_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "implementation-report",
+        "--output",
+        "docs/plans/implementation-report-demo.md",
+        "--title",
+        "Task 1 implementation report",
+        "--sprint-contract",
+        "docs/plans/sprint-contract-demo.md",
+        "--summary",
+        "Added bounded artifact writers for the execution handoff chain",
+        "--files-touched",
+        "scripts/team_state.py, ops/templates/sprint-contract.md",
+        "--tests-run",
+        "uv run pytest tests/test_team_state_script.py tests/test_ops_templates.py -q",
+        "--follow-ups",
+        "QA handoff still lands in phase 13 task 3",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "implementation-report-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Implementation Report: Task 1 implementation report" in content
+    assert "## Sprint Contract" in content
+    assert "docs/plans/sprint-contract-demo.md" in content
+    assert "## Summary" in content
+    assert "## Files Touched" in content
+    assert "## Tests Run" in content
+    assert "## Follow-Ups" in content
+
+
+def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "docs-sync-report",
+        "--output",
+        "docs/plans/docs-sync-report-demo.md",
+        "--title",
+        "Task 1 docs sync report",
+        "--implementation-report",
+        "docs/plans/implementation-report-demo.md",
+        "--qa-report",
+        "docs/plans/qa-report-demo.md",
+        "--docs-updated",
+        "ops/templates/qa-report.md and canonical docs alignment notes",
+        "--canonical-writeback",
+        "docs/status/EXECUTION_BOARD.md",
+        "--follow-ups",
+        "None for task 1",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "docs-sync-report-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Docs Sync Report: Task 1 docs sync report" in content
+    assert "## Implementation Report" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## QA Report" in content
+    assert "docs/plans/qa-report-demo.md" in content
+    assert "## Docs Updated" in content
+    assert "## Canonical Writeback" in content
+    assert "## Follow-Ups" in content
+
+
 def test_review_gate_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

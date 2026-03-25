@@ -103,6 +103,66 @@ def cmd_plan_brief(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sprint_contract(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Sprint Contract: {args.title}\n\n"
+        "## Planner\n\n"
+        f"{args.planner}\n\n"
+        "## Generator\n\n"
+        f"{args.generator}\n\n"
+        "## Evaluator\n\n"
+        f"{args.evaluator}\n\n"
+        "## Scope\n\n"
+        f"{args.scope}\n\n"
+        "## Acceptance Criteria\n\n"
+        f"{args.acceptance}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_implementation_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Implementation Report: {args.title}\n\n"
+        "## Sprint Contract\n\n"
+        f"{args.sprint_contract}\n\n"
+        "## Summary\n\n"
+        f"{args.summary}\n\n"
+        "## Files Touched\n\n"
+        f"{args.files_touched}\n\n"
+        "## Tests Run\n\n"
+        f"{args.tests_run}\n\n"
+        "## Follow-Ups\n\n"
+        f"{args.follow_ups}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_docs_sync_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Docs Sync Report: {args.title}\n\n"
+        "## Implementation Report\n\n"
+        f"{args.implementation_report}\n\n"
+        "## QA Report\n\n"
+        f"{args.qa_report}\n\n"
+        "## Docs Updated\n\n"
+        f"{args.docs_updated}\n\n"
+        "## Canonical Writeback\n\n"
+        f"{args.canonical_writeback}\n\n"
+        "## Follow-Ups\n\n"
+        f"{args.follow_ups}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_gate(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     review_passes = "\n".join(f"- {item}" for item in args.review_pass)
@@ -366,6 +426,57 @@ def build_parser() -> argparse.ArgumentParser:
     plan_brief.add_argument("--exit-criteria", required=True, dest="exit_criteria")
     plan_brief.add_argument("--writeback", required=True)
     plan_brief.set_defaults(func=cmd_plan_brief)
+
+    sprint_contract = subparsers.add_parser(
+        "sprint-contract",
+        help="Create sprint contract markdown",
+    )
+    sprint_contract.add_argument("--output", required=True)
+    sprint_contract.add_argument("--title", required=True)
+    sprint_contract.add_argument("--planner", required=True)
+    sprint_contract.add_argument("--generator", required=True)
+    sprint_contract.add_argument("--evaluator", required=True)
+    sprint_contract.add_argument("--scope", required=True)
+    sprint_contract.add_argument("--acceptance", required=True)
+    sprint_contract.set_defaults(func=cmd_sprint_contract)
+
+    implementation_report = subparsers.add_parser(
+        "implementation-report",
+        help="Create implementation report markdown",
+    )
+    implementation_report.add_argument("--output", required=True)
+    implementation_report.add_argument("--title", required=True)
+    implementation_report.add_argument(
+        "--sprint-contract",
+        required=True,
+        dest="sprint_contract",
+    )
+    implementation_report.add_argument("--summary", required=True)
+    implementation_report.add_argument("--files-touched", required=True, dest="files_touched")
+    implementation_report.add_argument("--tests-run", required=True, dest="tests_run")
+    implementation_report.add_argument("--follow-ups", required=True, dest="follow_ups")
+    implementation_report.set_defaults(func=cmd_implementation_report)
+
+    docs_sync_report = subparsers.add_parser(
+        "docs-sync-report",
+        help="Create docs sync report markdown",
+    )
+    docs_sync_report.add_argument("--output", required=True)
+    docs_sync_report.add_argument("--title", required=True)
+    docs_sync_report.add_argument(
+        "--implementation-report",
+        required=True,
+        dest="implementation_report",
+    )
+    docs_sync_report.add_argument("--qa-report", required=True, dest="qa_report")
+    docs_sync_report.add_argument("--docs-updated", required=True, dest="docs_updated")
+    docs_sync_report.add_argument(
+        "--canonical-writeback",
+        required=True,
+        dest="canonical_writeback",
+    )
+    docs_sync_report.add_argument("--follow-ups", required=True, dest="follow_ups")
+    docs_sync_report.set_defaults(func=cmd_docs_sync_report)
 
     review_gate = subparsers.add_parser("review-gate", help="Create review gate markdown")
     review_gate.add_argument("--output", required=True)
