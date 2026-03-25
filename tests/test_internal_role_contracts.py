@@ -59,21 +59,35 @@ def test_review_roles_can_write_structured_review_passes() -> None:
         assert (
             "scripts/team_state.py review-result" in content
         ), f"{role} contract should include review-result writeback command shape"
+        assert "review-pass" in content.lower(), f"{role} contract should mention review-pass ownership"
+        assert (
+            "docs/plans/review-passes/" in content
+        ), f"{role} contract should allow direct review-pass writeback"
+        assert (
+            "scripts/team_state.py review-pass" in content
+        ), f"{role} contract should include review-pass writeback command shape"
+        assert "review-pass" in content.lower(), f"{role} contract should mention review-pass ownership"
+        assert (
+            "docs/plans/review-passes/" in content
+        ), f"{role} contract should allow direct review-pass writeback"
+        assert (
+            "scripts/team_state.py review-pass" in content
+        ), f"{role} contract should include review-pass writeback command shape"
 
 
 def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
     expected = {
         ROOT / ".codex" / "roles" / "product-reviewer.toml": (
             "skills/product-discovery/SKILL.md",
-            "docs/plans/review-results/product.md",
+            "docs/plans/review-passes/product.md",
         ),
         ROOT / ".codex" / "roles" / "architect-reviewer.toml": (
             "skills/architecture-review/SKILL.md",
-            "docs/plans/review-results/architect.md",
+            "docs/plans/review-passes/architect.md",
         ),
         ROOT / ".codex" / "roles" / "code-reviewer.toml": (
             "skills/code-reviewer/SKILL.md",
-            "docs/plans/review-results/reviewer.md",
+            "docs/plans/review-passes/reviewer.md",
         ),
     }
     for path, (skill_path, result_path) in expected.items():
