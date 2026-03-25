@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for direct internal role-owned canonical review-pass writeback
+- define next implementation tranche for behavior-aware orchestration checks and richer live team execution
 
 ## Completed
 
@@ -47,3 +47,6 @@ evolve
 - add direct review-result writeback protocol
 - add direct role-owned review-result writeback
 - add codex role configs for internal reviewers
+- promote review packets to direct review-pass writeback
+- promote live review to direct review-pass writeback
+- rebind internal reviewers to canonical review passes

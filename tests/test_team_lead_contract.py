@@ -97,8 +97,9 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "taste decisions" in content.lower()
     assert "multi-role review passes" in content.lower()
     assert "live subagent review preparation" in content.lower()
-    assert "direct role-owned structured review-result writeback" in content.lower()
+    assert "direct role-owned canonical review-pass writeback" in content.lower()
     assert "repo-scoped codex review role config" in content.lower()
+    assert "review-result plus lead_loop.py review-collect available as a compatibility path" in content.lower()
     assert "deterministic fallback" in content.lower()
 
 

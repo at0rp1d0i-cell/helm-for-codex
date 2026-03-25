@@ -22,6 +22,7 @@
 - single visible lead
 - small active concurrency
 - repo as memory
-- direct role-owned review-result writeback is the preferred live review path
+- direct role-owned canonical review-pass writeback is the preferred live review path
 - Product, Architect, and Reviewer live review roles are defined in repo-scoped Codex config
+- review-result remains supported as a compatibility and recovery path
 - deterministic fallback remains available when live subagent review is unavailable
