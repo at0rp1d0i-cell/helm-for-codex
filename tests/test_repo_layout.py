@@ -40,12 +40,19 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "docs/project/ARCHITECTURE.md",
         "docs/project/QUALITY_BAR.md",
         "docs/status/EXECUTION_BOARD.md",
+        ".codex/config.toml",
+        ".codex/roles/product-reviewer.toml",
+        ".codex/roles/architect-reviewer.toml",
+        ".codex/roles/code-reviewer.toml",
         "skills/team-lead/SKILL.md",
         "skills/team-lead/agents/openai.yaml",
         "skills/product-discovery/SKILL.md",
+        "skills/product-discovery/agents/openai.yaml",
         "skills/architecture-review/SKILL.md",
+        "skills/architecture-review/agents/openai.yaml",
         "skills/implementation-worker/SKILL.md",
         "skills/code-reviewer/SKILL.md",
+        "skills/code-reviewer/agents/openai.yaml",
         "skills/qa-runner/SKILL.md",
         "skills/docs-sync/SKILL.md",
         "skills/refactor-planner/SKILL.md",
@@ -92,6 +99,17 @@ def test_team_lead_contract_is_visible_to_repo_validation() -> None:
         "review-prepare",
         "review-collect",
         "approval-needed",
+    ]
+    for token in required_tokens:
+        assert token in content
+
+
+def test_codex_internal_role_config_declares_review_roles() -> None:
+    content = (ROOT / ".codex" / "config.toml").read_text()
+    required_tokens = [
+        "roles/product-reviewer.toml",
+        "roles/architect-reviewer.toml",
+        "roles/code-reviewer.toml",
     ]
     for token in required_tokens:
         assert token in content

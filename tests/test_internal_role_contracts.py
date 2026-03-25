@@ -52,5 +52,32 @@ def test_review_roles_can_write_structured_review_passes() -> None:
 
     for path, role in review_roles.items():
         content = path.read_text()
-        assert "review-pass" in content.lower(), f"{role} contract should mention review pass output"
-        assert "docs/plans/" in content, f"{role} contract should allow repo-backed review pass writeback"
+        assert "review-result" in content.lower(), f"{role} contract should mention review-result output"
+        assert (
+            "docs/plans/review-results/" in content
+        ), f"{role} contract should allow direct review-result writeback"
+        assert (
+            "scripts/team_state.py review-result" in content
+        ), f"{role} contract should include review-result writeback command shape"
+
+
+def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
+    expected = {
+        ROOT / ".codex" / "roles" / "product-reviewer.toml": (
+            "skills/product-discovery/SKILL.md",
+            "docs/plans/review-results/product.md",
+        ),
+        ROOT / ".codex" / "roles" / "architect-reviewer.toml": (
+            "skills/architecture-review/SKILL.md",
+            "docs/plans/review-results/architect.md",
+        ),
+        ROOT / ".codex" / "roles" / "code-reviewer.toml": (
+            "skills/code-reviewer/SKILL.md",
+            "docs/plans/review-results/reviewer.md",
+        ),
+    }
+    for path, (skill_path, result_path) in expected.items():
+        content = path.read_text()
+        assert skill_path in content
+        assert result_path in content
+        assert "scripts/team_state.py review-result" in content

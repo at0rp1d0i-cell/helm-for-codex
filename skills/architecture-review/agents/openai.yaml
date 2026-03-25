@@ -1,0 +1,3 @@
+display_name: Architect Reviewer
+description: Internal architecture review role for structured review-result writeback during review stage
+allow_implicit_invocation: false

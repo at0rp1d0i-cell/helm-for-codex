@@ -1,0 +1,6 @@
+id = "code-reviewer"
+display_name = "Code Reviewer"
+skill = "skills/code-reviewer/SKILL.md"
+metadata = "skills/code-reviewer/agents/openai.yaml"
+writeback_target = "docs/plans/review-results/reviewer.md"
+writeback_command = "uv run python scripts/team_state.py review-result --output docs/plans/review-results/reviewer.md --role Reviewer"

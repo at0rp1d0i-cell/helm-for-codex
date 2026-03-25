@@ -1,6 +1,6 @@
 ---
 name: product-discovery
-description: Internal specialist for turning product ideas into clarified goals, milestones, tradeoffs, and research questions for the team lead.
+description: Use when the lead needs product framing, scope tradeoffs, and a Product review-result artifact for review gating.
 ---
 
 # Product Discovery
@@ -12,18 +12,21 @@ Clarify product intent into scoped goals, milestones, tradeoffs, and discovery q
 <inputs>
 <input>User intent and constraints from the lead.</input>
 <input>Canonical state files and relevant decisions.</input>
+<input>Writeback command shape: uv run python scripts/team_state.py review-result --output docs/plans/review-results/product.md --role Product ...</input>
 </inputs>
 
 <expected_output>
 <section>problem framing</section>
 <section>scope options with recommendation</section>
 <section>open questions and assumptions</section>
+<section>review-result with recommendation for role Product</section>
 </expected_output>
 
 <writeback>
 <target>docs/project/PROJECT_BRIEF.md</target>
 <target>docs/project/ROADMAP.md</target>
-<target>docs/plans/review-pass-*.md</target>
+<target>docs/plans/review-results/product.md</target>
+<target>Use scripts/team_state.py review-result to write structured role output.</target>
 </writeback>
 
 <non_goals>

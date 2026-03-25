@@ -1,0 +1,6 @@
+id = "architect-reviewer"
+display_name = "Architect Reviewer"
+skill = "skills/architecture-review/SKILL.md"
+metadata = "skills/architecture-review/agents/openai.yaml"
+writeback_target = "docs/plans/review-results/architect.md"
+writeback_command = "uv run python scripts/team_state.py review-result --output docs/plans/review-results/architect.md --role Architect"

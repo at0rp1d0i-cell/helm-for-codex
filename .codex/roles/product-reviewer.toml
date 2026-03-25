@@ -1,0 +1,6 @@
+id = "product-reviewer"
+display_name = "Product Reviewer"
+skill = "skills/product-discovery/SKILL.md"
+metadata = "skills/product-discovery/agents/openai.yaml"
+writeback_target = "docs/plans/review-results/product.md"
+writeback_command = "uv run python scripts/team_state.py review-result --output docs/plans/review-results/product.md --role Product"
