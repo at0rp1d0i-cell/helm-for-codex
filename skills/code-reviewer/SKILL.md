@@ -23,6 +23,11 @@ Review changes for correctness, regression risk, and implementation completeness
 <section>review-pass with recommendation for role Reviewer</section>
 </expected_output>
 
+<packaging>
+<target>.agents/skills/code-reviewer/SKILL.md</target>
+<target>Runtime installer makes this skill available at `.agents/skills/code-reviewer` per onboarding.</target>
+</packaging>
+
 <writeback>
 <target>docs/status/EXECUTION_BOARD.md</target>
 <target>docs/plans/review-passes/reviewer.md</target>

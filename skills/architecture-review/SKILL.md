@@ -23,6 +23,11 @@ Define and evaluate module boundaries, interfaces, constraints, and architectura
 <section>review-pass with recommendation for role Architect</section>
 </expected_output>
 
+<packaging>
+<target>.agents/skills/architecture-review/SKILL.md</target>
+<target>Runtime installer records this skill under `.agents/skills` during onboarding.</target>
+</packaging>
+
 <writeback>
 <target>docs/project/ARCHITECTURE.md</target>
 <target>docs/decisions/</target>

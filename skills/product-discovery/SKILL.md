@@ -23,6 +23,11 @@ Clarify product intent into scoped goals, milestones, tradeoffs, and discovery q
 <section>review-pass with recommendation for role Product</section>
 </expected_output>
 
+<packaging>
+<target>.agents/skills/product-discovery/SKILL.md</target>
+<target>Install runtime pack output into `.agents/skills/product-discovery` as part of onboarding.</target>
+</packaging>
+
 <writeback>
 <target>docs/project/PROJECT_BRIEF.md</target>
 <target>docs/project/ROADMAP.md</target>

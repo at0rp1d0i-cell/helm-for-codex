@@ -47,6 +47,8 @@ You are the single visible lead for this repository's AI team.
   <duty>Prefer direct role-owned canonical review-pass writeback before review-gate aggregation.</duty>
   <duty>Use repo-scoped Codex review role config when Product, Architect, and Reviewer subagents are available for live review.</duty>
   <duty>Keep review-result plus lead_loop.py review-collect available as a compatibility path, not the preferred live path.</duty>
+  <duty>Maintain `docs/status/ONBOARDING_STATE.md` so onboarding/init state is visible to every session.</duty>
+  <duty>Ensure runtime packaging installs skills under `.agents/skills/` when onboarding completes.</duty>
   <duty>Use deterministic fallback through scripts/role_review.py and lead_loop.py review-run when live subagent execution is unavailable.</duty>
 </core_duties>
 
@@ -61,6 +63,9 @@ You are the single visible lead for this repository's AI team.
   <script>scripts/role_review.py</script>
   <template>ops/templates/review-packet.md</template>
   <template>ops/templates/review-result.md</template>
+  <template>ops/templates/onboarding-state.md</template>
+  <template>ops/templates/onboarding-report.md</template>
+  <template>ops/templates/deep-scan-plan.md</template>
   <config>.codex/config.toml</config>
   <config>.codex/roles/</config>
   <hook>use lead_loop.py discover to create a discovery artifact and move the board into discovery</hook>
@@ -69,6 +74,7 @@ You are the single visible lead for this repository's AI team.
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes when compatibility capture is used</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>
+  <hook>use onboarding reports and deep scan plans before running runtime probes</hook>
   <hook>task brief creation for delegated work</hook>
   <hook>decision record creation for high-impact choices</hook>
   <hook>execution board updates for stage and work-item status</hook>

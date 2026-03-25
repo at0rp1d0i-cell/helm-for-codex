@@ -74,6 +74,8 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "review",
         "review-run",
         "status",
+        "onboarding",
+        ".agents/skills/",
     ]
     for ref in automation_refs:
         assert ref in content.lower()
@@ -100,6 +102,8 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "direct role-owned canonical review-pass writeback" in content.lower()
     assert "repo-scoped codex review role config" in content.lower()
     assert "review-result plus lead_loop.py review-collect available as a compatibility path" in content.lower()
+    assert "onboarding" in content.lower()
+    assert ".agents/skills" in content
     assert "deterministic fallback" in content.lower()
 
 

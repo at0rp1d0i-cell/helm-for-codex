@@ -67,20 +67,21 @@ def test_review_roles_can_write_structured_review_passes() -> None:
             "scripts/team_state.py review-pass" in content
         ), f"{role} contract should include review-pass writeback command shape"
         assert "compatibility" in content.lower(), f"{role} contract should mention compatibility behavior"
+        assert ".agents/skills" in content, f"{role} contract should refer to runtime packaging target"
 
 
 def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
     expected = {
         ROOT / ".codex" / "roles" / "product-reviewer.toml": (
-            "skills/product-discovery/SKILL.md",
+            ".agents/skills/product-discovery/SKILL.md",
             "docs/plans/review-passes/product.md",
         ),
         ROOT / ".codex" / "roles" / "architect-reviewer.toml": (
-            "skills/architecture-review/SKILL.md",
+            ".agents/skills/architecture-review/SKILL.md",
             "docs/plans/review-passes/architect.md",
         ),
         ROOT / ".codex" / "roles" / "code-reviewer.toml": (
-            "skills/code-reviewer/SKILL.md",
+            ".agents/skills/code-reviewer/SKILL.md",
             "docs/plans/review-passes/reviewer.md",
         ),
     }
@@ -91,3 +92,4 @@ def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
         assert "scripts/team_state.py review-pass" in content
         assert "compatibility_writeback_target" in content
         assert "scripts/team_state.py review-result" in content
+        assert ".agents/skills" in content
