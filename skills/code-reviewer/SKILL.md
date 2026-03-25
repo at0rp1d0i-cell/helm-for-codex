@@ -20,7 +20,6 @@ Review changes for correctness, regression risk, and implementation completeness
 <section>findings ordered by severity</section>
 <section>residual risks and testing gaps</section>
 <section>approval status</section>
-</section>
 <section>review-pass with recommendation for role Reviewer</section>
 </expected_output>
 

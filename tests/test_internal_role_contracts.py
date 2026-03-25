@@ -66,13 +66,7 @@ def test_review_roles_can_write_structured_review_passes() -> None:
         assert (
             "scripts/team_state.py review-pass" in content
         ), f"{role} contract should include review-pass writeback command shape"
-        assert "review-pass" in content.lower(), f"{role} contract should mention review-pass ownership"
-        assert (
-            "docs/plans/review-passes/" in content
-        ), f"{role} contract should allow direct review-pass writeback"
-        assert (
-            "scripts/team_state.py review-pass" in content
-        ), f"{role} contract should include review-pass writeback command shape"
+        assert "compatibility" in content.lower(), f"{role} contract should mention compatibility behavior"
 
 
 def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
@@ -94,4 +88,6 @@ def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
         content = path.read_text()
         assert skill_path in content
         assert result_path in content
+        assert "scripts/team_state.py review-pass" in content
+        assert "compatibility_writeback_target" in content
         assert "scripts/team_state.py review-result" in content

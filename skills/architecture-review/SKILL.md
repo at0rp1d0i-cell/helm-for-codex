@@ -20,7 +20,6 @@ Define and evaluate module boundaries, interfaces, constraints, and architectura
 <section>target architecture delta</section>
 <section>interface and boundary impacts</section>
 <section>risks and recommendation</section>
-</section>
 <section>review-pass with recommendation for role Architect</section>
 </expected_output>
 
