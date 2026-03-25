@@ -72,6 +72,7 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "## Writeback Command" in review_packet
     assert "<writeback_command>" in review_packet
     assert "scripts/team_state.py review-pass" in review_packet
+    assert "Preferred canonical path: `docs/plans/review-passes/<role>.md`" in review_packet
 
     review_result = (ROOT / "ops" / "templates" / "review-result.md").read_text()
     assert "# Review Result: <title>" in review_result

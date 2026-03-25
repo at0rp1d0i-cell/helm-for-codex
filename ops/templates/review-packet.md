@@ -29,3 +29,4 @@
 <writeback_command>
 
 Example: `uv run python scripts/team_state.py review-pass --output <review_pass_path> ...`
+Preferred canonical path: `docs/plans/review-passes/<role>.md`
