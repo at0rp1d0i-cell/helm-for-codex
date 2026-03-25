@@ -28,4 +28,4 @@
 
 <writeback_command>
 
-Example: `uv run python scripts/team_state.py review-result --output <review_result_path> ...`
+Example: `uv run python scripts/team_state.py review-pass --output <review_pass_path> ...`
