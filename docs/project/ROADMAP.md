@@ -7,7 +7,7 @@ Phase 12 baseline complete: the repository can now install a Codex-facing runtim
 ## Later Milestones
 
 - expand validation from structural checks into richer behavior-aware orchestration checks
-- plan the next tranche around internal execution handoffs (implementation → QA → docs) and onboarding semantics, not just installer packaging
+- execute the first bounded execution-handoff slice (delegate -> builder -> QA -> docs-sync -> board update) with installed-runtime verification from day one
 - add fresh-repo smoke validation for installed runtime packs
 - deepen onboarding into project-specific deep-scan tranches and runtime evidence capture
 - automate more canonical state updates, handoff generation, and decision gating

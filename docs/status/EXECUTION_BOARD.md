@@ -8,7 +8,7 @@ approval-needed
 
 ## Active Work
 
-- Plan the next team orchestration tranche (implementation → QA → docs) now that runtime verification is done
+- Plan phase 13: the first bounded execution-handoff slice (delegate -> builder -> QA -> docs-sync -> board update)
 
 ## Completed
 
