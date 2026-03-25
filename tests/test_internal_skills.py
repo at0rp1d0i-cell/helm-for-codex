@@ -66,3 +66,11 @@ def test_runtime_builder_and_lead_skill_contracts_include_phase13_handoff_terms(
         ROOT / ".agents" / "skills" / "implementation-worker" / "SKILL.md"
     ).read_text().lower()
     assert "do not claim feature-branch autonomy" in implementation_worker
+
+
+def test_runtime_qa_skill_contract_includes_phase13_handoff_terms() -> None:
+    content = (ROOT / ".agents" / "skills" / "qa-runner" / "SKILL.md").read_text().lower()
+    assert "sprint contract" in content
+    assert "implementation report" in content
+    assert "qa-report" in content
+    assert "evaluator" in content

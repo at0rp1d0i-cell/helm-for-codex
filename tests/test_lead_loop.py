@@ -108,6 +108,183 @@ def test_build_creates_sprint_contract_and_updates_board(tmp_path: Path) -> None
     assert "- Phase 13 task 2" in board
 
 
+def test_qa_creates_report_and_moves_board_to_qa(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "sprint-contract-phase13-task3.md").write_text(
+        "# Sprint Contract: Phase 13 task 3\n\n"
+        "## Planner\n\nLead owns the bounded task.\n\n"
+        "## Generator\n\nBuilder writes the implementation report.\n\n"
+        "## Evaluator\n\nQA validates the builder output.\n\n"
+        "## Scope\n\nAdd QA handoff.\n\n"
+        "## Acceptance Criteria\n\n"
+        "Consume the sprint contract and implementation report before board movement.\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
+        "# Implementation Report: Phase 13 task 3\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task3.md\n\n"
+        "## Generator Summary\n\nBuilder completed the bounded task.\n\n"
+        "## Files Touched\n\nscripts/lead_loop.py\n\n"
+        "## Tests Run\n\nuv run pytest tests/test_lead_loop.py -q\n\n"
+        "## Follow-Ups\n\nnone\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "qa",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "uv run pytest in repo root",
+        "--scenario",
+        "Run the targeted handoff test suite",
+        "--verification-status",
+        "passed",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md"
+    assert report.exists()
+    content = report.read_text()
+    assert "# QA Report" in content
+    assert "docs/plans/sprint-contract-phase13-task3.md" in content
+    assert "docs/plans/implementation-report-phase13-task3.md" in content
+    assert "Run the targeted handoff test suite" in content
+    assert "passed" in content
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nqa" in board
+    assert "- Phase 13 task 3" in board
+
+
+def test_qa_failure_moves_task_back_to_build(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "sprint-contract-phase13-task3.md").write_text(
+        "# Sprint Contract: Phase 13 task 3\n\n## Planner\n\nLead\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
+        "# Implementation Report: Phase 13 task 3\n\n## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task3.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "qa",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "uv run pytest in repo root",
+        "--scenario",
+        "Run the targeted handoff test suite",
+        "--issue",
+        "QA found a board regression",
+        "--verification-status",
+        "failed",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = (tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md").read_text()
+    assert "QA found a board regression" in report
+    assert "failed" in report
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nbuild" in board
+    assert "- Phase 13 task 3" in board
+
+
+def test_qa_rejects_mismatched_consumed_sprint_contract(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "sprint-contract-phase13-task3.md").write_text(
+        "# Sprint Contract: Phase 13 task 3\n\n## Planner\n\nLead\n"
+    )
+    (tmp_path / "docs" / "plans" / "other-sprint-contract.md").write_text(
+        "# Sprint Contract: Other task\n\n## Planner\n\nLead\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
+        "# Implementation Report: Phase 13 task 3\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/other-sprint-contract.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "qa",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "uv run pytest in repo root",
+        "--scenario",
+        "Run the targeted handoff test suite",
+        "--verification-status",
+        "passed",
+    )
+
+    assert result.returncode != 0
+    assert "Implementation report consumed sprint contract" in result.stderr
+    assert not (tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- define next task" in board
+
+
+def test_qa_rejects_invalid_verification_status(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "sprint-contract-phase13-task3.md").write_text(
+        "# Sprint Contract: Phase 13 task 3\n\n## Planner\n\nLead\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
+        "# Implementation Report: Phase 13 task 3\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task3.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "qa",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "uv run pytest in repo root",
+        "--scenario",
+        "Run the targeted handoff test suite",
+        "--verification-status",
+        "maybe",
+    )
+
+    assert result.returncode != 0
+    assert "Invalid verification status" in result.stderr
+    assert not (tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- define next task" in board
+
+
 def test_discover_creates_discovery_brief_and_updates_board(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

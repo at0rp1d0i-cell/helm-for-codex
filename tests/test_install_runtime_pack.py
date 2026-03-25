@@ -19,6 +19,16 @@ def run_installer(target: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+def run_runtime_lead_loop(target: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(target / "scripts" / "lead_loop.py"), "--root", str(target), *args],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
 def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     target = tmp_path / "project"
     result = run_installer(target)
@@ -105,3 +115,69 @@ def test_copy_dir_is_noop_when_source_equals_destination(tmp_path: Path) -> None
     module._copy_dir(ops_dir, ops_dir)
 
     assert marker.read_text() == "present\n"
+
+
+def test_installed_runtime_supports_build_to_qa_handoff(tmp_path: Path) -> None:
+    target = tmp_path / "project"
+    result = run_installer(target)
+    assert result.returncode == 0, result.stderr
+
+    build = run_runtime_lead_loop(
+        target,
+        "build",
+        "--title",
+        "Phase 13 task 3",
+        "--planner",
+        "Lead owns the sprint contract and acceptance for one bounded task.",
+        "--generator",
+        "Builder implements the approved task and writes the implementation report.",
+        "--evaluator",
+        "QA evaluates the builder output against the sprint contract and implementation report.",
+        "--scope",
+        "Add QA handoff and defect loop only.",
+        "--acceptance",
+        "QA consumes the upstream artifacts and writes the canonical qa-report.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+    )
+    assert build.returncode == 0, build.stderr
+
+    (target / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
+        "# Implementation Report: Phase 13 task 3\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task3.md\n\n"
+        "## Generator Summary\n\nBuilder completed the bounded task.\n\n"
+        "## Files Touched\n\nscripts/lead_loop.py\n\n"
+        "## Tests Run\n\nuv run pytest tests/test_lead_loop.py -q\n\n"
+        "## Follow-Ups\n\nnone\n"
+    )
+
+    qa = run_runtime_lead_loop(
+        target,
+        "qa",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "Installed runtime repo",
+        "--scenario",
+        "Run the builder-to-QA handoff from the installed runtime",
+        "--verification-status",
+        "passed",
+    )
+    assert qa.returncode == 0, qa.stderr
+
+    report = (target / "docs" / "plans" / "qa-report-phase13-task3.md").read_text()
+    assert "docs/plans/sprint-contract-phase13-task3.md" in report
+    assert "docs/plans/implementation-report-phase13-task3.md" in report
+    assert "Run the builder-to-QA handoff from the installed runtime" in report
+
+    board = (target / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nqa" in board

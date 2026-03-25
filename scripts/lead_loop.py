@@ -25,6 +25,16 @@ def _read(path: Path) -> str:
     return path.read_text() if path.exists() else ""
 
 
+def _write(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content)
+
+
+def _resolve_path(root: Path, path: str) -> Path:
+    candidate = Path(path)
+    return candidate if candidate.is_absolute() else root / candidate
+
+
 def _extract_section(content: str, heading: str) -> str:
     marker = f"## {heading}\n\n"
     start = content.find(marker)
@@ -50,6 +60,34 @@ def _extract_list_section(content: str, heading: str) -> list[str]:
         if value and value.lower() != "none":
             items.append(value)
     return items
+
+
+def _normalize_verification_status(value: str) -> str:
+    normalized = value.strip().lower()
+    if normalized not in {"passed", "failed"}:
+        raise ValueError(f"Invalid verification status: {value}")
+    return normalized
+
+
+def _assert_consumed_sprint_contract(
+    root: Path,
+    sprint_contract_path: Path,
+    sprint_contract_arg: str,
+    implementation_report_path: Path,
+) -> None:
+    implementation_content = _read(implementation_report_path)
+    consumed_contract = _extract_section(implementation_content, "Consumed Sprint Contract")
+    if not consumed_contract:
+        raise ValueError(
+            "Implementation report consumed sprint contract is missing from the implementation report.",
+        )
+
+    consumed_contract_path = _resolve_path(root, consumed_contract)
+    expected_contract_path = _resolve_path(root, sprint_contract_arg)
+    if consumed_contract_path != expected_contract_path:
+        raise ValueError(
+            "Implementation report consumed sprint contract does not match the supplied sprint contract.",
+        )
 
 
 def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
@@ -349,6 +387,46 @@ def cmd_build(args: argparse.Namespace) -> int:
     return _update_board(args.root, args.board_path, "build", [args.title])
 
 
+def cmd_qa(args: argparse.Namespace) -> int:
+    sprint_contract = _resolve_path(args.root, args.sprint_contract_path)
+    implementation_report = _resolve_path(args.root, args.implementation_report_path)
+    if not sprint_contract.exists():
+        raise FileNotFoundError(f"Missing sprint contract: {sprint_contract}")
+    if not implementation_report.exists():
+        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
+    _assert_consumed_sprint_contract(
+        args.root,
+        sprint_contract,
+        args.sprint_contract_path,
+        implementation_report,
+    )
+    verification_status = _normalize_verification_status(args.verification_status)
+
+    issues = "\n".join(f"- {item}" for item in args.issue) if args.issue else "- none"
+    scenarios = "\n".join(f"- {item}" for item in args.scenario)
+    qa_report = _resolve_path(args.root, args.qa_report_path)
+    content = (
+        "# QA Report\n\n"
+        "## Consumed Sprint Contract\n\n"
+        f"{args.sprint_contract_path}\n\n"
+        "## Consumed Implementation Report\n\n"
+        f"{args.implementation_report_path}\n\n"
+        "QA must validate the generator output against the consumed artifacts before board advancement.\n\n"
+        "## Environment\n\n"
+        f"{args.environment}\n\n"
+        "## Scenarios Tested\n\n"
+        f"{scenarios}\n\n"
+        "## Issues Found\n\n"
+        f"{issues}\n\n"
+        "## Verification Status\n\n"
+        f"{verification_status}\n"
+    )
+    _write(qa_report, content)
+
+    next_stage = "build" if verification_status == "failed" else "qa"
+    return _update_board(args.root, args.board_path, next_stage, [args.title])
+
+
 def cmd_review(args: argparse.Namespace) -> int:
     review_passes = args.review_pass
     auto_decisions = args.auto_decision
@@ -517,6 +595,25 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
     build.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     build.set_defaults(func=cmd_build)
+
+    qa = subparsers.add_parser(
+        "qa",
+        help="Write the canonical QA report and move the board to qa or back to build",
+    )
+    qa.add_argument("--title", required=True)
+    qa.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
+    qa.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    qa.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    qa.add_argument("--environment", required=True)
+    qa.add_argument("--scenario", action="append", default=[], required=True)
+    qa.add_argument("--issue", action="append", default=[])
+    qa.add_argument("--verification-status", required=True, dest="verification_status")
+    qa.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    qa.set_defaults(func=cmd_qa)
 
     review_pass = subparsers.add_parser("review-pass", help="Create review pass artifact")
     review_pass.add_argument("--title", required=True)
