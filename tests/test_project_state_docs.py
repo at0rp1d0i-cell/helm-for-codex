@@ -16,6 +16,7 @@ def test_canonical_state_docs_have_required_headings() -> None:
         "docs/project/ARCHITECTURE.md": ["# Architecture", "## Modules", "## Constraints"],
         "docs/project/QUALITY_BAR.md": ["# Quality Bar", "## Code", "## Tests", "## Docs"],
         "docs/project/TECH_DEBT.md": ["# Tech Debt", "## Active Debt", "## Deferred Debt"],
+        "docs/status/ONBOARDING_STATE.md": ["# Onboarding State:", "## Stage", "## Last Scan", "## Notes"],
         "docs/status/EXECUTION_BOARD.md": ["# Execution Board", "## Current Stage", "## Active Work"],
         "docs/status/MODULE_CONTRACTS/README.md": ["# Module Contracts", "## Required Fields"],
     }
@@ -23,3 +24,17 @@ def test_canonical_state_docs_have_required_headings() -> None:
         content = read(relpath)
         for heading in headings:
             assert heading in content, f"{heading} missing from {relpath}"
+
+
+def test_readme_describes_runtime_pack_and_onboarding() -> None:
+    content = read("README.md")
+    required = [
+        "# Codex-Native AI Team",
+        "## Install Into Another Repo",
+        "scripts/install_runtime_pack.py",
+        ".agents/skills",
+        "## First Contact And Onboarding",
+        "ONBOARDING_STATE.md",
+    ]
+    for token in required:
+        assert token in content

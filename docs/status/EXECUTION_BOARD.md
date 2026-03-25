@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for behavior-aware orchestration checks and richer live team execution
+- define the next behavior-aware orchestration tranche and fresh-repo runtime smoke validation
 
 ## Completed
 
@@ -50,3 +50,11 @@ evolve
 - promote review packets to direct review-pass writeback
 - promote live review to direct review-pass writeback
 - rebind internal reviewers to canonical review passes
+- add onboarding state, onboarding report, and deep-scan plan artifacts
+- add lead-led init and manual re-init flow
+- add runtime-pack installer for target repos
+- bootstrap repo-local `.agents/skills` runtime packaging
+- preserve canonical state during runtime re-install
+- install runtime scripts, ops templates, and checks into target repos
+- add plan archive hygiene baseline
+- add source-to-runtime skill mirror validation

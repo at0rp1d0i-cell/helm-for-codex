@@ -29,6 +29,13 @@ def expected_headings(root: Path) -> dict[Path, list[str]]:
             "## Tests",
             "## Docs",
         ],
+        root / "docs" / "status" / "ONBOARDING_STATE.md": [
+            "# Onboarding State:",
+            "## Stage",
+            "## Last Scan",
+            "## Pending Decisions",
+            "## Notes",
+        ],
         root / "docs" / "status" / "EXECUTION_BOARD.md": [
             "# Execution Board",
             "_This file can be updated manually or via `scripts/team_state.py board`._",

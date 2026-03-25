@@ -22,6 +22,9 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "task-brief.md",
         ROOT / "ops" / "templates" / "discovery-brief.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
+        ROOT / "ops" / "templates" / "onboarding-state.md",
+        ROOT / "ops" / "templates" / "onboarding-report.md",
+        ROOT / "ops" / "templates" / "deep-scan-plan.md",
         ROOT / "ops" / "templates" / "review-gate.md",
         ROOT / "ops" / "templates" / "review-pass.md",
         ROOT / "ops" / "templates" / "review-packet.md",
@@ -125,6 +128,7 @@ def test_check_docs_freshness_rejects_board_without_preamble(tmp_path: Path) -> 
         "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
         "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
         "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/ONBOARDING_STATE.md": "# Onboarding State: x\n\n## Stage\n\nadopted\n\n## Last Scan\n\nphase-12\n\n## Pending Decisions\n\n- none\n\n## Notes\n\nready\n",
         "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n\n## Completed\n\n- y\n",
     }
     for relpath, content in files.items():
@@ -146,6 +150,7 @@ def test_check_docs_freshness_rejects_board_without_completed_section(tmp_path: 
         "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
         "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
         "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/ONBOARDING_STATE.md": "# Onboarding State: x\n\n## Stage\n\nadopted\n\n## Last Scan\n\nphase-12\n\n## Pending Decisions\n\n- none\n\n## Notes\n\nready\n",
         "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n_This file can be updated manually or via `scripts/team_state.py board`._\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n",
     }
     for relpath, content in files.items():
@@ -167,6 +172,7 @@ def test_check_docs_freshness_rejects_project_brief_without_current_goal(tmp_pat
         "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
         "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
         "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/ONBOARDING_STATE.md": "# Onboarding State: x\n\n## Stage\n\nadopted\n\n## Last Scan\n\nphase-12\n\n## Pending Decisions\n\n- none\n\n## Notes\n\nready\n",
         "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n_This file can be updated manually or via `scripts/team_state.py board`._\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n\n## Completed\n\n- y\n",
     }
     for relpath, content in files.items():
@@ -177,3 +183,25 @@ def test_check_docs_freshness_rejects_project_brief_without_current_goal(tmp_pat
     result = run_doc_check(tmp_path)
     assert result.returncode == 1
     assert "## Current Goal" in result.stdout
+
+
+def test_check_docs_freshness_rejects_missing_onboarding_state_sections(tmp_path: Path) -> None:
+    (tmp_path / "docs" / "project").mkdir(parents=True)
+    (tmp_path / "docs" / "status").mkdir(parents=True)
+
+    files = {
+        "docs/project/PROJECT_BRIEF.md": "# Project Brief\n\n## Problem\n\nx\n\n## Current Goal\n\nship phase 12\n\n## Success Criteria\n\ny\n",
+        "docs/project/ROADMAP.md": "# Roadmap\n\n## Current Milestone\n\nx\n\n## Later Milestones\n\ny\n",
+        "docs/project/ARCHITECTURE.md": "# Architecture\n\n## Modules\n\nx\n\n## Constraints\n\ny\n",
+        "docs/project/QUALITY_BAR.md": "# Quality Bar\n\n## Code\n\nx\n\n## Tests\n\ny\n\n## Docs\n\nz\n",
+        "docs/status/ONBOARDING_STATE.md": "# Onboarding State: x\n\n## Stage\n\nadopted\n\n## Notes\n\nready\n",
+        "docs/status/EXECUTION_BOARD.md": "# Execution Board\n\n_This file can be updated manually or via `scripts/team_state.py board`._\n\n## Current Stage\n\nplan\n\n## Active Work\n\n- x\n\n## Completed\n\n- y\n",
+    }
+    for relpath, content in files.items():
+        path = tmp_path / relpath
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+
+    result = run_doc_check(tmp_path)
+    assert result.returncode == 1
+    assert "## Last Scan" in result.stdout

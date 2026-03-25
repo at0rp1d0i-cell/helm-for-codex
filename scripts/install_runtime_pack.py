@@ -13,6 +13,20 @@ CANONICAL_DOCS = [
     ("docs/project/QUALITY_BAR.md", "docs/project/QUALITY_BAR.md"),
     ("docs/project/TECH_DEBT.md", "docs/project/TECH_DEBT.md"),
     ("docs/status/EXECUTION_BOARD.md", "docs/status/EXECUTION_BOARD.md"),
+    ("docs/status/ONBOARDING_STATE.md", "docs/status/ONBOARDING_STATE.md"),
+]
+MODULE_CONTRACT_DOCS = [
+    ("docs/status/MODULE_CONTRACTS/README.md", "docs/status/MODULE_CONTRACTS/README.md"),
+    ("docs/status/MODULE_CONTRACTS/team-lead.md", "docs/status/MODULE_CONTRACTS/team-lead.md"),
+]
+RUNTIME_SCRIPTS = [
+    "scripts/team_state.py",
+    "scripts/lead_loop.py",
+    "scripts/role_review.py",
+]
+RUNTIME_DIRS = [
+    ("ops/templates", "ops/templates"),
+    ("ops/checks", "ops/checks"),
 ]
 
 
@@ -27,9 +41,13 @@ def _copy_file(src: Path, dst: Path) -> None:
     shutil.copy2(src, dst)
 
 
-def _copy_dir(src: Path, dst: Path) -> None:
+def _bootstrap_file(src: Path, dst: Path) -> None:
     if dst.exists():
-        shutil.rmtree(dst)
+        return
+    _copy_file(src, dst)
+
+
+def _copy_dir(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".git", "*.pyc"))
 
 
@@ -52,8 +70,10 @@ def install_codex_config(target: Path) -> None:
 
 def bootstrap_docs(target: Path) -> None:
     for rel_src, rel_dst in CANONICAL_DOCS:
-        _copy_file(ROOT / rel_src, target / rel_dst)
+        _bootstrap_file(ROOT / rel_src, target / rel_dst)
     (target / "docs" / "status" / "MODULE_CONTRACTS").mkdir(parents=True, exist_ok=True)
+    for rel_src, rel_dst in MODULE_CONTRACT_DOCS:
+        _bootstrap_file(ROOT / rel_src, target / rel_dst)
     (target / "docs" / "decisions").mkdir(parents=True, exist_ok=True)
     (target / "docs" / "plans").mkdir(parents=True, exist_ok=True)
     (target / "docs" / "plans" / "archive").mkdir(parents=True, exist_ok=True)
@@ -61,7 +81,14 @@ def bootstrap_docs(target: Path) -> None:
 
 
 def install_project_fields(target: Path) -> None:
-    _copy_file(ROOT / "AGENTS.md", target / "AGENTS.md")
+    _bootstrap_file(ROOT / "AGENTS.md", target / "AGENTS.md")
+
+
+def install_runtime_files(target: Path) -> None:
+    for rel_path in RUNTIME_SCRIPTS:
+        _copy_file(ROOT / rel_path, target / rel_path)
+    for rel_src, rel_dst in RUNTIME_DIRS:
+        _copy_dir(ROOT / rel_src, target / rel_dst)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -80,6 +107,7 @@ def main() -> int:
     bootstrap_docs(target)
     install_skills(target)
     install_codex_config(target)
+    install_runtime_files(target)
 
     print(f"Runtime pack installed into {target}")
     return 0

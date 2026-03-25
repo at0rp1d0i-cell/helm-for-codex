@@ -7,14 +7,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_required_top_level_paths_exist() -> None:
     required = [
+        ROOT / "README.md",
         ROOT / "docs" / "project",
         ROOT / "docs" / "plans",
+        ROOT / "docs" / "plans" / "archive",
+        ROOT / "docs" / "status" / "ONBOARDING_STATE.md",
         ROOT / "docs" / "status" / "MODULE_CONTRACTS",
         ROOT / "docs" / "decisions",
         ROOT / "ops" / "templates",
         ROOT / "ops" / "checks",
         ROOT / "skills" / "team-lead",
         ROOT / "scripts" / "check_repo.py",
+        ROOT / "scripts" / "install_runtime_pack.py",
         ROOT / "scripts" / "team_state.py",
         ROOT / "scripts" / "lead_loop.py",
         ROOT / "scripts" / "role_review.py",
@@ -43,12 +47,17 @@ def test_repo_check_covers_minimum_team_shape() -> None:
     spec.loader.exec_module(module)
 
     expected = [
+        "README.md",
         "AGENTS.md",
         "docs/project/PROJECT_BRIEF.md",
         "docs/project/ROADMAP.md",
         "docs/project/ARCHITECTURE.md",
         "docs/project/QUALITY_BAR.md",
+        "docs/project/TECH_DEBT.md",
         "docs/status/EXECUTION_BOARD.md",
+        "docs/status/ONBOARDING_STATE.md",
+        "docs/status/MODULE_CONTRACTS/README.md",
+        "docs/plans/archive/.gitkeep",
         ".codex/config.toml",
         ".codex/roles/product-reviewer.toml",
         ".codex/roles/architect-reviewer.toml",
@@ -78,6 +87,9 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/task-brief.md",
         "ops/templates/discovery-brief.md",
         "ops/templates/plan-brief.md",
+        "ops/templates/onboarding-state.md",
+        "ops/templates/onboarding-report.md",
+        "ops/templates/deep-scan-plan.md",
         "ops/templates/review-packet.md",
         "ops/templates/review-result.md",
         "ops/templates/review-gate.md",
@@ -86,6 +98,7 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/qa-report.md",
         "ops/templates/refactor-proposal.md",
         "ops/checks/check_docs_freshness.py",
+        "scripts/install_runtime_pack.py",
         "scripts/team_state.py",
         "scripts/lead_loop.py",
         "scripts/role_review.py",
@@ -114,6 +127,7 @@ def test_team_lead_contract_is_visible_to_repo_validation() -> None:
         "<automation_hooks>",
         "<approval_triggers>",
         "scripts/team_state.py",
+        "ONBOARDING_STATE.md",
         "review-prepare",
         "review-collect",
         "approval-needed",
@@ -128,6 +142,8 @@ def test_codex_internal_role_config_declares_review_roles() -> None:
         "roles/product-reviewer.toml",
         "roles/architect-reviewer.toml",
         "roles/code-reviewer.toml",
+        'default_skill_path = ".agents/skills"',
+        'onboarding_state = "docs/status/ONBOARDING_STATE.md"',
     ]
     for token in required_tokens:
         assert token in content
