@@ -62,8 +62,11 @@ git commit -m "feat: add execution handoff artifacts"
 - Modify: `tests/test_lead_loop.py`
 - Modify: `skills/team-lead/SKILL.md`
 - Modify: `skills/implementation-worker/SKILL.md`
+- Modify: `.agents/skills/team-lead/SKILL.md`
+- Modify: `.agents/skills/implementation-worker/SKILL.md`
 - Modify: `tests/test_team_lead_contract.py`
 - Modify: `tests/test_internal_role_contracts.py`
+- Modify: `tests/test_internal_skills.py`
 
 **Step 1: Write the failing tests**
 
@@ -72,24 +75,25 @@ Extend the lead-loop and contract tests so they require:
 - a lead command that creates a sprint contract before builder work starts
 - a builder handoff that emits an implementation-report path, not just a generic task brief
 - explicit planner/generator separation between `team-lead` and `implementation-worker`
+- the runtime `.agents/skills` mirror to stay synchronized with the source skill contracts
 - a bounded-task scope rule so this tranche does not claim full feature-branch autonomy
 
 **Step 2: Run test to verify it fails**
 
-Run: `uv run pytest tests/test_lead_loop.py tests/test_team_lead_contract.py tests/test_internal_role_contracts.py -q`
+Run: `uv run pytest tests/test_lead_loop.py tests/test_team_lead_contract.py tests/test_internal_role_contracts.py tests/test_internal_skills.py -q`
 
 **Step 3: Write minimal implementation**
 
-Add the smallest lead-loop command surface for builder kickoff and wire the lead and builder contracts to the new sprint contract plus implementation-report flow.
+Add the smallest lead-loop command surface for builder kickoff and wire the lead and builder contracts to the new sprint contract plus implementation-report flow, keeping the runtime skill mirror in lockstep with the source contracts.
 
 **Step 4: Run the targeted test**
 
-Run: `uv run pytest tests/test_lead_loop.py tests/test_team_lead_contract.py tests/test_internal_role_contracts.py -q`
+Run: `uv run pytest tests/test_lead_loop.py tests/test_team_lead_contract.py tests/test_internal_role_contracts.py tests/test_internal_skills.py -q`
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/lead_loop.py skills/team-lead/SKILL.md skills/implementation-worker/SKILL.md tests/test_lead_loop.py tests/test_team_lead_contract.py tests/test_internal_role_contracts.py
+git add scripts/lead_loop.py skills/team-lead/SKILL.md skills/implementation-worker/SKILL.md .agents/skills/team-lead/SKILL.md .agents/skills/implementation-worker/SKILL.md tests/test_lead_loop.py tests/test_team_lead_contract.py tests/test_internal_role_contracts.py tests/test_internal_skills.py
 git commit -m "feat: add builder handoff sprint contract"
 ```
 
@@ -98,9 +102,11 @@ git commit -m "feat: add builder handoff sprint contract"
 **Files:**
 - Modify: `scripts/lead_loop.py`
 - Modify: `skills/qa-runner/SKILL.md`
+- Modify: `.agents/skills/qa-runner/SKILL.md`
 - Modify: `tests/test_lead_loop.py`
 - Create: `tests/test_execution_handoff_flow.py`
 - Modify: `tests/test_install_runtime_pack.py`
+- Modify: `tests/test_internal_skills.py`
 
 **Step 1: Write the failing tests**
 
@@ -110,23 +116,24 @@ Extend the flow tests so they require:
 - a `qa` handoff that writes the canonical `qa-report` and moves the board to `qa`
 - a defect-loop path that sends the task back to `build` when QA fails
 - the same builder-to-QA handoff commands to work in a fresh installed runtime repo, not only in the source repo
+- the runtime `.agents/skills` mirror to stay synchronized with the updated QA role contract
 
 **Step 2: Run test to verify it fails**
 
-Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py -q`
+Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py tests/test_internal_skills.py -q`
 
 **Step 3: Write minimal implementation**
 
-Add the minimal QA command surface to the lead loop, keep the evaluator role separate from the builder, and cover source-repo plus installed-runtime execution with the same artifact contract.
+Add the minimal QA command surface to the lead loop, keep the evaluator role separate from the builder, cover source-repo plus installed-runtime execution with the same artifact contract, and keep the runtime QA skill mirror in sync.
 
 **Step 4: Run the targeted test**
 
-Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py -q`
+Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py tests/test_internal_skills.py -q`
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/lead_loop.py skills/qa-runner/SKILL.md tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py
+git add scripts/lead_loop.py skills/qa-runner/SKILL.md .agents/skills/qa-runner/SKILL.md tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py tests/test_internal_skills.py
 git commit -m "feat: add qa handoff and defect loop"
 ```
 
@@ -135,9 +142,11 @@ git commit -m "feat: add qa handoff and defect loop"
 **Files:**
 - Modify: `scripts/lead_loop.py`
 - Modify: `skills/docs-sync/SKILL.md`
+- Modify: `.agents/skills/docs-sync/SKILL.md`
 - Modify: `tests/test_lead_loop.py`
 - Modify: `tests/test_execution_handoff_flow.py`
 - Modify: `tests/test_install_runtime_pack.py`
+- Modify: `tests/test_internal_skills.py`
 
 **Step 1: Write the failing tests**
 
@@ -147,24 +156,25 @@ Extend the orchestration tests so they require:
 - a `docs-sync` handoff that writes a docs-sync report
 - the board to move to `docs-sync` and then `ship-ready` only after docs-sync completes
 - the installed runtime verification path to exercise the full builder -> QA -> docs-sync slice, not just the earlier handoffs
+- the runtime `.agents/skills` mirror to stay synchronized with the updated Docs role contract
 - canonical writeback targets to remain repo-backed rather than ad hoc session notes
 
 **Step 2: Run test to verify it fails**
 
-Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py -q`
+Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py tests/test_internal_skills.py -q`
 
 **Step 3: Write minimal implementation**
 
-Add the smallest docs-sync command path and update the docs role contract so the final handoff completes the bounded task lifecycle in both the source repo and a freshly installed runtime copy.
+Add the smallest docs-sync command path and update the docs role contract so the final handoff completes the bounded task lifecycle in both the source repo and a freshly installed runtime copy, while keeping the runtime skill mirror aligned.
 
 **Step 4: Run the targeted test**
 
-Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py -q`
+Run: `uv run pytest tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py tests/test_internal_skills.py -q`
 
 **Step 5: Commit**
 
 ```bash
-git add scripts/lead_loop.py skills/docs-sync/SKILL.md tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py
+git add scripts/lead_loop.py skills/docs-sync/SKILL.md .agents/skills/docs-sync/SKILL.md tests/test_lead_loop.py tests/test_execution_handoff_flow.py tests/test_install_runtime_pack.py tests/test_internal_skills.py
 git commit -m "feat: add docs sync handoff"
 ```
 
