@@ -365,6 +365,9 @@ def test_review_prepare_generates_live_review_packets_and_moves_board(tmp_path: 
     assert "docs/plans/phase8-plan-brief.md" in product_packet
     assert "Return a review-result with Role, Focus, Findings, Auto Decisions, Taste Decisions, Recommendation" in product_packet
     assert "docs/plans/review-results/product.md" in product_packet
+    assert "scripts/team_state.py review-result" in product_packet
+    assert '--title "Product live result"' in product_packet
+    assert '--output docs/plans/review-results/product.md' in product_packet
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nreview" in board

@@ -101,6 +101,16 @@ def cmd_review_prepare(args: argparse.Namespace) -> int:
                 "Taste Decisions, Recommendation"
             ),
             writeback=str(Path(target_dir) / filename),
+            writeback_command=(
+                f"uv run python scripts/team_state.py review-result "
+                f"--output {Path(target_dir) / filename} "
+                f'--title "{role_name} live result" '
+                f"--role {role_name} "
+                f'--focus "<focus>" '
+                f'--finding "<finding>" '
+                f'--auto-decision "<auto decision>" '
+                f'--recommendation "<recommendation>"'
+            ),
         )
         rc = cmd_review_packet(packet_args)
         if rc != 0:
