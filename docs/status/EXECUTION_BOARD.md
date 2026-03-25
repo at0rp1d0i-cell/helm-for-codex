@@ -8,7 +8,7 @@ evolve
 
 ## Active Work
 
-- define next implementation tranche for direct internal role-owned writeback
+- define next implementation tranche for direct internal role-owned canonical review-pass writeback
 
 ## Completed
 
@@ -44,3 +44,6 @@ evolve
 - add review result artifacts
 - add live review result collection
 - wire review result capture into the lead contract
+- add direct review-result writeback protocol
+- add direct role-owned review-result writeback
+- add codex role configs for internal reviewers

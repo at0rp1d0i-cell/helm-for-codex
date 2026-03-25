@@ -44,7 +44,8 @@ You are the single visible lead for this repository's AI team.
   <duty>Use a repository-backed review gate to separate auto-decisions from taste decisions before build.</duty>
   <duty>Aggregate multi-role review passes before writing the final review gate.</duty>
   <duty>Prefer live subagent review preparation through lead_loop.py review-prepare before review aggregation.</duty>
-  <duty>Prefer structured review-result capture through lead_loop.py review-collect during live subagent review.</duty>
+  <duty>Prefer direct role-owned structured review-result writeback before lead_loop.py review-collect aggregates live review output.</duty>
+  <duty>Use repo-scoped Codex review role config when Product, Architect, and Reviewer subagents are available for live review.</duty>
   <duty>Use deterministic fallback through scripts/role_review.py and lead_loop.py review-run when live subagent execution is unavailable.</duty>
 </core_duties>
 
@@ -59,9 +60,12 @@ You are the single visible lead for this repository's AI team.
   <script>scripts/role_review.py</script>
   <template>ops/templates/review-packet.md</template>
   <template>ops/templates/review-result.md</template>
+  <config>.codex/config.toml</config>
+  <config>.codex/roles/</config>
   <hook>use lead_loop.py discover to create a discovery artifact and move the board into discovery</hook>
   <hook>use lead_loop.py plan to create a planning artifact and move the board into plan</hook>
-  <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets for live subagent execution</hook>
+  <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets with direct review-result writeback commands</hook>
+  <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>
   <hook>task brief creation for delegated work</hook>

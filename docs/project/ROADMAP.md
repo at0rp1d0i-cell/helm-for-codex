@@ -2,10 +2,10 @@
 
 ## Current Milestone
 
-Phase 9 baseline complete: the repository now has review-result artifacts plus lead-managed collection from structured live role outputs into canonical review passes and the review gate, while deterministic role review remains available as fallback.
+Phase 10 baseline complete: the repository now has direct role-owned `review-result` writeback for Product, Architect, and Reviewer plus repo-scoped Codex role config, while lead-managed collection into canonical review passes and deterministic fallback both remain in place.
 
 ## Later Milestones
 
-- replace lead-captured review-result files with direct internal role-owned canonical writeback
+- promote direct role-owned review-result files into more direct canonical review-pass ownership
 - automate more canonical state updates, handoff generation, and decision gating
 - expand validation from structural checks into behavior-aware orchestration checks
