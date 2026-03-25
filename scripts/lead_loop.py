@@ -77,12 +77,14 @@ def cmd_record_review_pass(args: argparse.Namespace) -> int:
 def cmd_review_prepare(args: argparse.Namespace) -> int:
     review_dir = args.root / args.review_dir
     review_dir.mkdir(parents=True, exist_ok=True)
-    target_dir = args.result_dir or args.pass_dir
+    pass_dir = args.root / args.pass_dir
+    pass_dir.mkdir(parents=True, exist_ok=True)
     for role_name, filename, objective in [
         ("Product", "product.md", "Assess milestone fit and scope pressure before build."),
         ("Architect", "architect.md", "Assess module boundaries and architecture fit before build."),
         ("Reviewer", "reviewer.md", "Assess quality expectations and verification readiness before build."),
     ]:
+        pass_rel = Path(args.pass_dir) / filename
         packet_args = SimpleNamespace(
             root=args.root,
             output=str(Path(args.review_dir) / filename),
@@ -97,14 +99,14 @@ def cmd_review_prepare(args: argparse.Namespace) -> int:
             ],
             plan_brief=args.plan_path,
             expected_output=(
-                "Return a review-result with Role, Focus, Findings, Auto Decisions, "
+                "Return a review-pass with Role, Focus, Findings, Auto Decisions, "
                 "Taste Decisions, Recommendation"
             ),
-            writeback=str(Path(target_dir) / filename),
+            writeback=str(pass_rel),
             writeback_command=(
-                f"uv run python scripts/team_state.py review-result "
-                f"--output {Path(target_dir) / filename} "
-                f'--title "{role_name} live result" '
+                f"uv run python scripts/team_state.py review-pass "
+                f"--output {pass_rel} "
+                f"--title \"{role_name} live pass\" "
                 f"--role {role_name} "
                 f'--focus "<focus>" '
                 f'--finding "<finding>" '
