@@ -50,3 +50,19 @@ def test_runtime_skill_mirror_matches_source_skills() -> None:
         if source_metadata.exists():
             assert mirrored_metadata.exists(), f"missing mirrored metadata for {source_dir.name}"
             assert mirrored_metadata.read_text() == source_metadata.read_text()
+
+
+def test_runtime_builder_and_lead_skill_contracts_include_phase13_handoff_terms() -> None:
+    for name in ["team-lead", "implementation-worker"]:
+        content = (ROOT / ".agents" / "skills" / name / "SKILL.md").read_text().lower()
+        assert "sprint contract" in content
+        assert "implementation-report" in content
+
+    team_lead = (ROOT / ".agents" / "skills" / "team-lead" / "SKILL.md").read_text().lower()
+    assert "planner owns the sprint contract" in team_lead
+    assert "build" in team_lead
+
+    implementation_worker = (
+        ROOT / ".agents" / "skills" / "implementation-worker" / "SKILL.md"
+    ).read_text().lower()
+    assert "do not claim feature-branch autonomy" in implementation_worker

@@ -56,6 +56,8 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
 
     automation_refs = [
         "task brief",
+        "sprint contract",
+        "implementation-report",
         "decision",
         "execution board",
         "ops/templates/review-packet.md",
@@ -67,6 +69,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "scripts/role_review.py",
         "discover",
         "plan",
+        "build",
         "delegate",
         "review-prepare",
         "review-collect",
@@ -105,6 +108,13 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "onboarding" in content.lower()
     assert ".agents/skills" in content
     assert "deterministic fallback" in content.lower()
+    assert "planner owns the sprint contract" in content.lower()
+    assert "builder must not start before the sprint contract exists" in content.lower()
+    assert "implementation-report" in content.lower()
+    assert "bounded task" in content.lower()
+    assert "do not imply full feature-branch autonomy" in content.lower()
+    assert "sole builder kickoff path" in content.lower()
+    assert "delegate to create a bounded delegated task and move the board into build" not in content.lower()
 
 
 def test_team_lead_openai_metadata_is_tight_and_explicit() -> None:

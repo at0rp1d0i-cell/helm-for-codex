@@ -43,6 +43,17 @@ def test_internal_roles_use_xml_like_contracts() -> None:
         )
 
 
+def test_implementation_worker_contract_requires_sprint_contract_and_report_path() -> None:
+    content = (ROOT / "skills" / "implementation-worker" / "SKILL.md").read_text().lower()
+
+    assert "sprint contract" in content
+    assert "implementation-report" in content
+    assert "generator" in content
+    assert "planner" in content
+    assert "bounded task" in content
+    assert "do not claim feature-branch autonomy" in content
+
+
 def test_review_roles_can_write_structured_review_passes() -> None:
     review_roles = {
         ROOT / "skills" / "product-discovery" / "SKILL.md": "Product",

@@ -15,6 +15,7 @@ from team_state import (
     cmd_review_gate,
     cmd_review_packet,
     cmd_review_pass as cmd_write_review_pass,
+    cmd_sprint_contract,
     cmd_task_brief,
     cmd_deep_scan_plan,
 )
@@ -320,6 +321,30 @@ def cmd_delegate(args: argparse.Namespace) -> int:
     rc = cmd_task_brief(task_args)
     if rc != 0:
         return rc
+    return 0
+
+
+def cmd_build(args: argparse.Namespace) -> int:
+    sprint_args = SimpleNamespace(
+        root=args.root,
+        output=args.sprint_contract_path,
+        title=args.title,
+        planner=(
+            f"{args.planner}\n\n"
+            f"Implementation report path: {args.implementation_report_path}"
+        ),
+        generator=args.generator,
+        evaluator=args.evaluator,
+        scope=args.scope,
+        acceptance=(
+            f"{args.acceptance}\n\n"
+            "Builder handoff output: "
+            f"{args.implementation_report_path}"
+        ),
+    )
+    rc = cmd_sprint_contract(sprint_args)
+    if rc != 0:
+        return rc
 
     return _update_board(args.root, args.board_path, "build", [args.title])
 
@@ -459,7 +484,10 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--force", action="store_true")
     init.set_defaults(func=cmd_init)
 
-    delegate = subparsers.add_parser("delegate", help="Create task brief and move board to build")
+    delegate = subparsers.add_parser(
+        "delegate",
+        help="Create a delegated task brief without starting builder kickoff",
+    )
     delegate.add_argument("--title", required=True)
     delegate.add_argument("--objective", required=True)
     delegate.add_argument("--scope", required=True)
@@ -470,6 +498,25 @@ def build_parser() -> argparse.ArgumentParser:
     delegate.add_argument("--task-path", required=True)
     delegate.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     delegate.set_defaults(func=cmd_delegate)
+
+    build = subparsers.add_parser(
+        "build",
+        help="Create sprint contract for bounded builder kickoff and move board to build",
+    )
+    build.add_argument("--title", required=True)
+    build.add_argument("--planner", required=True)
+    build.add_argument("--generator", required=True)
+    build.add_argument("--evaluator", required=True)
+    build.add_argument("--scope", required=True)
+    build.add_argument("--acceptance", required=True)
+    build.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    build.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
+    build.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    build.set_defaults(func=cmd_build)
 
     review_pass = subparsers.add_parser("review-pass", help="Create review pass artifact")
     review_pass.add_argument("--title", required=True)

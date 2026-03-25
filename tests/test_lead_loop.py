@@ -34,7 +34,7 @@ def seed_repo_state(tmp_path: Path) -> None:
     )
 
 
-def test_delegate_creates_task_brief_and_updates_board(tmp_path: Path) -> None:
+def test_delegate_creates_task_brief_without_starting_build(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 
     result = run_lead_loop(
@@ -64,8 +64,48 @@ def test_delegate_creates_task_brief_and_updates_board(tmp_path: Path) -> None:
     assert "# Task Brief: Implement lead loop" in task_brief.read_text()
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- define next task" in board
+    assert "- Implement lead loop" not in board
+
+
+def test_build_creates_sprint_contract_and_updates_board(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "build",
+        "--title",
+        "Phase 13 task 2",
+        "--planner",
+        "Lead owns planning, acceptance, and board movement for one bounded task.",
+        "--generator",
+        "Builder implements the approved bounded task only.",
+        "--evaluator",
+        "QA and docs-sync stay out of scope for this task slice.",
+        "--scope",
+        "Add the builder kickoff contract without implying feature-branch autonomy.",
+        "--acceptance",
+        "Sprint contract exists before builder work and names the implementation report path.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task2.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task2.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    sprint_contract = tmp_path / "docs" / "plans" / "sprint-contract-phase13-task2.md"
+    assert sprint_contract.exists()
+    sprint_content = sprint_contract.read_text()
+    assert "# Sprint Contract: Phase 13 task 2" in sprint_content
+    assert "## Planner" in sprint_content
+    assert "## Generator" in sprint_content
+    assert "## Evaluator" in sprint_content
+    assert "docs/plans/implementation-report-phase13-task2.md" in sprint_content
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nbuild" in board
-    assert "- Implement lead loop" in board
+    assert "- Phase 13 task 2" in board
 
 
 def test_discover_creates_discovery_brief_and_updates_board(tmp_path: Path) -> None:

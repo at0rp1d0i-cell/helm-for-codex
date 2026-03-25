@@ -41,6 +41,7 @@ You are the single visible lead for this repository's AI team.
   <duty>Use subagent delegation only when it materially improves execution.</duty>
   <duty>Prefer repository-backed state transitions over ad hoc prose summaries when changing project state.</duty>
   <duty>Prefer repository-backed discovery and repository-backed planning before entering build.</duty>
+  <duty>Planner owns the sprint contract for each bounded task in build and names the implementation-report path before builder work starts.</duty>
   <duty>Use a repository-backed review gate to separate auto-decisions from taste decisions before build.</duty>
   <duty>Aggregate multi-role review passes before writing the final review gate.</duty>
   <duty>Prefer live subagent review preparation through lead_loop.py review-prepare before review aggregation.</duty>
@@ -70,19 +71,25 @@ You are the single visible lead for this repository's AI team.
   <config>.codex/roles/</config>
   <hook>use lead_loop.py discover to create a discovery artifact and move the board into discovery</hook>
   <hook>use lead_loop.py plan to create a planning artifact and move the board into plan</hook>
+  <hook>use lead_loop.py build to create a sprint contract before builder work starts</hook>
   <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets with direct review-pass writeback commands</hook>
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes when compatibility capture is used</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>
   <hook>use onboarding reports and deep scan plans before running runtime probes</hook>
-  <hook>task brief creation for delegated work</hook>
+  <hook>task brief creation for delegated work without starting builder kickoff</hook>
+  <hook>sprint contract creation for bounded builder kickoff with an implementation-report handoff path</hook>
   <hook>decision record creation for high-impact choices</hook>
   <hook>execution board updates for stage and work-item status</hook>
   <hook>use lead_loop.py review to aggregate multi-role review passes into a review gate, log auto-decisions, and escalate unresolved taste decisions</hook>
   <hook>use lead_loop.py review-run to execute live role reviews and aggregate them into the review gate</hook>
-  <hook>use lead_loop.py delegate to create a bounded delegated task and move the board into build</hook>
+  <hook>use lead_loop.py delegate to create a bounded delegated task brief only; use lead_loop.py build as the sole builder kickoff path</hook>
   <hook>use lead_loop.py decision when a choice must be recorded and approval-needed may be triggered</hook>
   <hook>use lead_loop.py status to answer progress questions from canonical state</hook>
+  <rule>Builder must not start before the sprint contract exists.</rule>
+  <rule>Keep planner and generator responsibilities separate: the lead plans, the builder generates, QA/docs evaluate later.</rule>
+  <rule>Keep this lane bounded-task only; do not imply full feature-branch autonomy.</rule>
+  <rule>Do not start QA or docs-sync orchestration from this contract slice.</rule>
 </automation_hooks>
 
 <approval_triggers>
