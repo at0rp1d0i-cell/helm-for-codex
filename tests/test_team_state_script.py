@@ -258,6 +258,95 @@ def test_review_result_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Recommendation" in content
 
 
+def test_onboarding_state_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "onboarding-state",
+        "--output",
+        "docs/status/onboarding-state.md",
+        "--title",
+        "Initial contact",
+        "--stage",
+        "shallow-scan",
+        "--last-scan",
+        "directory review",
+        "--pending",
+        "Decide entry module",
+        "--notes",
+        "Initial review complete",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "status" / "onboarding-state.md"
+    content = out.read_text()
+    assert "# Onboarding State: Initial contact" in content
+    assert "## Stage" in content
+    assert "shallow-scan" in content
+    assert "Decide entry module" in content
+    assert "Initial review complete" in content
+
+
+def test_onboarding_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "onboarding-report",
+        "--output",
+        "docs/plans/onboarding-report.md",
+        "--title",
+        "Initial survey",
+        "--summary",
+        "Project is in early stage",
+        "--findings",
+        "Tests missing",
+        "--recommendations",
+        "Add smoke tests",
+        "--next-steps",
+        "Schedule design review",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "onboarding-report.md"
+    content = out.read_text()
+    assert "# Onboarding Report: Initial survey" in content
+    assert "Project is in early stage" in content
+    assert "- Tests missing" in content
+    assert "- Add smoke tests" in content
+    assert "- Schedule design review" in content
+
+
+def test_deep_scan_plan_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "deep-scan-plan",
+        "--output",
+        "docs/plans/deep-scan-plan.md",
+        "--title",
+        "Runtime validation",
+        "--goals",
+        "Validate startup",
+        "--hypotheses",
+        "Install fails without env",
+        "--probes",
+        "install",
+        "--probes",
+        "run",
+        "--evidence",
+        "build exit 0",
+        "--risk-level",
+        "medium",
+        "--writeback-targets",
+        "docs/project/PROJECT_BRIEF.md",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "deep-scan-plan.md"
+    content = out.read_text()
+    assert "# Deep Scan Plan: Runtime validation" in content
+    assert "Validate startup" in content
+    assert "- install" in content
+    assert "- run" in content
+    assert "- build exit 0" in content
+    assert "medium" in content
+    assert "docs/project/PROJECT_BRIEF.md" in content
+
+
 def test_decision_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

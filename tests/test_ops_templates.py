@@ -83,6 +83,26 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<taste_decisions>" in review_result
     assert "<recommendation>" in review_result
 
+    onboarding_state = (ROOT / "ops" / "templates" / "onboarding-state.md").read_text()
+    assert "# Onboarding State: <title>" in onboarding_state
+    assert "<stage>" in onboarding_state
+    assert "<pending_decisions>" in onboarding_state
+    assert "<notes>" in onboarding_state
+
+    onboarding_report = (ROOT / "ops" / "templates" / "onboarding-report.md").read_text()
+    assert "# Onboarding Report: <title>" in onboarding_report
+    assert "<summary>" in onboarding_report
+    assert "<findings>" in onboarding_report
+    assert "<recommendations>" in onboarding_report
+    assert "<next_steps>" in onboarding_report
+
+    deep_scan_plan = (ROOT / "ops" / "templates" / "deep-scan-plan.md").read_text()
+    assert "# Deep Scan Plan: <title>" in deep_scan_plan
+    assert "<goals>" in deep_scan_plan
+    assert "<hypotheses>" in deep_scan_plan
+    assert "<probes>" in deep_scan_plan
+    assert "<evidence>" in deep_scan_plan
+
     refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
     assert "# Refactor Proposal" in refactor
     assert "<problem_scope>" in refactor

@@ -232,6 +232,75 @@ def cmd_decision(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_onboarding_state(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    pending = args.pending or []
+    pending_output = "\n".join(f"- {item}" for item in pending) if pending else "- none"
+    content = (
+        f"# Onboarding State: {args.title}\n\n"
+        "## Stage\n\n"
+        f"{args.stage}\n\n"
+        "## Last Scan\n\n"
+        f"{args.last_scan or 'none yet'}\n\n"
+        "## Pending Decisions\n\n"
+        f"{pending_output}\n\n"
+        "## Notes\n\n"
+        f"{args.notes}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_onboarding_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    findings = "\n".join(f"- {item}" for item in args.findings)
+    recommendations = "\n".join(f"- {item}" for item in args.recommendations)
+    plans = "\n".join(f"- {item}" for item in args.next_steps)
+    content = (
+        f"# Onboarding Report: {args.title}\n\n"
+        "## Summary\n\n"
+        f"{args.summary}\n\n"
+        "## Key Findings\n\n"
+        f"{findings}\n\n"
+        "## Recommendations\n\n"
+        f"{recommendations}\n\n"
+        "## Next Steps\n\n"
+        f"{plans}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_deep_scan_plan(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    probes = "\n".join(f"- {item}" for item in args.probes)
+    evidence = "\n".join(f"- {item}" for item in args.evidence)
+    escalation = "\n".join(f"- {item}" for item in args.escalation) if args.escalation else "- none"
+    writebacks = "\n".join(f"- {item}" for item in args.writeback_targets)
+    content = (
+        f"# Deep Scan Plan: {args.title}\n\n"
+        "## Goals\n\n"
+        f"{args.goals}\n\n"
+        "## Hypotheses\n\n"
+        f"{args.hypotheses}\n\n"
+        "## Probes\n\n"
+        f"{probes}\n\n"
+        "## Expected Evidence\n\n"
+        f"{evidence}\n\n"
+        "## Risk Level\n\n"
+        f"{args.risk_level}\n\n"
+        "## Escalation Points\n\n"
+        f"{escalation}\n\n"
+        "## Writeback Targets\n\n"
+        f"{writebacks}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_board(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.path)
     existing = out.read_text() if out.exists() else ""
@@ -369,6 +438,36 @@ def build_parser() -> argparse.ArgumentParser:
     board.add_argument("--active", action="append", default=[])
     board.add_argument("--completed", action="append", default=[])
     board.set_defaults(func=cmd_board)
+
+    onboarding_state = subparsers.add_parser("onboarding-state", help="Create or update onboarding state")
+    onboarding_state.add_argument("--output", required=True)
+    onboarding_state.add_argument("--title", required=True)
+    onboarding_state.add_argument("--stage", required=True)
+    onboarding_state.add_argument("--last-scan", dest="last_scan")
+    onboarding_state.add_argument("--pending", action="append", default=[])
+    onboarding_state.add_argument("--notes", default="No additional notes.")
+    onboarding_state.set_defaults(func=cmd_onboarding_state)
+
+    onboarding_report = subparsers.add_parser("onboarding-report", help="Create onboarding report markdown")
+    onboarding_report.add_argument("--output", required=True)
+    onboarding_report.add_argument("--title", required=True)
+    onboarding_report.add_argument("--summary", required=True)
+    onboarding_report.add_argument("--findings", action="append", default=[], required=True)
+    onboarding_report.add_argument("--recommendations", action="append", default=[], required=True)
+    onboarding_report.add_argument("--next-steps", action="append", default=[], required=True)
+    onboarding_report.set_defaults(func=cmd_onboarding_report)
+
+    deep_scan = subparsers.add_parser("deep-scan-plan", help="Create deep scan plan markdown")
+    deep_scan.add_argument("--output", required=True)
+    deep_scan.add_argument("--title", required=True)
+    deep_scan.add_argument("--goals", required=True)
+    deep_scan.add_argument("--hypotheses", required=True)
+    deep_scan.add_argument("--probes", action="append", default=[], required=True)
+    deep_scan.add_argument("--evidence", action="append", default=[], required=True)
+    deep_scan.add_argument("--risk-level", required=True)
+    deep_scan.add_argument("--escalation", action="append", default=[])
+    deep_scan.add_argument("--writeback-targets", action="append", default=[], required=True)
+    deep_scan.set_defaults(func=cmd_deep_scan_plan)
 
     return parser
 
