@@ -1,52 +1,68 @@
 # Codex-Native AI Team
 
-This repository is the source repo for a Codex-native AI team runtime.
+This repository is both the **source** and the **dogfooding runtime** for a Codex-powered development team.  
+It keeps the plans, tests, runtime scripts, repo-local skills, and canonical state that let Codex behave not as a single super-context assistant but as a disciplined, accountable engineering team.
 
-It keeps the design, tests, runtime scripts, repo-local skills, and canonical project state that back a single-entry `Lead` experience. The source repo can also export a runtime pack into another project so Codex can adopt and run that repo with the same team model.
+## Team Model
+
+The user talks only to the `Lead`. The lead owns project state, orchestrates work, and delegates to internal specialists that handle narrower responsibilities:
+
+- `Product`: scopes requests, translates them into goals, and keeps the roadmap honest.  
+- `Researcher`: surfaces papers, libraries, or precedents before committing to a build.  
+- `Architect`: defines module boundaries, interfaces, and hard constraints.  
+- `Builder`: implements bounded tasks inside the agreed architecture and quality constraints.  
+- `Reviewer`: inspects correctness, regressions, and completeness of the proposed work.  
+- `QA`: validates flows, repro steps, and automation before merging.  
+- `Docs`: keeps canonical docs plus decision records aligned with the implementation.  
+- `Refactor Planner`: proposes focused cleanup when technical debt blocks safe progress.  
+- `Release Manager`: wraps up the final rollout, push, and verification steps.
+
+Roles are codified as repo-local Codex skills under `.agents/skills`, and the `Lead` routes each task through the workflow without forcing you to address multiple agents directly.
+
+## What the Workflow Does
+
+The system is built on four layers:
+
+- `AGENTS.md` describes the operating guide and canonical state.  
+- `.codex/config.toml` plus `.codex/roles/*.toml` bind review roles to their latest installed skills.  
+- `scripts/team_state.py` writes markdown artifacts such as briefs, review passes, onboarding reports, and refactor proposals.  
+- `scripts/lead_loop.py` sequences the stages (`intake → discovery → plan → build → review → qa → docs-sync → ship-ready → evolve`) and keeps `docs/status/EXECUTION_BOARD.md` up to date.
+
+The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
+
+## Agent Work Granularity
+
+The team favors bounded, measurable slices but currently only the `Lead/Review/Onboarding/Packaging` chain has been fully exercised. Work granularity looks like this:
+
+1. **Task brief** – the smallest unit (bug fix, doc update, refactor slice) with a clear scope, constraints, and verification. Builders and QA runners operate at this level.  
+2. **Feature slice** – a concrete surface (API endpoint, screen, workflow) that may already include Builder + QA + Docs touches, but today the runtime has only locked the review/QA handoff path; docs synchronization as part of the same flow is the next tranche.  
+3. **Feature branch / PR** – assigned when a slice is owned end-to-end; the lead still orchestrates review, QA, and docs before shipping, while the implementation agent focuses on the aggregated changes across task briefs.
+
+This keeps each agent focused: they solve a small problem or slice inside a shared repository-backed plan, not a vague scope. The `Lead` stitches slices into a cohesive feature and triggers review and QA only after the slice is ready.
 
 ## Install Into Another Repo
 
-Use the installer from this repo:
+Use the installer:
 
 ```bash
 uv run python scripts/install_runtime_pack.py --target /path/to/target-repo
 ```
 
-The installer bootstraps:
-
-- `AGENTS.md`
-- `.codex/config.toml` and `.codex/roles/*.toml`
-- `.agents/skills/`
-- `scripts/team_state.py`, `scripts/lead_loop.py`, `scripts/role_review.py`
-- `ops/templates/` and `ops/checks/check_docs_freshness.py`
-- canonical docs under `docs/project/`, `docs/status/`, `docs/decisions/`, and `docs/plans/archive/`
-
-Runtime-managed files are refreshed on install. Existing canonical project state is preserved so re-installing the runtime pack does not wipe a target repo's `PROJECT_BRIEF`, `EXECUTION_BOARD`, `ONBOARDING_STATE`, or `AGENTS.md`.
+It bootstraps `AGENTS.md`, `.codex/config.toml` + roles, `.agents/skills`, runtime scripts, ops templates/checks, and canonical docs. Runtime-managed files refresh while existing canonical state stays intact, so rerunning the installer does not wipe a target repo’s `PROJECT_BRIEF`, `EXECUTION_BOARD`, `ONBOARDING_STATE`, or `AGENTS.md`.
 
 ## First Contact And Onboarding
 
-The installed team uses a single visible `Lead`.
-
-On first contact with an unfamiliar repo, the lead should notice a missing or incomplete `docs/status/ONBOARDING_STATE.md` and start onboarding rather than jumping straight into implementation. The intended flow is:
-
-`detect -> shallow-scan -> deep-scan-plan -> waiting-user-alignment -> deep-scan -> adopt`
-
-Shallow scan is repo-safe and read-heavy. Deep scan is planned before execution so the lead can explain:
-
-- what the team wants to verify
-- which probes it wants to run
-- what evidence it expects
-- what requires user approval or credentials
-
-You can also trigger the same flow manually with `init` or `re-init`.
+Onboarding follows `detect → shallow-scan → deep-scan-plan → waiting-user-alignment → deep-scan → adopt`.  
+Shallow scan is repo-safe and read-only. Deep scan is planned so the lead can explain what it will verify, which probes it will run, what evidence it expects, and what requires user approval.  
+You can also trigger the same flow with `uv run python scripts/lead_loop.py init` or `--force` when the repo already has an onboarding state file.
 
 ## Runtime Surface
 
-The runtime pack depends on these Codex-facing surfaces:
+When installed, Codex only relies on:
 
-- `AGENTS.md` for repo guidance
-- `.agents/skills` for repo-local role skills
-- `.codex/config.toml` and `.codex/roles/*.toml` for internal review roles
-- canonical docs in `docs/project/` and `docs/status/`
+- `AGENTS.md` for guidance  
+- `.agents/skills` for role skills  
+- `.codex/config.toml` and `.codex/roles/*.toml` for role bindings  
+- canonical docs under `docs/project/` and `docs/status/` for state  
 
-The source repo also keeps tests and implementation plans so the runtime can keep evolving without mixing every historical phase artifact into installed target projects.
+Plans, tests, and design docs stay in the source repo so this runtime pack can keep evolving without dragging every historical artifact into target projects.

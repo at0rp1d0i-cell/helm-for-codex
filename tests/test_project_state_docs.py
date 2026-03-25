@@ -26,15 +26,19 @@ def test_canonical_state_docs_have_required_headings() -> None:
             assert heading in content, f"{heading} missing from {relpath}"
 
 
-def test_readme_describes_runtime_pack_and_onboarding() -> None:
+def test_readme_describes_team_model_and_granularity() -> None:
     content = read("README.md")
     required = [
         "# Codex-Native AI Team",
-        "## Install Into Another Repo",
-        "scripts/install_runtime_pack.py",
-        ".agents/skills",
-        "## First Contact And Onboarding",
-        "ONBOARDING_STATE.md",
+        "## Team Model",
+        "## Agent Work Granularity",
+        "bounded task",
+        "feature slice",
+        "feature branch",
+        "Lead",
     ]
     for token in required:
-        assert token in content
+        if token.islower():
+            assert token in content.lower(), f"{token} missing from README"
+        else:
+            assert token in content, f"{token} missing from README"

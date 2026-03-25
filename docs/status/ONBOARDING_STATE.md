@@ -1,17 +1,17 @@
-# Onboarding State: Source Repo Baseline
+# Onboarding State: Current Repo Onboarding
 
 ## Stage
 
-adopted
+waiting-user-alignment
 
 ## Last Scan
 
-phase-12-baseline
+deep-scan-plan
 
 ## Pending Decisions
-
-- define the next behavior-aware orchestration tranche after packaging and onboarding baseline
+- Accept that the installed runtime has been verified and proceed to the next internal handoff tranche (implementation → QA → docs).
+- Decide what behavior-aware tests are needed to guard the execution handoff before closing this onboarding slice.
 
 ## Notes
 
-This source repo already includes the runtime pack, repo-local skill packaging, onboarding artifacts, and lead-led init flow. Installed target repos bootstrap this file if it is missing, then the lead moves it through shallow scan, deep-scan planning, user alignment, and adoption.
+Manual re-init and deep scan are complete; the runtime verification report covers the installed target, so the onboarding state now pauses for the next tranche’s approval rather than another verification iteration.

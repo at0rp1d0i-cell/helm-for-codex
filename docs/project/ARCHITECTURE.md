@@ -28,10 +28,10 @@
 - single visible lead
 - small active concurrency
 - repo as memory
-- runtime installer must preserve target canonical state during re-install
-- onboarding state is canonical and visible across sessions
+- runtime installer must preserve target canonical state during re-install; deep scan confirmed AGENTS/PROJECT_BRIEF/ONBOARDING_STATE survive reinstall and installed docs checks pass
+- installed onboarding currently requires an explicit `init --force` because the installer bootstraps onboarding state immediately
 - source `skills/` and repo-local `.agents/skills/` must stay synchronized
-- direct role-owned canonical review-pass writeback is the preferred live review path
+- direct role-owned canonical review-pass writeback is the preferred live review path and works after runtime install
 - Product, Architect, and Reviewer live review roles are defined in repo-scoped Codex config
 - review-result remains supported as a compatibility and recovery path
 - deterministic fallback remains available when live subagent review is unavailable

@@ -4,11 +4,11 @@ _This file can be updated manually or via `scripts/team_state.py board`._
 
 ## Current Stage
 
-evolve
+approval-needed
 
 ## Active Work
 
-- define the next behavior-aware orchestration tranche and fresh-repo runtime smoke validation
+- Plan the next team orchestration tranche (implementation → QA → docs) now that runtime verification is done
 
 ## Completed
 
@@ -58,3 +58,4 @@ evolve
 - install runtime scripts, ops templates, and checks into target repos
 - add plan archive hygiene baseline
 - add source-to-runtime skill mirror validation
+- validate installed runtime onboarding, reinstall preservation, and review-pass writeback in a fresh target repo
