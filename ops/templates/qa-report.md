@@ -1,12 +1,14 @@
 # QA Report
 
-## Sprint Contract
+## Consumed Sprint Contract
 
 <sprint_contract_path>
 
-## Implementation Report
+## Consumed Implementation Report
 
 <implementation_report_path>
+
+QA must validate the generator output against the consumed artifacts before board advancement.
 
 ## Environment
 

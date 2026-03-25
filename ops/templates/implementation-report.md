@@ -1,10 +1,10 @@
 # Implementation Report: <title>
 
-## Sprint Contract
+## Consumed Sprint Contract
 
 <sprint_contract_path>
 
-## Summary
+## Generator Summary
 
 <summary>
 

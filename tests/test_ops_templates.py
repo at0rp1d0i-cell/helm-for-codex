@@ -57,14 +57,19 @@ def test_ops_templates_and_checks_exist() -> None:
 
     sprint_contract = (ROOT / "ops" / "templates" / "sprint-contract.md").read_text()
     assert "# Sprint Contract: <title>" in sprint_contract
+    assert "Planner owns the task plan and acceptance contract." in sprint_contract
     assert "<planner_role>" in sprint_contract
+    assert "Generator owns implementation output only." in sprint_contract
     assert "<generator_role>" in sprint_contract
+    assert "Evaluator owns verification and writeback evidence." in sprint_contract
     assert "<evaluator_role>" in sprint_contract
     assert "<acceptance_criteria>" in sprint_contract
 
     implementation_report = (ROOT / "ops" / "templates" / "implementation-report.md").read_text()
     assert "# Implementation Report: <title>" in implementation_report
+    assert "## Consumed Sprint Contract" in implementation_report
     assert "<sprint_contract_path>" in implementation_report
+    assert "## Generator Summary" in implementation_report
     assert "<files_touched>" in implementation_report
     assert "<tests_run>" in implementation_report
 
@@ -124,13 +129,18 @@ def test_ops_templates_and_checks_exist() -> None:
 
     qa_report = (ROOT / "ops" / "templates" / "qa-report.md").read_text()
     assert "# QA Report" in qa_report
+    assert "## Consumed Sprint Contract" in qa_report
     assert "<sprint_contract_path>" in qa_report
+    assert "## Consumed Implementation Report" in qa_report
     assert "<implementation_report_path>" in qa_report
+    assert "QA must validate the generator output against the consumed artifacts before board advancement." in qa_report
     assert "<verification_status>" in qa_report
 
     docs_sync_report = (ROOT / "ops" / "templates" / "docs-sync-report.md").read_text()
     assert "# Docs Sync Report: <title>" in docs_sync_report
+    assert "## Consumed Implementation Report" in docs_sync_report
     assert "<implementation_report_path>" in docs_sync_report
+    assert "## Consumed QA Report" in docs_sync_report
     assert "<qa_report_path>" in docs_sync_report
     assert "<canonical_writeback_target>" in docs_sync_report
 

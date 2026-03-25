@@ -108,10 +108,13 @@ def cmd_sprint_contract(args: argparse.Namespace) -> int:
     content = (
         f"# Sprint Contract: {args.title}\n\n"
         "## Planner\n\n"
+        "Planner owns the task plan and acceptance contract.\n\n"
         f"{args.planner}\n\n"
         "## Generator\n\n"
+        "Generator owns implementation output only.\n\n"
         f"{args.generator}\n\n"
         "## Evaluator\n\n"
+        "Evaluator owns verification and writeback evidence.\n\n"
         f"{args.evaluator}\n\n"
         "## Scope\n\n"
         f"{args.scope}\n\n"
@@ -127,9 +130,9 @@ def cmd_implementation_report(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     content = (
         f"# Implementation Report: {args.title}\n\n"
-        "## Sprint Contract\n\n"
+        "## Consumed Sprint Contract\n\n"
         f"{args.sprint_contract}\n\n"
-        "## Summary\n\n"
+        "## Generator Summary\n\n"
         f"{args.summary}\n\n"
         "## Files Touched\n\n"
         f"{args.files_touched}\n\n"
@@ -147,9 +150,9 @@ def cmd_docs_sync_report(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     content = (
         f"# Docs Sync Report: {args.title}\n\n"
-        "## Implementation Report\n\n"
+        "## Consumed Implementation Report\n\n"
         f"{args.implementation_report}\n\n"
-        "## QA Report\n\n"
+        "## Consumed QA Report\n\n"
         f"{args.qa_report}\n\n"
         "## Docs Updated\n\n"
         f"{args.docs_updated}\n\n"

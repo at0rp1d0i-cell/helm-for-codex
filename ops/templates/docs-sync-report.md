@@ -1,10 +1,10 @@
 # Docs Sync Report: <title>
 
-## Implementation Report
+## Consumed Implementation Report
 
 <implementation_report_path>
 
-## QA Report
+## Consumed QA Report
 
 <qa_report_path>
 

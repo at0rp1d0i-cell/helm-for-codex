@@ -135,8 +135,11 @@ def test_sprint_contract_command_writes_markdown(tmp_path: Path) -> None:
     content = out.read_text()
     assert "# Sprint Contract: Task 1 builder kickoff" in content
     assert "## Planner" in content
+    assert "Lead defines the bounded handoff and acceptance criteria" in content
     assert "## Generator" in content
+    assert "Builder implements only the artifact writers and templates" in content
     assert "## Evaluator" in content
+    assert "QA and Docs consume the artifact chain before board advancement" in content
     assert "## Scope" in content
     assert "## Acceptance Criteria" in content
 
@@ -165,9 +168,9 @@ def test_implementation_report_command_writes_markdown(tmp_path: Path) -> None:
     assert out.exists()
     content = out.read_text()
     assert "# Implementation Report: Task 1 implementation report" in content
-    assert "## Sprint Contract" in content
+    assert "## Consumed Sprint Contract" in content
     assert "docs/plans/sprint-contract-demo.md" in content
-    assert "## Summary" in content
+    assert "## Generator Summary" in content
     assert "## Files Touched" in content
     assert "## Tests Run" in content
     assert "## Follow-Ups" in content
@@ -197,9 +200,9 @@ def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
     assert out.exists()
     content = out.read_text()
     assert "# Docs Sync Report: Task 1 docs sync report" in content
-    assert "## Implementation Report" in content
+    assert "## Consumed Implementation Report" in content
     assert "docs/plans/implementation-report-demo.md" in content
-    assert "## QA Report" in content
+    assert "## Consumed QA Report" in content
     assert "docs/plans/qa-report-demo.md" in content
     assert "## Docs Updated" in content
     assert "## Canonical Writeback" in content
