@@ -202,6 +202,8 @@ def test_review_packet_command_writes_markdown(tmp_path: Path) -> None:
         "Findings, auto decisions, taste decisions, recommendation",
         "--writeback",
         "docs/plans/review-pass-product.md",
+        "--writeback-command",
+        "uv run python scripts/team_state.py review-result --output docs/plans/review-results/product.md --title '<title>' --role Product --focus '<focus>' --finding '<finding>' --auto-decision '<auto_decision>' --recommendation '<recommendation>'",
     )
     assert result.returncode == 0, result.stderr
     out = tmp_path / "docs" / "plans" / "review-packets" / "product.md"
@@ -217,6 +219,8 @@ def test_review_packet_command_writes_markdown(tmp_path: Path) -> None:
     assert "docs/plans/phase8-plan-brief.md" in content
     assert "## Expected Output" in content
     assert "## Writeback Target" in content
+    assert "## Writeback Command" in content
+    assert "scripts/team_state.py review-result" in content
 
 
 def test_review_result_command_writes_markdown(tmp_path: Path) -> None:

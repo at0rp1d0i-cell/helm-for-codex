@@ -206,7 +206,9 @@ def cmd_review_packet(args: argparse.Namespace) -> int:
         "## Expected Output\n\n"
         f"{args.expected_output}\n\n"
         "## Writeback Target\n\n"
-        f"{args.writeback}\n"
+        f"{args.writeback}\n\n"
+        "## Writeback Command\n\n"
+        f"{args.writeback_command}\n"
     )
     _write(out, content)
     print(f"wrote {out}")
@@ -350,6 +352,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_packet.add_argument("--plan-brief", required=True, dest="plan_brief")
     review_packet.add_argument("--expected-output", required=True, dest="expected_output")
     review_packet.add_argument("--writeback", required=True)
+    review_packet.add_argument("--writeback-command", required=True, dest="writeback_command")
     review_packet.set_defaults(func=cmd_review_packet)
 
     decision = subparsers.add_parser("decision", help="Create decision markdown")
