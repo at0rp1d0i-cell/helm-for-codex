@@ -130,6 +130,63 @@ def test_plan_creates_plan_brief_and_updates_board(tmp_path: Path) -> None:
     assert "- Phase 4 orchestration slice" in board
 
 
+def test_init_creates_onboarding_artifacts_and_moves_board_to_approval_needed(
+    tmp_path: Path,
+) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "init",
+        "--title",
+        "Repository onboarding",
+        "--summary",
+        "Initial shallow scan complete",
+        "--finding",
+        "Tests are sparse",
+        "--recommendation",
+        "Add a smoke path",
+        "--next-step",
+        "Align on runtime validation tranche",
+        "--goals",
+        "Validate install build and run behavior",
+        "--hypotheses",
+        "Install may fail without env",
+        "--probe",
+        "install",
+        "--probe",
+        "run",
+        "--evidence",
+        "Install exits zero",
+        "--risk-level",
+        "medium",
+        "--writeback-target",
+        "docs/project/PROJECT_BRIEF.md",
+        "--pending",
+        "Approve deep scan runtime tranche",
+    )
+
+    assert result.returncode == 0, result.stderr
+    onboarding = tmp_path / "docs" / "status" / "ONBOARDING_STATE.md"
+    assert onboarding.exists()
+    onboarding_content = onboarding.read_text()
+    assert "## Stage\n\nwaiting-user-alignment" in onboarding_content
+    assert "## Last Scan\n\ndeep-scan-plan" in onboarding_content
+    assert "- Approve deep scan runtime tranche" in onboarding_content
+
+    report = tmp_path / "docs" / "plans" / "onboarding-report.md"
+    assert report.exists()
+    assert "# Onboarding Report: Repository onboarding" in report.read_text()
+
+    deep_scan = tmp_path / "docs" / "plans" / "deep-scan-plan.md"
+    assert deep_scan.exists()
+    assert "# Deep Scan Plan: Repository onboarding" in deep_scan.read_text()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\napproval-needed" in board
+    assert "- Repository onboarding" in board
+
+
 def test_review_pass_creates_artifact_for_role(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

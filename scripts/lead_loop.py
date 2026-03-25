@@ -9,11 +9,14 @@ from team_state import (
     cmd_board,
     cmd_decision,
     cmd_discovery_brief,
+    cmd_onboarding_report,
+    cmd_onboarding_state,
     cmd_plan_brief,
     cmd_review_gate,
     cmd_review_packet,
     cmd_review_pass as cmd_write_review_pass,
     cmd_task_brief,
+    cmd_deep_scan_plan,
 )
 
 
@@ -59,6 +62,11 @@ def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
     return cmd_board(board_args)
 
 
+def _onboarding_stage(root: Path, path: str) -> str:
+    content = _read(root / path)
+    return _extract_section(content, "Stage") if content else ""
+
+
 def cmd_record_review_pass(args: argparse.Namespace) -> int:
     pass_args = SimpleNamespace(
         root=args.root,
@@ -72,6 +80,64 @@ def cmd_record_review_pass(args: argparse.Namespace) -> int:
         recommendation=args.recommendation,
     )
     return cmd_write_review_pass(pass_args)
+
+
+def cmd_init(args: argparse.Namespace) -> int:
+    onboarding_rel = args.onboarding_state_path
+    current_stage = _onboarding_stage(args.root, onboarding_rel)
+    if current_stage and not args.force:
+        print(
+            "Onboarding state already exists. Re-run with --force to perform a manual re-init.",
+        )
+        return 1
+
+    report_args = SimpleNamespace(
+        root=args.root,
+        output=args.report_path,
+        title=args.title,
+        summary=args.summary,
+        findings=args.finding,
+        recommendations=args.recommendation,
+        next_steps=args.next_step,
+    )
+    rc = cmd_onboarding_report(report_args)
+    if rc != 0:
+        return rc
+
+    scan_args = SimpleNamespace(
+        root=args.root,
+        output=args.deep_scan_path,
+        title=args.title,
+        goals=args.goals,
+        hypotheses=args.hypotheses,
+        probes=args.probe,
+        evidence=args.evidence,
+        risk_level=args.risk_level,
+        escalation=args.escalation,
+        writeback_targets=args.writeback_target,
+    )
+    rc = cmd_deep_scan_plan(scan_args)
+    if rc != 0:
+        return rc
+
+    notes = (
+        "Missing onboarding state detected. "
+        "Shallow scan complete and deep scan plan prepared for user alignment."
+    )
+    state_args = SimpleNamespace(
+        root=args.root,
+        output=onboarding_rel,
+        title=args.title,
+        stage="waiting-user-alignment",
+        last_scan="deep-scan-plan",
+        pending=args.pending,
+        notes=notes,
+    )
+    rc = cmd_onboarding_state(state_args)
+    if rc != 0:
+        return rc
+
+    return _update_board(args.root, args.board_path, "approval-needed", [args.title])
 
 
 def cmd_review_prepare(args: argparse.Namespace) -> int:
@@ -368,6 +434,30 @@ def build_parser() -> argparse.ArgumentParser:
     plan.add_argument("--plan-path", required=True)
     plan.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     plan.set_defaults(func=cmd_plan)
+
+    init = subparsers.add_parser(
+        "init",
+        help="Create onboarding state, shallow-scan report, and deep-scan plan",
+    )
+    init.add_argument("--title", required=True)
+    init.add_argument("--summary", required=True)
+    init.add_argument("--finding", action="append", default=[], required=True)
+    init.add_argument("--recommendation", action="append", default=[], required=True)
+    init.add_argument("--next-step", action="append", default=[], required=True, dest="next_step")
+    init.add_argument("--goals", required=True)
+    init.add_argument("--hypotheses", required=True)
+    init.add_argument("--probe", action="append", default=[], required=True)
+    init.add_argument("--evidence", action="append", default=[], required=True)
+    init.add_argument("--risk-level", required=True, dest="risk_level")
+    init.add_argument("--escalation", action="append", default=[])
+    init.add_argument("--writeback-target", action="append", default=[], required=True, dest="writeback_target")
+    init.add_argument("--pending", action="append", default=[])
+    init.add_argument("--report-path", default="docs/plans/onboarding-report.md")
+    init.add_argument("--deep-scan-path", default="docs/plans/deep-scan-plan.md")
+    init.add_argument("--onboarding-state-path", default="docs/status/ONBOARDING_STATE.md")
+    init.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    init.add_argument("--force", action="store_true")
+    init.set_defaults(func=cmd_init)
 
     delegate = subparsers.add_parser("delegate", help="Create task brief and move board to build")
     delegate.add_argument("--title", required=True)
