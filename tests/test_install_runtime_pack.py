@@ -117,7 +117,7 @@ def test_copy_dir_is_noop_when_source_equals_destination(tmp_path: Path) -> None
     assert marker.read_text() == "present\n"
 
 
-def test_installed_runtime_supports_build_to_qa_handoff(tmp_path: Path) -> None:
+def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: Path) -> None:
     target = tmp_path / "project"
     result = run_installer(target)
     assert result.returncode == 0, result.stderr
@@ -179,5 +179,30 @@ def test_installed_runtime_supports_build_to_qa_handoff(tmp_path: Path) -> None:
     assert "docs/plans/implementation-report-phase13-task3.md" in report
     assert "Run the builder-to-QA handoff from the installed runtime" in report
 
+    docs_sync = run_runtime_lead_loop(
+        target,
+        "docs-sync",
+        "--title",
+        "Phase 13 task 3",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task3.md",
+        "--docs-updated",
+        "docs/status/EXECUTION_BOARD.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+        "--canonical-writeback",
+        "docs/status/EXECUTION_BOARD.md",
+    )
+    assert docs_sync.returncode == 0, docs_sync.stderr
+
+    docs_sync_report = (target / "docs" / "plans" / "docs-sync-report-phase13-task3.md").read_text()
+    assert "docs/plans/implementation-report-phase13-task3.md" in docs_sync_report
+    assert "docs/plans/qa-report-phase13-task3.md" in docs_sync_report
+    assert "- docs/project/PROJECT_BRIEF.md" in docs_sync_report
+
     board = (target / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
-    assert "## Current Stage\n\nqa" in board
+    assert "## Current Stage\n\nship-ready" in board

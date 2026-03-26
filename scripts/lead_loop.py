@@ -62,10 +62,33 @@ def _extract_list_section(content: str, heading: str) -> list[str]:
     return items
 
 
+def _first_nonempty_line(value: str) -> str:
+    for line in value.splitlines():
+        candidate = line.strip()
+        if candidate:
+            return candidate
+    return ""
+
+
 def _normalize_verification_status(value: str) -> str:
     normalized = value.strip().lower()
     if normalized not in {"passed", "failed"}:
         raise ValueError(f"Invalid verification status: {value}")
+    return normalized
+
+
+def _normalize_repo_backed_targets(targets: list[str], *, label: str) -> list[str]:
+    normalized: list[str] = []
+    for target in targets:
+        value = target.strip()
+        if not value:
+            continue
+        candidate = Path(value)
+        if candidate.is_absolute() or not value.startswith("docs/"):
+            raise ValueError(f"{label} must stay repo-backed under docs/: {target}")
+        normalized.append(value)
+    if not normalized:
+        raise ValueError(f"{label} must include at least one repo-backed docs/ target.")
     return normalized
 
 
@@ -99,6 +122,11 @@ def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
         completed=[],
     )
     return cmd_board(board_args)
+
+
+def _board_stage(root: Path, path: str) -> str:
+    board = _read(root / path)
+    return _extract_section(board, "Current Stage") if board else ""
 
 
 def _onboarding_stage(root: Path, path: str) -> str:
@@ -427,6 +455,66 @@ def cmd_qa(args: argparse.Namespace) -> int:
     return _update_board(args.root, args.board_path, next_stage, [args.title])
 
 
+def cmd_docs_sync(args: argparse.Namespace) -> int:
+    implementation_report = _resolve_path(args.root, args.implementation_report_path)
+    qa_report = _resolve_path(args.root, args.qa_report_path)
+    if not implementation_report.exists():
+        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
+    if not qa_report.exists():
+        raise FileNotFoundError(f"Missing QA report: {qa_report}")
+    if _board_stage(args.root, args.board_path) != "qa":
+        raise ValueError("Execution board must be at qa stage before docs-sync can proceed.")
+
+    qa_content = _read(qa_report)
+    consumed_implementation = _extract_section(qa_content, "Consumed Implementation Report")
+    if not consumed_implementation:
+        raise ValueError("QA report consumed implementation report is missing from the QA report.")
+
+    consumed_implementation_path = _resolve_path(
+        args.root,
+        _first_nonempty_line(consumed_implementation),
+    )
+    expected_implementation_path = _resolve_path(args.root, args.implementation_report_path)
+    if consumed_implementation_path != expected_implementation_path:
+        raise ValueError(
+            "QA report consumed implementation report does not match the supplied implementation report.",
+        )
+    verification_status = _normalize_verification_status(
+        _first_nonempty_line(_extract_section(qa_content, "Verification Status")),
+    )
+    if verification_status != "passed":
+        raise ValueError("QA report verification status must be passed before docs-sync can proceed.")
+
+    docs_updated = "\n".join(f"- {item}" for item in args.docs_updated) if args.docs_updated else "- none"
+    follow_ups = "\n".join(f"- {item}" for item in args.follow_up) if args.follow_up else "- none"
+    canonical_targets = _normalize_repo_backed_targets(
+        args.canonical_writeback,
+        label="Canonical writeback targets",
+    )
+    canonical_writeback = "\n".join(f"- {item}" for item in canonical_targets)
+
+    rc = _update_board(args.root, args.board_path, "docs-sync", [args.title])
+    if rc != 0:
+        return rc
+
+    docs_sync_report = _resolve_path(args.root, args.docs_sync_report_path)
+    content = (
+        f"# Docs Sync Report: {args.title}\n\n"
+        "## Consumed Implementation Report\n\n"
+        f"{args.implementation_report_path}\n\n"
+        "## Consumed QA Report\n\n"
+        f"{args.qa_report_path}\n\n"
+        "## Docs Updated\n\n"
+        f"{docs_updated}\n\n"
+        "## Canonical Writeback\n\n"
+        f"{canonical_writeback}\n\n"
+        "## Follow-Ups\n\n"
+        f"{follow_ups}\n"
+    )
+    _write(docs_sync_report, content)
+    return _update_board(args.root, args.board_path, "ship-ready", [args.title])
+
+
 def cmd_review(args: argparse.Namespace) -> int:
     review_passes = args.review_pass
     auto_decisions = args.auto_decision
@@ -614,6 +702,30 @@ def build_parser() -> argparse.ArgumentParser:
     qa.add_argument("--verification-status", required=True, dest="verification_status")
     qa.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     qa.set_defaults(func=cmd_qa)
+
+    docs_sync = subparsers.add_parser(
+        "docs-sync",
+        help="Write the canonical docs-sync report and move the board to ship-ready",
+    )
+    docs_sync.add_argument("--title", required=True)
+    docs_sync.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    docs_sync.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    docs_sync.add_argument("--docs-sync-report-path", required=True, dest="docs_sync_report_path")
+    docs_sync.add_argument("--docs-updated", action="append", default=[], dest="docs_updated")
+    docs_sync.add_argument(
+        "--canonical-writeback",
+        action="append",
+        default=[],
+        required=True,
+        dest="canonical_writeback",
+    )
+    docs_sync.add_argument("--follow-up", action="append", default=[], dest="follow_up")
+    docs_sync.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    docs_sync.set_defaults(func=cmd_docs_sync)
 
     review_pass = subparsers.add_parser("review-pass", help="Create review pass artifact")
     review_pass.add_argument("--title", required=True)

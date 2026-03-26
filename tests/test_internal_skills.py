@@ -74,3 +74,12 @@ def test_runtime_qa_skill_contract_includes_phase13_handoff_terms() -> None:
     assert "implementation report" in content
     assert "qa-report" in content
     assert "evaluator" in content
+
+
+def test_runtime_docs_sync_skill_contract_includes_phase13_handoff_terms() -> None:
+    content = (ROOT / ".agents" / "skills" / "docs-sync" / "SKILL.md").read_text().lower()
+    assert "implementation report" in content
+    assert "qa report" in content
+    assert "docs-sync report" in content
+    assert "final consistency-evaluator" in content
+    assert "repo-backed" in content

@@ -285,6 +285,200 @@ def test_qa_rejects_invalid_verification_status(tmp_path: Path) -> None:
     assert "- define next task" in board
 
 
+def test_docs_sync_writes_report_and_moves_board_to_ship_ready_from_qa(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").write_text(
+        "# Execution Board\n\n"
+        "_This file can be updated manually or via `scripts/team_state.py board`._\n\n"
+        "## Current Stage\n\nqa\n\n"
+        "## Active Work\n\n- Phase 13 task 4\n\n"
+        "## Completed\n\n- bootstrap\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task4.md").write_text(
+        "# Implementation Report: Phase 13 task 4\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n\n"
+        "## Generator Summary\n\nBuilder completed the bounded task.\n"
+    )
+    (tmp_path / "docs" / "plans" / "qa-report-phase13-task4.md").write_text(
+        "# QA Report\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n\n"
+        "## Consumed Implementation Report\n\n"
+        "docs/plans/implementation-report-phase13-task4.md\n\n"
+        "## Verification Status\n\n"
+        "passed\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "docs-sync",
+        "--title",
+        "Phase 13 task 4",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task4.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task4.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task4.md",
+        "--docs-updated",
+        "docs/status/EXECUTION_BOARD.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+        "--canonical-writeback",
+        "docs/status/EXECUTION_BOARD.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = tmp_path / "docs" / "plans" / "docs-sync-report-phase13-task4.md"
+    assert report.exists()
+    content = report.read_text()
+    assert "# Docs Sync Report: Phase 13 task 4" in content
+    assert "docs/plans/implementation-report-phase13-task4.md" in content
+    assert "docs/plans/qa-report-phase13-task4.md" in content
+    assert "- docs/project/PROJECT_BRIEF.md" in content
+    assert "- docs/status/EXECUTION_BOARD.md" in content
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nship-ready" in board
+    assert "- Phase 13 task 4" in board
+
+
+def test_docs_sync_rejects_non_qa_board_stage(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task4.md").write_text(
+        "# Implementation Report: Phase 13 task 4\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n"
+    )
+    (tmp_path / "docs" / "plans" / "qa-report-phase13-task4.md").write_text(
+        "# QA Report\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n\n"
+        "## Consumed Implementation Report\n\n"
+        "docs/plans/implementation-report-phase13-task4.md\n\n"
+        "## Verification Status\n\n"
+        "passed\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "docs-sync",
+        "--title",
+        "Phase 13 task 4",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task4.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task4.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task4.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+    )
+
+    assert result.returncode != 0
+    assert "Execution board must be at qa stage" in result.stderr
+    assert not (tmp_path / "docs" / "plans" / "docs-sync-report-phase13-task4.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- define next task" in board
+
+
+def test_docs_sync_rejects_failed_qa_report(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").write_text(
+        "# Execution Board\n\n"
+        "_This file can be updated manually or via `scripts/team_state.py board`._\n\n"
+        "## Current Stage\n\nqa\n\n"
+        "## Active Work\n\n- Phase 13 task 4\n\n"
+        "## Completed\n\n- bootstrap\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task4.md").write_text(
+        "# Implementation Report: Phase 13 task 4\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n"
+    )
+    (tmp_path / "docs" / "plans" / "qa-report-phase13-task4.md").write_text(
+        "# QA Report\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n\n"
+        "## Consumed Implementation Report\n\n"
+        "docs/plans/implementation-report-phase13-task4.md\n\n"
+        "## Verification Status\n\n"
+        "failed\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "docs-sync",
+        "--title",
+        "Phase 13 task 4",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task4.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task4.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task4.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+    )
+
+    assert result.returncode != 0
+    assert "QA report verification status must be passed" in result.stderr
+    assert not (tmp_path / "docs" / "plans" / "docs-sync-report-phase13-task4.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nqa" in board
+    assert "- Phase 13 task 4" in board
+
+
+def test_docs_sync_rejects_non_repo_backed_writeback_targets(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").write_text(
+        "# Execution Board\n\n"
+        "_This file can be updated manually or via `scripts/team_state.py board`._\n\n"
+        "## Current Stage\n\nqa\n\n"
+        "## Active Work\n\n- Phase 13 task 4\n\n"
+        "## Completed\n\n- bootstrap\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-phase13-task4.md").write_text(
+        "# Implementation Report: Phase 13 task 4\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-phase13-task4.md\n"
+    )
+    (tmp_path / "docs" / "plans" / "qa-report-phase13-task4.md").write_text(
+        "# QA Report\n\n"
+        "## Consumed Implementation Report\n\n"
+        "docs/plans/implementation-report-phase13-task4.md\n\n"
+        "## Verification Status\n\n"
+        "passed\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "docs-sync",
+        "--title",
+        "Phase 13 task 4",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task4.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task4.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task4.md",
+        "--canonical-writeback",
+        "session-notes/phase13-task4.md",
+    )
+
+    assert result.returncode != 0
+    assert "repo-backed under docs/" in result.stderr
+    assert not (tmp_path / "docs" / "plans" / "docs-sync-report-phase13-task4.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nqa" in board
+    assert "- Phase 13 task 4" in board
+
+
 def test_discover_creates_discovery_brief_and_updates_board(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

@@ -45,7 +45,9 @@ def write_implementation_report(tmp_path: Path) -> None:
     )
 
 
-def test_build_then_qa_passes_with_canonical_artifacts(tmp_path: Path) -> None:
+def test_build_then_qa_then_docs_sync_reaches_ship_ready_with_canonical_artifacts(
+    tmp_path: Path,
+) -> None:
     seed_repo_state(tmp_path)
 
     build = run_lead_loop(
@@ -92,13 +94,38 @@ def test_build_then_qa_passes_with_canonical_artifacts(tmp_path: Path) -> None:
     )
 
     assert qa.returncode == 0, qa.stderr
-    report = (tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md").read_text()
-    assert "docs/plans/sprint-contract-phase13-task3.md" in report
-    assert "docs/plans/implementation-report-phase13-task3.md" in report
-    assert "Run builder-to-QA handoff validation" in report
+    qa_report = (tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md").read_text()
+    assert "docs/plans/sprint-contract-phase13-task3.md" in qa_report
+    assert "docs/plans/implementation-report-phase13-task3.md" in qa_report
+    assert "Run builder-to-QA handoff validation" in qa_report
+
+    docs_sync = run_lead_loop(
+        tmp_path,
+        "docs-sync",
+        "--title",
+        "Phase 13 task 3",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task3.md",
+        "--docs-updated",
+        "docs/status/EXECUTION_BOARD.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+        "--canonical-writeback",
+        "docs/status/EXECUTION_BOARD.md",
+    )
+
+    assert docs_sync.returncode == 0, docs_sync.stderr
+    docs_sync_report = (tmp_path / "docs" / "plans" / "docs-sync-report-phase13-task3.md").read_text()
+    assert "docs/plans/implementation-report-phase13-task3.md" in docs_sync_report
+    assert "docs/plans/qa-report-phase13-task3.md" in docs_sync_report
+    assert "- docs/project/PROJECT_BRIEF.md" in docs_sync_report
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
-    assert "## Current Stage\n\nqa" in board
+    assert "## Current Stage\n\nship-ready" in board
     assert "- Phase 13 task 3" in board
 
 
