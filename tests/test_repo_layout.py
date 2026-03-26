@@ -63,6 +63,9 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         ".codex/roles/product-reviewer.toml",
         ".codex/roles/architect-reviewer.toml",
         ".codex/roles/code-reviewer.toml",
+        ".codex/roles/implementation-worker.toml",
+        ".codex/roles/qa-runner.toml",
+        ".codex/roles/docs-sync.toml",
         "skills/team-lead/SKILL.md",
         "skills/team-lead/agents/openai.yaml",
         ".agents/skills/team-lead/SKILL.md",
@@ -70,21 +73,31 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         ".agents/skills/architecture-review/SKILL.md",
         ".agents/skills/code-reviewer/SKILL.md",
         ".agents/skills/implementation-worker/SKILL.md",
+        ".agents/skills/implementation-worker/agents/openai.yaml",
         ".agents/skills/qa-runner/SKILL.md",
+        ".agents/skills/qa-runner/agents/openai.yaml",
         ".agents/skills/docs-sync/SKILL.md",
+        ".agents/skills/docs-sync/agents/openai.yaml",
         ".agents/skills/refactor-planner/SKILL.md",
+        ".agents/skills/refactor-planner/agents/openai.yaml",
         ".agents/skills/release-manager/SKILL.md",
+        ".agents/skills/release-manager/agents/openai.yaml",
         "skills/product-discovery/SKILL.md",
         "skills/product-discovery/agents/openai.yaml",
         "skills/architecture-review/SKILL.md",
         "skills/architecture-review/agents/openai.yaml",
         "skills/implementation-worker/SKILL.md",
+        "skills/implementation-worker/agents/openai.yaml",
         "skills/code-reviewer/SKILL.md",
         "skills/code-reviewer/agents/openai.yaml",
         "skills/qa-runner/SKILL.md",
+        "skills/qa-runner/agents/openai.yaml",
         "skills/docs-sync/SKILL.md",
+        "skills/docs-sync/agents/openai.yaml",
         "skills/refactor-planner/SKILL.md",
+        "skills/refactor-planner/agents/openai.yaml",
         "skills/release-manager/SKILL.md",
+        "skills/release-manager/agents/openai.yaml",
         "ops/templates/task-brief.md",
         "ops/templates/discovery-brief.md",
         "ops/templates/plan-brief.md",
@@ -138,12 +151,15 @@ def test_team_lead_contract_is_visible_to_repo_validation() -> None:
         assert token in content
 
 
-def test_codex_internal_role_config_declares_review_roles() -> None:
+def test_codex_internal_role_config_declares_live_roles() -> None:
     content = (ROOT / ".codex" / "config.toml").read_text()
     required_tokens = [
         "roles/product-reviewer.toml",
         "roles/architect-reviewer.toml",
         "roles/code-reviewer.toml",
+        "roles/implementation-worker.toml",
+        "roles/qa-runner.toml",
+        "roles/docs-sync.toml",
         'default_skill_path = ".agents/skills"',
         'onboarding_state = "docs/status/ONBOARDING_STATE.md"',
     ]

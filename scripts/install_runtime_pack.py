@@ -67,8 +67,8 @@ def install_codex_config(target: Path) -> None:
     codex_dir.mkdir(parents=True, exist_ok=True)
     _copy_file(ROOT / ".codex" / "config.toml", codex_dir / "config.toml")
     (codex_dir / "roles").mkdir(parents=True, exist_ok=True)
-    for role in ("product-reviewer.toml", "architect-reviewer.toml", "code-reviewer.toml"):
-        _copy_file(ROOT / ".codex" / "roles" / role, codex_dir / "roles" / role)
+    for role in sorted((ROOT / ".codex" / "roles").glob("*.toml")):
+        _copy_file(role, codex_dir / "roles" / role.name)
 
 
 def bootstrap_docs(target: Path) -> None:

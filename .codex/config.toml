@@ -2,6 +2,9 @@
 "product-reviewer" = "roles/product-reviewer.toml"
 "architect-reviewer" = "roles/architect-reviewer.toml"
 "code-reviewer" = "roles/code-reviewer.toml"
+"implementation-worker" = "roles/implementation-worker.toml"
+"qa-runner" = "roles/qa-runner.toml"
+"docs-sync" = "roles/docs-sync.toml"
 
 [packages]
 default_skill_path = ".agents/skills"

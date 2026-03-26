@@ -21,11 +21,16 @@ def test_internal_skills_exist_with_frontmatter() -> None:
         assert f"name: {name}" in content
 
 
-def test_internal_review_skill_openai_metadata_exists() -> None:
+def test_internal_skill_openai_metadata_exists_for_live_roles() -> None:
     roles = {
         "product-discovery": "Product Reviewer",
         "architecture-review": "Architect Reviewer",
         "code-reviewer": "Code Reviewer",
+        "implementation-worker": "Implementation Worker",
+        "qa-runner": "QA Runner",
+        "docs-sync": "Docs Sync",
+        "refactor-planner": "Refactor Planner",
+        "release-manager": "Release Manager",
     }
     for skill_name, display_name in roles.items():
         content = (ROOT / "skills" / skill_name / "agents" / "openai.yaml").read_text()

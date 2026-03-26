@@ -1,0 +1,3 @@
+display_name: Refactor Planner
+description: Internal advisory role for scoped structural cleanup planning when quality debt blocks progress
+allow_implicit_invocation: false

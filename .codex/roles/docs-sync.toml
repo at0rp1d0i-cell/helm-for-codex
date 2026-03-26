@@ -1,0 +1,8 @@
+id = "docs-sync"
+display_name = "Docs Sync"
+skill = ".agents/skills/docs-sync/SKILL.md"
+metadata = ".agents/skills/docs-sync/agents/openai.yaml"
+writeback_target = "docs/plans/docs-sync-report-<task>.md"
+writeback_command = "uv run python scripts/ops_loop.py docs-sync --title <title> --implementation-report-path <path> --qa-report-path <path> --docs-sync-report-path <path> --docs-updated <docs/path> --canonical-writeback <docs/path> --follow-up <item>"
+runtime_skill = ".agents/skills/docs-sync/SKILL.md"
+packaging_notes = "Runtime pack installs this skill and metadata into .agents/skills during onboarding."

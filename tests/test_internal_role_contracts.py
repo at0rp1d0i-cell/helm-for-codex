@@ -99,26 +99,46 @@ def test_review_roles_can_write_structured_review_passes() -> None:
         assert ".agents/skills" in content, f"{role} contract should refer to runtime packaging target"
 
 
-def test_codex_role_files_bind_review_skills_and_writeback_paths() -> None:
+def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
     expected = {
         ROOT / ".codex" / "roles" / "product-reviewer.toml": (
             ".agents/skills/product-discovery/SKILL.md",
             "docs/plans/review-passes/product.md",
+            "scripts/team_state.py review-pass",
         ),
         ROOT / ".codex" / "roles" / "architect-reviewer.toml": (
             ".agents/skills/architecture-review/SKILL.md",
             "docs/plans/review-passes/architect.md",
+            "scripts/team_state.py review-pass",
         ),
         ROOT / ".codex" / "roles" / "code-reviewer.toml": (
             ".agents/skills/code-reviewer/SKILL.md",
             "docs/plans/review-passes/reviewer.md",
+            "scripts/team_state.py review-pass",
+        ),
+        ROOT / ".codex" / "roles" / "implementation-worker.toml": (
+            ".agents/skills/implementation-worker/SKILL.md",
+            "docs/plans/implementation-report-<task>.md",
+            "scripts/team_state.py implementation-report",
+        ),
+        ROOT / ".codex" / "roles" / "qa-runner.toml": (
+            ".agents/skills/qa-runner/SKILL.md",
+            "docs/plans/qa-report-<task>.md",
+            "scripts/ops_loop.py qa",
+        ),
+        ROOT / ".codex" / "roles" / "docs-sync.toml": (
+            ".agents/skills/docs-sync/SKILL.md",
+            "docs/plans/docs-sync-report-<task>.md",
+            "scripts/ops_loop.py docs-sync",
         ),
     }
-    for path, (skill_path, result_path) in expected.items():
+    for path, (skill_path, result_path, writeback_command) in expected.items():
         content = path.read_text()
         assert skill_path in content
         assert result_path in content
-        assert "scripts/team_state.py review-pass" in content
-        assert "compatibility_writeback_target" in content
-        assert "scripts/team_state.py review-result" in content
+        assert writeback_command in content
         assert ".agents/skills" in content
+        assert "metadata =" in content
+        if "reviewer" in path.name:
+            assert "compatibility_writeback_target" in content
+            assert "scripts/team_state.py review-result" in content

@@ -1,0 +1,3 @@
+display_name: Release Manager
+description: Internal release readiness role for rollout checks, blocking risks, and go/no-go recommendations
+allow_implicit_invocation: false

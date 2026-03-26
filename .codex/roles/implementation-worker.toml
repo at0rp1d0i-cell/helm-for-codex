@@ -1,0 +1,8 @@
+id = "implementation-worker"
+display_name = "Implementation Worker"
+skill = ".agents/skills/implementation-worker/SKILL.md"
+metadata = ".agents/skills/implementation-worker/agents/openai.yaml"
+writeback_target = "docs/plans/implementation-report-<task>.md"
+writeback_command = "uv run python scripts/team_state.py implementation-report --output <path> --title <title> --sprint-contract <path> --summary <summary> --files-touched <files> --tests-run <tests> --follow-ups <follow-ups>"
+runtime_skill = ".agents/skills/implementation-worker/SKILL.md"
+packaging_notes = "Runtime pack installs this skill and metadata into .agents/skills during onboarding."
