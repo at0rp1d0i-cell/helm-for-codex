@@ -828,9 +828,21 @@ def test_review_prepare_generates_live_review_packets_and_moves_board(tmp_path: 
     assert (review_dir / "product.md").exists()
     assert (review_dir / "architect.md").exists()
     assert (review_dir / "reviewer.md").exists()
+    invocation_dir = tmp_path / "docs" / "plans" / "invocation-specs"
+    assert (invocation_dir / "product.md").exists()
+    assert (invocation_dir / "architect.md").exists()
+    assert (invocation_dir / "reviewer.md").exists()
 
     product_packet = (review_dir / "product.md").read_text()
     assert "# Review Packet: Product review packet" in product_packet
+    assert "## Logical Role" in product_packet
+    assert "product-reviewer" in product_packet
+    assert "## Invocation Bridge" in product_packet
+    assert "- agent_type: explorer" in product_packet
+    assert "## Runtime Role Binding" in product_packet
+    assert ".agents/skills/product-discovery/SKILL.md" in product_packet
+    assert ".agents/skills/product-discovery/agents/openai.yaml" in product_packet
+    assert "canonical_writeback_target: docs/plans/review-passes/product.md" in product_packet
     assert "docs/project/PROJECT_BRIEF.md" in product_packet
     assert "docs/project/ROADMAP.md" in product_packet
     assert "docs/project/ARCHITECTURE.md" in product_packet
@@ -841,6 +853,28 @@ def test_review_prepare_generates_live_review_packets_and_moves_board(tmp_path: 
     assert "scripts/team_state.py review-pass" in product_packet
     assert '--title "Product live pass"' in product_packet
     assert '--output docs/plans/review-passes/product.md' in product_packet
+    product_invocation = (invocation_dir / "product.md").read_text()
+    assert "# Invocation Spec: Product review invocation" in product_invocation
+    assert "product-reviewer" in product_invocation
+    assert "docs/plans/review-packets/product.md" in product_invocation
+    assert ".agents/skills/product-discovery/SKILL.md" in product_invocation
+    assert "docs/plans/review-passes/product.md" in product_invocation
+
+    architect_packet = (review_dir / "architect.md").read_text()
+    assert "architect-reviewer" in architect_packet
+    assert "- agent_type: explorer" in architect_packet
+    assert ".agents/skills/architecture-review/SKILL.md" in architect_packet
+    architect_invocation = (invocation_dir / "architect.md").read_text()
+    assert "architect-reviewer" in architect_invocation
+    assert ".agents/skills/architecture-review/SKILL.md" in architect_invocation
+
+    reviewer_packet = (review_dir / "reviewer.md").read_text()
+    assert "code-reviewer" in reviewer_packet
+    assert "- agent_type: explorer" in reviewer_packet
+    assert ".agents/skills/code-reviewer/SKILL.md" in reviewer_packet
+    reviewer_invocation = (invocation_dir / "reviewer.md").read_text()
+    assert "code-reviewer" in reviewer_invocation
+    assert ".agents/skills/code-reviewer/SKILL.md" in reviewer_invocation
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nreview" in board

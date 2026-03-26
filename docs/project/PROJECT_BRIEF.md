@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 15 baseline complete: the repository now keeps repo role names canonical through a role invocation bridge, so `Lead` and `Ops` dispatch `ops-orchestrator`, `implementation-worker`, `qa-runner`, and the review roles first, then resolve them to the currently available generic agent API only at the last hop.
+Phase 17 baseline complete: the repository now pairs execution dispatch packets and live review packets with repo-backed invocation specs, so Ops can own specialist dispatch while the final bridge hop remains explicit about generic agent type, runtime skill binding, and expected writeback.
 
 ## Success Criteria
 
@@ -22,4 +22,7 @@ Phase 15 baseline complete: the repository now keeps repo role names canonical t
 - review-result compatibility remains available
 - `Ops` now has a live repo-scoped role surface in addition to the repo-owned `scripts/ops_loop.py` runtime
 - role invocation bridge exists and is wired into execution dispatch packets
+- role invocation bridge now also resolves the live review lane packets for Product, Architect, and Reviewer
+- execution dispatch packets and live review packets now include runtime role binding details from the repo role config
+- execution dispatch packets and live review packets now get paired invocation specs for the final bridge hop
 - repo validation passes

@@ -24,6 +24,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "sprint-contract.md",
         ROOT / "ops" / "templates" / "dispatch-packet.md",
+        ROOT / "ops" / "templates" / "invocation-spec.md",
         ROOT / "ops" / "templates" / "implementation-report.md",
         ROOT / "ops" / "templates" / "onboarding-state.md",
         ROOT / "ops" / "templates" / "onboarding-report.md",
@@ -73,9 +74,26 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<bridge_agent_type>" in dispatch_packet
     assert "<bridge_model>" in dispatch_packet
     assert "<bridge_reasoning_effort>" in dispatch_packet
+    assert "<role_skill>" in dispatch_packet
+    assert "<role_metadata>" in dispatch_packet
+    assert "<role_writeback_target>" in dispatch_packet
+    assert "<role_writeback_command>" in dispatch_packet
     assert "<consumed_artifacts>" in dispatch_packet
     assert "<writeback_target>" in dispatch_packet
     assert "<completion_command>" in dispatch_packet
+
+    invocation_spec = (ROOT / "ops" / "templates" / "invocation-spec.md").read_text()
+    assert "# Invocation Spec: <title>" in invocation_spec
+    assert "<logical_role>" in invocation_spec
+    assert "<source_packet>" in invocation_spec
+    assert "<bridge_agent_type>" in invocation_spec
+    assert "<bridge_model>" in invocation_spec
+    assert "<bridge_reasoning_effort>" in invocation_spec
+    assert "<runtime_skill>" in invocation_spec
+    assert "<metadata>" in invocation_spec
+    assert "<consumed_artifacts>" in invocation_spec
+    assert "<expected_writeback_target>" in invocation_spec
+    assert "<expected_writeback_command>" in invocation_spec
 
     implementation_report = (ROOT / "ops" / "templates" / "implementation-report.md").read_text()
     assert "# Implementation Report: <title>" in implementation_report
@@ -100,6 +118,14 @@ def test_ops_templates_and_checks_exist() -> None:
     review_packet = (ROOT / "ops" / "templates" / "review-packet.md").read_text()
     assert "# Review Packet: <title>" in review_packet
     assert "<role>" in review_packet
+    assert "<logical_role>" in review_packet
+    assert "<bridge_agent_type>" in review_packet
+    assert "<bridge_model>" in review_packet
+    assert "<bridge_reasoning_effort>" in review_packet
+    assert "<role_skill>" in review_packet
+    assert "<role_metadata>" in review_packet
+    assert "<role_writeback_target>" in review_packet
+    assert "<role_writeback_command>" in review_packet
     assert "<objective>" in review_packet
     assert "<canonical_sources>" in review_packet
     assert "<plan_brief_path>" in review_packet

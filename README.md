@@ -31,12 +31,14 @@ The system is built on four layers:
 - `scripts/lead_loop.py` sequences the stages (`intake → discovery → plan → build → review → qa → docs-sync → ship-ready → evolve`) and keeps `docs/status/EXECUTION_BOARD.md` up to date.
 
 Inside the execution lane, `Ops` now creates explicit dispatch packets for `Builder`, `QA`, and `Docs Sync`, so specialists consume repo-backed handoffs instead of relying only on implicit bridge context.
+The live review lane now does the same for `Product Reviewer`, `Architect Reviewer`, and `Code Reviewer`, so review packets carry canonical logical role names plus bridge resolution instead of only human-readable labels.
+Each live packet now has a paired invocation spec. The packet remains the bounded handoff artifact; the invocation spec carries the final bridge contract: resolved generic agent type, runtime skill path, metadata path, consumed artifacts, and expected writeback. That keeps `Ops` as the dispatch owner without pretending repo-defined roles are natively spawnable.
 
 The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
 
 Current live Codex role bindings cover `Ops Orchestrator`, `Product Reviewer`, `Architect Reviewer`, `Code Reviewer`, `Implementation Worker`, `QA Runner`, and `Docs Sync`. `Lead` is still the visible session entrypoint rather than a spawned role, while `Ops` now has both a live role surface and the repo-owned orchestration runtime in `scripts/ops_loop.py`.
 
-Because the underlying session tool still exposes only generic agent types such as `worker` and `explorer`, the runtime now treats repo role names as the canonical orchestration surface and compiles them through the role bridge at the last hop. In other words, the real team roles live in the repo even when the final tool call still has to use a generic agent class.
+Because the underlying session tool still exposes only generic agent types such as `worker` and `explorer`, the runtime now treats repo role names as the canonical orchestration surface and compiles them through the role bridge at the last hop. In other words, the real team roles live in the repo even when the final tool call still has to use a generic agent class, and the paired invocation spec makes that bridge explicit instead of pretending the roles are natively spawnable.
 
 ## Agent Work Granularity
 

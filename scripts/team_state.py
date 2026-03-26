@@ -172,6 +172,10 @@ def cmd_dispatch_packet(args: argparse.Namespace) -> int:
     bridge_agent_type = args.bridge_agent_type or "unresolved"
     bridge_model = args.bridge_model or "unresolved"
     bridge_reasoning_effort = args.bridge_reasoning_effort or "unresolved"
+    role_skill = args.role_skill or "unresolved"
+    role_metadata = args.role_metadata or "unresolved"
+    role_writeback_target = args.role_writeback_target or "unresolved"
+    role_writeback_command = args.role_writeback_command or "unresolved"
     content = (
         f"# Dispatch Packet: {args.title}\n\n"
         "## Role\n\n"
@@ -182,6 +186,11 @@ def cmd_dispatch_packet(args: argparse.Namespace) -> int:
         f"- agent_type: {bridge_agent_type}\n"
         f"- model: {bridge_model}\n"
         f"- reasoning_effort: {bridge_reasoning_effort}\n\n"
+        "## Runtime Role Binding\n\n"
+        f"- skill: {role_skill}\n"
+        f"- metadata: {role_metadata}\n"
+        f"- canonical_writeback_target: {role_writeback_target}\n"
+        f"- canonical_writeback_command: {role_writeback_command}\n\n"
         "## Objective\n\n"
         f"{args.objective}\n\n"
         "## Consumed Artifacts\n\n"
@@ -194,6 +203,40 @@ def cmd_dispatch_packet(args: argparse.Namespace) -> int:
         f"{args.writeback_target}\n\n"
         "## Completion Command\n\n"
         f"{args.completion_command}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_invocation_spec(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    consumed_artifacts = "\n".join(f"- {item}" for item in args.consumed_artifact)
+    bridge_agent_type = args.bridge_agent_type or "unresolved"
+    bridge_model = args.bridge_model or "unresolved"
+    bridge_reasoning_effort = args.bridge_reasoning_effort or "unresolved"
+    content = (
+        f"# Invocation Spec: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Logical Role\n\n"
+        f"{args.logical_role}\n\n"
+        "## Source Packet\n\n"
+        f"{args.source_packet}\n\n"
+        "## Invocation Bridge\n\n"
+        f"- agent_type: {bridge_agent_type}\n"
+        f"- model: {bridge_model}\n"
+        f"- reasoning_effort: {bridge_reasoning_effort}\n\n"
+        "## Runtime Skill\n\n"
+        f"{args.runtime_skill}\n\n"
+        "## Role Metadata\n\n"
+        f"{args.metadata}\n\n"
+        "## Consumed Artifacts\n\n"
+        f"{consumed_artifacts}\n\n"
+        "## Expected Writeback Target\n\n"
+        f"{args.expected_writeback_target}\n\n"
+        "## Expected Writeback Command\n\n"
+        f"{args.expected_writeback_command}\n"
     )
     _write(out, content)
     print(f"wrote {out}")
@@ -290,10 +333,28 @@ def cmd_review_result(args: argparse.Namespace) -> int:
 def cmd_review_packet(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     canonical_sources = "\n".join(f"- {item}" for item in args.canonical_source)
+    bridge_agent_type = args.bridge_agent_type or "unresolved"
+    bridge_model = args.bridge_model or "unresolved"
+    bridge_reasoning_effort = args.bridge_reasoning_effort or "unresolved"
+    role_skill = args.role_skill or "unresolved"
+    role_metadata = args.role_metadata or "unresolved"
+    role_writeback_target = args.role_writeback_target or "unresolved"
+    role_writeback_command = args.role_writeback_command or "unresolved"
     content = (
         f"# Review Packet: {args.title}\n\n"
         "## Role\n\n"
         f"{args.role}\n\n"
+        "## Logical Role\n\n"
+        f"{args.logical_role}\n\n"
+        "## Invocation Bridge\n\n"
+        f"- agent_type: {bridge_agent_type}\n"
+        f"- model: {bridge_model}\n"
+        f"- reasoning_effort: {bridge_reasoning_effort}\n\n"
+        "## Runtime Role Binding\n\n"
+        f"- skill: {role_skill}\n"
+        f"- metadata: {role_metadata}\n"
+        f"- canonical_writeback_target: {role_writeback_target}\n"
+        f"- canonical_writeback_command: {role_writeback_command}\n\n"
         "## Objective\n\n"
         f"{args.objective}\n\n"
         "## Canonical Sources\n\n"
@@ -526,6 +587,10 @@ def build_parser() -> argparse.ArgumentParser:
     dispatch_packet.add_argument("--bridge-agent-type", dest="bridge_agent_type")
     dispatch_packet.add_argument("--bridge-model", dest="bridge_model")
     dispatch_packet.add_argument("--bridge-reasoning-effort", dest="bridge_reasoning_effort")
+    dispatch_packet.add_argument("--role-skill", dest="role_skill")
+    dispatch_packet.add_argument("--role-metadata", dest="role_metadata")
+    dispatch_packet.add_argument("--role-writeback-target", dest="role_writeback_target")
+    dispatch_packet.add_argument("--role-writeback-command", dest="role_writeback_command")
     dispatch_packet.add_argument("--objective", required=True)
     dispatch_packet.add_argument(
         "--consumed-artifact",
@@ -539,6 +604,39 @@ def build_parser() -> argparse.ArgumentParser:
     dispatch_packet.add_argument("--writeback-target", required=True, dest="writeback_target")
     dispatch_packet.add_argument("--completion-command", required=True, dest="completion_command")
     dispatch_packet.set_defaults(func=cmd_dispatch_packet)
+
+    invocation_spec = subparsers.add_parser(
+        "invocation-spec",
+        help="Create a live invocation spec for bridge-backed specialist dispatch",
+    )
+    invocation_spec.add_argument("--output", required=True)
+    invocation_spec.add_argument("--title", required=True)
+    invocation_spec.add_argument("--role", required=True)
+    invocation_spec.add_argument("--logical-role", required=True, dest="logical_role")
+    invocation_spec.add_argument("--source-packet", required=True, dest="source_packet")
+    invocation_spec.add_argument("--bridge-agent-type", dest="bridge_agent_type")
+    invocation_spec.add_argument("--bridge-model", dest="bridge_model")
+    invocation_spec.add_argument("--bridge-reasoning-effort", dest="bridge_reasoning_effort")
+    invocation_spec.add_argument("--runtime-skill", required=True, dest="runtime_skill")
+    invocation_spec.add_argument("--metadata", required=True)
+    invocation_spec.add_argument(
+        "--consumed-artifact",
+        action="append",
+        default=[],
+        required=True,
+        dest="consumed_artifact",
+    )
+    invocation_spec.add_argument(
+        "--expected-writeback-target",
+        required=True,
+        dest="expected_writeback_target",
+    )
+    invocation_spec.add_argument(
+        "--expected-writeback-command",
+        required=True,
+        dest="expected_writeback_command",
+    )
+    invocation_spec.set_defaults(func=cmd_invocation_spec)
 
     review_gate = subparsers.add_parser("review-gate", help="Create review gate markdown")
     review_gate.add_argument("--output", required=True)
@@ -583,6 +681,14 @@ def build_parser() -> argparse.ArgumentParser:
     review_packet.add_argument("--output", required=True)
     review_packet.add_argument("--title", required=True)
     review_packet.add_argument("--role", required=True)
+    review_packet.add_argument("--logical-role", required=True, dest="logical_role")
+    review_packet.add_argument("--bridge-agent-type", dest="bridge_agent_type")
+    review_packet.add_argument("--bridge-model", dest="bridge_model")
+    review_packet.add_argument("--bridge-reasoning-effort", dest="bridge_reasoning_effort")
+    review_packet.add_argument("--role-skill", dest="role_skill")
+    review_packet.add_argument("--role-metadata", dest="role_metadata")
+    review_packet.add_argument("--role-writeback-target", dest="role_writeback_target")
+    review_packet.add_argument("--role-writeback-command", dest="role_writeback_command")
     review_packet.add_argument("--objective", required=True)
     review_packet.add_argument(
         "--canonical-source",

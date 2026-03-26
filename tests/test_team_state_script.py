@@ -194,6 +194,14 @@ def test_dispatch_packet_command_writes_markdown(tmp_path: Path) -> None:
         "gpt-5.4",
         "--bridge-reasoning-effort",
         "high",
+        "--role-skill",
+        ".agents/skills/implementation-worker/SKILL.md",
+        "--role-metadata",
+        ".agents/skills/implementation-worker/agents/openai.yaml",
+        "--role-writeback-target",
+        "docs/plans/implementation-report-demo.md",
+        "--role-writeback-command",
+        "uv run python scripts/team_state.py implementation-report --output docs/plans/implementation-report-demo.md ...",
         "--objective",
         "Implement the bounded task only.",
         "--consumed-artifact",
@@ -219,10 +227,71 @@ def test_dispatch_packet_command_writes_markdown(tmp_path: Path) -> None:
     assert "- agent_type: worker" in content
     assert "- model: gpt-5.4" in content
     assert "- reasoning_effort: high" in content
+    assert "## Runtime Role Binding" in content
+    assert ".agents/skills/implementation-worker/SKILL.md" in content
+    assert ".agents/skills/implementation-worker/agents/openai.yaml" in content
+    assert "canonical_writeback_target: docs/plans/implementation-report-demo.md" in content
+    assert "scripts/team_state.py implementation-report" in content
     assert "## Consumed Artifacts" in content
     assert "docs/plans/sprint-contract-demo.md" in content
     assert "## Writeback Target" in content
     assert "## Completion Command" in content
+
+
+def test_invocation_spec_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "invocation-spec",
+        "--output",
+        "docs/plans/invocation-specs/builder.md",
+        "--title",
+        "Task 1 builder invocation",
+        "--role",
+        "Implementation Worker",
+        "--logical-role",
+        "implementation-worker",
+        "--source-packet",
+        "docs/plans/builder-dispatch-demo.md",
+        "--bridge-agent-type",
+        "worker",
+        "--bridge-model",
+        "gpt-5.4",
+        "--bridge-reasoning-effort",
+        "high",
+        "--runtime-skill",
+        ".agents/skills/implementation-worker/SKILL.md",
+        "--metadata",
+        ".agents/skills/implementation-worker/agents/openai.yaml",
+        "--consumed-artifact",
+        "docs/plans/builder-dispatch-demo.md",
+        "--consumed-artifact",
+        "docs/plans/sprint-contract-demo.md",
+        "--expected-writeback-target",
+        "docs/plans/implementation-report-demo.md",
+        "--expected-writeback-command",
+        "uv run python scripts/team_state.py implementation-report ...",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "invocation-specs" / "builder.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Invocation Spec: Task 1 builder invocation" in content
+    assert "## Logical Role" in content
+    assert "implementation-worker" in content
+    assert "## Source Packet" in content
+    assert "docs/plans/builder-dispatch-demo.md" in content
+    assert "## Invocation Bridge" in content
+    assert "- agent_type: worker" in content
+    assert "- model: gpt-5.4" in content
+    assert "## Runtime Skill" in content
+    assert ".agents/skills/implementation-worker/SKILL.md" in content
+    assert "## Role Metadata" in content
+    assert ".agents/skills/implementation-worker/agents/openai.yaml" in content
+    assert "## Consumed Artifacts" in content
+    assert "docs/plans/sprint-contract-demo.md" in content
+    assert "## Expected Writeback Target" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## Expected Writeback Command" in content
 
 
 def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
@@ -338,6 +407,22 @@ def test_review_packet_command_writes_markdown(tmp_path: Path) -> None:
         "Product packet",
         "--role",
         "Product",
+        "--logical-role",
+        "product-reviewer",
+        "--bridge-agent-type",
+        "explorer",
+        "--bridge-model",
+        "gpt-5.4",
+        "--bridge-reasoning-effort",
+        "medium",
+        "--role-skill",
+        ".agents/skills/product-discovery/SKILL.md",
+        "--role-metadata",
+        ".agents/skills/product-discovery/agents/openai.yaml",
+        "--role-writeback-target",
+        "docs/plans/review-passes/product.md",
+        "--role-writeback-command",
+        "uv run python scripts/team_state.py review-pass --output docs/plans/review-passes/product.md --role Product ...",
         "--objective",
         "Assess milestone fit and scope pressure",
         "--canonical-source",
@@ -359,6 +444,17 @@ def test_review_packet_command_writes_markdown(tmp_path: Path) -> None:
     content = out.read_text()
     assert "# Review Packet: Product packet" in content
     assert "## Role" in content
+    assert "## Logical Role" in content
+    assert "product-reviewer" in content
+    assert "## Invocation Bridge" in content
+    assert "- agent_type: explorer" in content
+    assert "- model: gpt-5.4" in content
+    assert "- reasoning_effort: medium" in content
+    assert "## Runtime Role Binding" in content
+    assert ".agents/skills/product-discovery/SKILL.md" in content
+    assert ".agents/skills/product-discovery/agents/openai.yaml" in content
+    assert "canonical_writeback_target: docs/plans/review-passes/product.md" in content
+    assert "scripts/team_state.py review-pass" in content
     assert "## Objective" in content
     assert "## Canonical Sources" in content
     assert "- docs/project/PROJECT_BRIEF.md" in content

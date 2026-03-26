@@ -71,6 +71,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "scripts" / "role_review.py").exists()
     assert (target / "ops" / "templates" / "task-brief.md").exists()
     assert (target / "ops" / "templates" / "dispatch-packet.md").exists()
+    assert (target / "ops" / "templates" / "invocation-spec.md").exists()
     assert (target / "ops" / "templates" / "onboarding-state.md").exists()
     assert (target / "ops" / "templates" / "deep-scan-plan.md").exists()
     assert (target / "ops" / "checks" / "check_docs_freshness.py").exists()
@@ -161,9 +162,14 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     )
     assert build.returncode == 0, build.stderr
     assert (target / "docs" / "plans" / "builder-dispatch-phase13-task3.md").exists()
+    assert (target / "docs" / "plans" / "builder-dispatch-phase13-task3-invocation.md").exists()
     builder_packet = (target / "docs" / "plans" / "builder-dispatch-phase13-task3.md").read_text()
     assert "implementation-worker" in builder_packet
     assert "- agent_type: worker" in builder_packet
+    builder_invocation = (
+        target / "docs" / "plans" / "builder-dispatch-phase13-task3-invocation.md"
+    ).read_text()
+    assert ".agents/skills/implementation-worker/SKILL.md" in builder_invocation
 
     (target / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
         "# Implementation Report: Phase 13 task 3\n\n"
@@ -195,6 +201,7 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     )
     assert qa_prepare.returncode == 0, qa_prepare.stderr
     assert (target / "docs" / "plans" / "qa-dispatch-phase13-task3.md").exists()
+    assert (target / "docs" / "plans" / "qa-dispatch-phase13-task3-invocation.md").exists()
     qa_packet = (target / "docs" / "plans" / "qa-dispatch-phase13-task3.md").read_text()
     assert "qa-runner" in qa_packet
     assert "- agent_type: worker" in qa_packet

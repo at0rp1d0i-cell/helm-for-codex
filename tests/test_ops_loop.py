@@ -83,6 +83,10 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     builder_packet = (tmp_path / "docs" / "plans" / "builder-dispatch-ops.md").read_text()
     assert "# Dispatch Packet: Ops task builder dispatch" in builder_packet
     assert "docs/plans/sprint-contract-ops.md" in builder_packet
+    builder_invocation = (tmp_path / "docs" / "plans" / "builder-dispatch-ops-invocation.md").read_text()
+    assert "# Invocation Spec: Ops task builder dispatch invocation" in builder_invocation
+    assert "implementation-worker" in builder_invocation
+    assert "docs/plans/builder-dispatch-ops.md" in builder_invocation
 
     write_implementation_report(tmp_path)
 
@@ -108,6 +112,9 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     qa_packet = (tmp_path / "docs" / "plans" / "qa-dispatch-ops.md").read_text()
     assert "# Dispatch Packet: Ops task QA dispatch" in qa_packet
     assert "docs/plans/implementation-report-ops.md" in qa_packet
+    qa_invocation = (tmp_path / "docs" / "plans" / "qa-dispatch-ops-invocation.md").read_text()
+    assert "qa-runner" in qa_invocation
+    assert "docs/plans/qa-dispatch-ops.md" in qa_invocation
 
     qa = run_ops_loop(
         tmp_path,
@@ -151,6 +158,9 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     docs_packet = (tmp_path / "docs" / "plans" / "docs-sync-dispatch-ops.md").read_text()
     assert "# Dispatch Packet: Ops task docs-sync dispatch" in docs_packet
     assert "docs/plans/qa-report-ops.md" in docs_packet
+    docs_invocation = (tmp_path / "docs" / "plans" / "docs-sync-dispatch-ops-invocation.md").read_text()
+    assert "docs-sync" in docs_invocation
+    assert "docs/plans/docs-sync-dispatch-ops.md" in docs_invocation
 
     docs_sync = run_ops_loop(
         tmp_path,
@@ -208,6 +218,15 @@ def test_ops_loop_dispatch_packets_include_logical_role_bridge(tmp_path: Path) -
     assert "## Invocation Bridge" in builder_packet
     assert "- agent_type: worker" in builder_packet
     assert "- model: gpt-5.4" in builder_packet
+    builder_invocation = (tmp_path / "docs" / "plans" / "builder-dispatch-ops-bridge-invocation.md").read_text()
+    assert "## Runtime Skill" in builder_invocation
+    assert ".agents/skills/implementation-worker/SKILL.md" in builder_invocation
+    assert "## Expected Writeback Target" in builder_invocation
+    assert "docs/plans/implementation-report-ops-bridge.md" in builder_invocation
+    assert "## Runtime Role Binding" in builder_packet
+    assert ".agents/skills/implementation-worker/SKILL.md" in builder_packet
+    assert ".agents/skills/implementation-worker/agents/openai.yaml" in builder_packet
+    assert "scripts/team_state.py implementation-report" in builder_packet
 
 
 def test_ops_loop_exists_for_repo_runtime() -> None:

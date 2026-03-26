@@ -8,7 +8,7 @@ ship-ready
 
 ## Active Work
 
-- Prepare direct live role dispatch on top of the new role invocation bridge
+- Let the live Ops role consume packet plus invocation-spec pairs and push more specialist execution through the bridge runner
 
 ## Completed
 
@@ -65,3 +65,5 @@ ship-ready
 - add live execution role configs for builder, QA, and docs-sync
 - add a live Ops orchestrator role surface
 - add a repo-backed role invocation bridge for logical role dispatch
+- extend role bridge coverage to live review packets
+- add paired invocation specs for execution and review packets

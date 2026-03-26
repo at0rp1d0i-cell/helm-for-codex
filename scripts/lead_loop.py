@@ -6,11 +6,13 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from role_bridge import resolve_role
 import role_review
 from team_state import (
     cmd_board,
     cmd_decision,
     cmd_discovery_brief,
+    cmd_invocation_spec,
     cmd_onboarding_report,
     cmd_onboarding_state,
     cmd_plan_brief,
@@ -29,6 +31,13 @@ def _read(path: Path) -> str:
 def _resolve_path(root: Path, path: str) -> Path:
     candidate = Path(path)
     return candidate if candidate.is_absolute() else root / candidate
+
+
+def _default_invocation_spec_path(packet_path: str) -> str:
+    packet = Path(packet_path)
+    if packet.parent.name.endswith("packets"):
+        return str(packet.parent.parent / "invocation-specs" / packet.name)
+    return str(packet.with_name(f"{packet.stem}-invocation{packet.suffix or '.md'}"))
 
 
 def _extract_section(content: str, heading: str) -> str:
@@ -165,19 +174,32 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_review_prepare(args: argparse.Namespace) -> int:
     review_dir = args.root / args.review_dir
     review_dir.mkdir(parents=True, exist_ok=True)
+    invocation_dir = args.root / args.invocation_dir if args.invocation_dir else None
+    if invocation_dir is not None:
+        invocation_dir.mkdir(parents=True, exist_ok=True)
     pass_dir = args.root / args.pass_dir
     pass_dir.mkdir(parents=True, exist_ok=True)
-    for role_name, filename, objective in [
-        ("Product", "product.md", "Assess milestone fit and scope pressure before build."),
-        ("Architect", "architect.md", "Assess module boundaries and architecture fit before build."),
-        ("Reviewer", "reviewer.md", "Assess quality expectations and verification readiness before build."),
+    for role_name, logical_role, filename, objective in [
+        ("Product", "product-reviewer", "product.md", "Assess milestone fit and scope pressure before build."),
+        ("Architect", "architect-reviewer", "architect.md", "Assess module boundaries and architecture fit before build."),
+        ("Reviewer", "code-reviewer", "reviewer.md", "Assess quality expectations and verification readiness before build."),
     ]:
+        resolved_role = resolve_role(args.root, logical_role)
         pass_rel = Path(args.pass_dir) / filename
+        packet_rel = Path(args.review_dir) / filename
         packet_args = SimpleNamespace(
             root=args.root,
-            output=str(Path(args.review_dir) / filename),
+            output=str(packet_rel),
             title=f"{role_name} review packet",
             role=role_name,
+            logical_role=resolved_role["logical_role"],
+            bridge_agent_type=resolved_role["agent_type"],
+            bridge_model=resolved_role["model"],
+            bridge_reasoning_effort=resolved_role["reasoning_effort"],
+            role_skill=resolved_role["skill"],
+            role_metadata=resolved_role["metadata"],
+            role_writeback_target=resolved_role["writeback_target"],
+            role_writeback_command=resolved_role["writeback_command"],
             objective=objective,
             canonical_source=[
                 "docs/project/PROJECT_BRIEF.md",
@@ -203,6 +225,37 @@ def cmd_review_prepare(args: argparse.Namespace) -> int:
             ),
         )
         rc = cmd_review_packet(packet_args)
+        if rc != 0:
+            return rc
+
+        invocation_args = SimpleNamespace(
+            root=args.root,
+            output=(
+                str(Path(args.invocation_dir) / filename)
+                if args.invocation_dir
+                else _default_invocation_spec_path(str(packet_rel))
+            ),
+            title=f"{role_name} review invocation",
+            role=resolved_role["display_name"],
+            logical_role=resolved_role["logical_role"],
+            source_packet=str(packet_rel),
+            bridge_agent_type=resolved_role["agent_type"],
+            bridge_model=resolved_role["model"],
+            bridge_reasoning_effort=resolved_role["reasoning_effort"],
+            runtime_skill=resolved_role["skill"],
+            metadata=resolved_role["metadata"],
+            consumed_artifact=[
+                str(packet_rel),
+                "docs/project/PROJECT_BRIEF.md",
+                "docs/project/ROADMAP.md",
+                "docs/project/ARCHITECTURE.md",
+                "docs/project/QUALITY_BAR.md",
+                args.plan_path,
+            ],
+            expected_writeback_target=str(pass_rel),
+            expected_writeback_command=packet_args.writeback_command,
+        )
+        rc = cmd_invocation_spec(invocation_args)
         if rc != 0:
             return rc
 
@@ -368,6 +421,11 @@ def cmd_build(args: argparse.Namespace) -> int:
             args.sprint_contract_path,
             "--builder-packet-path",
             args.builder_packet_path,
+            *(
+                ["--builder-invocation-spec-path", args.builder_invocation_spec_path]
+                if args.builder_invocation_spec_path
+                else []
+            ),
             "--board-path",
             args.board_path,
         ],
@@ -384,6 +442,11 @@ def cmd_qa_prepare(args: argparse.Namespace) -> int:
         args.implementation_report_path,
         "--qa-packet-path",
         args.qa_packet_path,
+        *(
+            ["--qa-invocation-spec-path", args.qa_invocation_spec_path]
+            if args.qa_invocation_spec_path
+            else []
+        ),
         "--qa-report-path",
         args.qa_report_path,
         "--environment",
@@ -432,6 +495,11 @@ def cmd_docs_sync_prepare(args: argparse.Namespace) -> int:
         args.qa_report_path,
         "--docs-sync-packet-path",
         args.docs_sync_packet_path,
+        *(
+            ["--docs-sync-invocation-spec-path", args.docs_sync_invocation_spec_path]
+            if args.docs_sync_invocation_spec_path
+            else []
+        ),
         "--docs-sync-report-path",
         args.docs_sync_report_path,
     ]
@@ -630,6 +698,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     build.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
     build.add_argument("--builder-packet-path", required=True, dest="builder_packet_path")
+    build.add_argument("--builder-invocation-spec-path", dest="builder_invocation_spec_path")
     build.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     build.set_defaults(func=cmd_build)
 
@@ -645,6 +714,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="implementation_report_path",
     )
     qa_prepare.add_argument("--qa-packet-path", required=True, dest="qa_packet_path")
+    qa_prepare.add_argument("--qa-invocation-spec-path", dest="qa_invocation_spec_path")
     qa_prepare.add_argument("--qa-report-path", required=True, dest="qa_report_path")
     qa_prepare.add_argument("--environment", required=True)
     qa_prepare.add_argument("--scenario", action="append", default=[], required=True)
@@ -684,6 +754,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--docs-sync-packet-path",
         required=True,
         dest="docs_sync_packet_path",
+    )
+    docs_sync_prepare.add_argument(
+        "--docs-sync-invocation-spec-path",
+        dest="docs_sync_invocation_spec_path",
     )
     docs_sync_prepare.add_argument(
         "--docs-sync-report-path",
@@ -742,6 +816,7 @@ def build_parser() -> argparse.ArgumentParser:
     review_prepare.add_argument("--title", required=True)
     review_prepare.add_argument("--plan-path", required=True)
     review_prepare.add_argument("--review-dir", required=True)
+    review_prepare.add_argument("--invocation-dir")
     review_prepare.add_argument("--pass-dir", required=True)
     review_prepare.add_argument("--result-dir")
     review_prepare.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
