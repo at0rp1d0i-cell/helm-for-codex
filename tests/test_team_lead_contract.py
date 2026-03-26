@@ -66,6 +66,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         ".codex/roles/",
         "scripts/team_state.py",
         "scripts/lead_loop.py",
+        "scripts/ops_loop.py",
         "scripts/role_review.py",
         "discover",
         "plan",
@@ -115,6 +116,9 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "do not imply full feature-branch autonomy" in content.lower()
     assert "sole builder kickoff path" in content.lower()
     assert "delegate to create a bounded delegated task and move the board into build" not in content.lower()
+    assert "user-facing facade" in content.lower()
+    assert "does not dispatch specialist work directly" in content.lower()
+    assert "routes execution through ops_loop.py" in content.lower()
 
 
 def test_team_lead_openai_metadata_is_tight_and_explicit() -> None:

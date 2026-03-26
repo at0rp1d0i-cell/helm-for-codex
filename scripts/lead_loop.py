@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,7 +17,6 @@ from team_state import (
     cmd_review_gate,
     cmd_review_packet,
     cmd_review_pass as cmd_write_review_pass,
-    cmd_sprint_contract,
     cmd_task_brief,
     cmd_deep_scan_plan,
 )
@@ -23,11 +24,6 @@ from team_state import (
 
 def _read(path: Path) -> str:
     return path.read_text() if path.exists() else ""
-
-
-def _write(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content)
 
 
 def _resolve_path(root: Path, path: str) -> Path:
@@ -62,57 +58,6 @@ def _extract_list_section(content: str, heading: str) -> list[str]:
     return items
 
 
-def _first_nonempty_line(value: str) -> str:
-    for line in value.splitlines():
-        candidate = line.strip()
-        if candidate:
-            return candidate
-    return ""
-
-
-def _normalize_verification_status(value: str) -> str:
-    normalized = value.strip().lower()
-    if normalized not in {"passed", "failed"}:
-        raise ValueError(f"Invalid verification status: {value}")
-    return normalized
-
-
-def _normalize_repo_backed_targets(targets: list[str], *, label: str) -> list[str]:
-    normalized: list[str] = []
-    for target in targets:
-        value = target.strip()
-        if not value:
-            continue
-        candidate = Path(value)
-        if candidate.is_absolute() or not value.startswith("docs/"):
-            raise ValueError(f"{label} must stay repo-backed under docs/: {target}")
-        normalized.append(value)
-    if not normalized:
-        raise ValueError(f"{label} must include at least one repo-backed docs/ target.")
-    return normalized
-
-
-def _assert_consumed_sprint_contract(
-    root: Path,
-    sprint_contract_path: Path,
-    sprint_contract_arg: str,
-    implementation_report_path: Path,
-) -> None:
-    implementation_content = _read(implementation_report_path)
-    consumed_contract = _extract_section(implementation_content, "Consumed Sprint Contract")
-    if not consumed_contract:
-        raise ValueError(
-            "Implementation report consumed sprint contract is missing from the implementation report.",
-        )
-
-    consumed_contract_path = _resolve_path(root, consumed_contract)
-    expected_contract_path = _resolve_path(root, sprint_contract_arg)
-    if consumed_contract_path != expected_contract_path:
-        raise ValueError(
-            "Implementation report consumed sprint contract does not match the supplied sprint contract.",
-        )
-
-
 def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
     board_args = SimpleNamespace(
         root=root,
@@ -124,9 +69,19 @@ def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
     return cmd_board(board_args)
 
 
-def _board_stage(root: Path, path: str) -> str:
-    board = _read(root / path)
-    return _extract_section(board, "Current Stage") if board else ""
+def _run_ops_loop(args: argparse.Namespace, command: str, command_args: list[str]) -> int:
+    script = Path(__file__).with_name("ops_loop.py")
+    result = subprocess.run(
+        [sys.executable, str(script), "--root", str(args.root), command, *command_args],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+    return result.returncode
 
 
 def _onboarding_stage(root: Path, path: str) -> str:
@@ -391,128 +346,79 @@ def cmd_delegate(args: argparse.Namespace) -> int:
 
 
 def cmd_build(args: argparse.Namespace) -> int:
-    sprint_args = SimpleNamespace(
-        root=args.root,
-        output=args.sprint_contract_path,
-        title=args.title,
-        planner=(
-            f"{args.planner}\n\n"
-            f"Implementation report path: {args.implementation_report_path}"
-        ),
-        generator=args.generator,
-        evaluator=args.evaluator,
-        scope=args.scope,
-        acceptance=(
-            f"{args.acceptance}\n\n"
-            "Builder handoff output: "
-            f"{args.implementation_report_path}"
-        ),
+    return _run_ops_loop(
+        args,
+        "build",
+        [
+            "--title",
+            args.title,
+            "--planner",
+            args.planner,
+            "--generator",
+            args.generator,
+            "--evaluator",
+            args.evaluator,
+            "--scope",
+            args.scope,
+            "--acceptance",
+            args.acceptance,
+            "--implementation-report-path",
+            args.implementation_report_path,
+            "--sprint-contract-path",
+            args.sprint_contract_path,
+            "--board-path",
+            args.board_path,
+        ],
     )
-    rc = cmd_sprint_contract(sprint_args)
-    if rc != 0:
-        return rc
-
-    return _update_board(args.root, args.board_path, "build", [args.title])
 
 
 def cmd_qa(args: argparse.Namespace) -> int:
-    sprint_contract = _resolve_path(args.root, args.sprint_contract_path)
-    implementation_report = _resolve_path(args.root, args.implementation_report_path)
-    if not sprint_contract.exists():
-        raise FileNotFoundError(f"Missing sprint contract: {sprint_contract}")
-    if not implementation_report.exists():
-        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
-    _assert_consumed_sprint_contract(
-        args.root,
-        sprint_contract,
+    command_args = [
+        "--title",
+        args.title,
+        "--sprint-contract-path",
         args.sprint_contract_path,
-        implementation_report,
+        "--implementation-report-path",
+        args.implementation_report_path,
+        "--qa-report-path",
+        args.qa_report_path,
+        "--environment",
+        args.environment,
+    ]
+    for scenario in args.scenario:
+        command_args.extend(["--scenario", scenario])
+    for issue in args.issue:
+        command_args.extend(["--issue", issue])
+    command_args.extend(
+        [
+            "--verification-status",
+            args.verification_status,
+            "--board-path",
+            args.board_path,
+        ],
     )
-    verification_status = _normalize_verification_status(args.verification_status)
-
-    issues = "\n".join(f"- {item}" for item in args.issue) if args.issue else "- none"
-    scenarios = "\n".join(f"- {item}" for item in args.scenario)
-    qa_report = _resolve_path(args.root, args.qa_report_path)
-    content = (
-        "# QA Report\n\n"
-        "## Consumed Sprint Contract\n\n"
-        f"{args.sprint_contract_path}\n\n"
-        "## Consumed Implementation Report\n\n"
-        f"{args.implementation_report_path}\n\n"
-        "QA must validate the generator output against the consumed artifacts before board advancement.\n\n"
-        "## Environment\n\n"
-        f"{args.environment}\n\n"
-        "## Scenarios Tested\n\n"
-        f"{scenarios}\n\n"
-        "## Issues Found\n\n"
-        f"{issues}\n\n"
-        "## Verification Status\n\n"
-        f"{verification_status}\n"
-    )
-    _write(qa_report, content)
-
-    next_stage = "build" if verification_status == "failed" else "qa"
-    return _update_board(args.root, args.board_path, next_stage, [args.title])
+    return _run_ops_loop(args, "qa", command_args)
 
 
 def cmd_docs_sync(args: argparse.Namespace) -> int:
-    implementation_report = _resolve_path(args.root, args.implementation_report_path)
-    qa_report = _resolve_path(args.root, args.qa_report_path)
-    if not implementation_report.exists():
-        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
-    if not qa_report.exists():
-        raise FileNotFoundError(f"Missing QA report: {qa_report}")
-    if _board_stage(args.root, args.board_path) != "qa":
-        raise ValueError("Execution board must be at qa stage before docs-sync can proceed.")
-
-    qa_content = _read(qa_report)
-    consumed_implementation = _extract_section(qa_content, "Consumed Implementation Report")
-    if not consumed_implementation:
-        raise ValueError("QA report consumed implementation report is missing from the QA report.")
-
-    consumed_implementation_path = _resolve_path(
-        args.root,
-        _first_nonempty_line(consumed_implementation),
-    )
-    expected_implementation_path = _resolve_path(args.root, args.implementation_report_path)
-    if consumed_implementation_path != expected_implementation_path:
-        raise ValueError(
-            "QA report consumed implementation report does not match the supplied implementation report.",
-        )
-    verification_status = _normalize_verification_status(
-        _first_nonempty_line(_extract_section(qa_content, "Verification Status")),
-    )
-    if verification_status != "passed":
-        raise ValueError("QA report verification status must be passed before docs-sync can proceed.")
-
-    docs_updated = "\n".join(f"- {item}" for item in args.docs_updated) if args.docs_updated else "- none"
-    follow_ups = "\n".join(f"- {item}" for item in args.follow_up) if args.follow_up else "- none"
-    canonical_targets = _normalize_repo_backed_targets(
-        args.canonical_writeback,
-        label="Canonical writeback targets",
-    )
-    canonical_writeback = "\n".join(f"- {item}" for item in canonical_targets)
-
-    rc = _update_board(args.root, args.board_path, "docs-sync", [args.title])
-    if rc != 0:
-        return rc
-
-    docs_sync_report = _resolve_path(args.root, args.docs_sync_report_path)
-    content = (
-        f"# Docs Sync Report: {args.title}\n\n"
-        "## Consumed Implementation Report\n\n"
-        f"{args.implementation_report_path}\n\n"
-        "## Consumed QA Report\n\n"
-        f"{args.qa_report_path}\n\n"
-        "## Docs Updated\n\n"
-        f"{docs_updated}\n\n"
-        "## Canonical Writeback\n\n"
-        f"{canonical_writeback}\n\n"
-        "## Follow-Ups\n\n"
-        f"{follow_ups}\n"
-    )
-    _write(docs_sync_report, content)
-    return _update_board(args.root, args.board_path, "ship-ready", [args.title])
+    command_args = [
+        "--title",
+        args.title,
+        "--implementation-report-path",
+        args.implementation_report_path,
+        "--qa-report-path",
+        args.qa_report_path,
+        "--docs-sync-report-path",
+        args.docs_sync_report_path,
+    ]
+    for doc in args.docs_updated:
+        command_args.extend(["--docs-updated", doc])
+    for target in args.canonical_writeback:
+        command_args.extend(["--canonical-writeback", target])
+    for follow_up in args.follow_up:
+        command_args.extend(["--follow-up", follow_up])
+    command_args.extend(["--board-path", args.board_path])
+    return _run_ops_loop(args, "docs-sync", command_args)
 
 
 def cmd_review(args: argparse.Namespace) -> int:
