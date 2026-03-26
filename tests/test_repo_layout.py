@@ -23,6 +23,7 @@ def test_required_top_level_paths_exist() -> None:
         ROOT / "scripts" / "team_state.py",
         ROOT / "scripts" / "lead_loop.py",
         ROOT / "scripts" / "role_review.py",
+        ROOT / ".agents" / "skills" / "ops-orchestrator",
         ROOT / ".agents" / "skills" / "team-lead",
         ROOT / ".agents" / "skills" / "product-discovery",
         ROOT / ".agents" / "skills" / "architecture-review",
@@ -66,8 +67,13 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         ".codex/roles/implementation-worker.toml",
         ".codex/roles/qa-runner.toml",
         ".codex/roles/docs-sync.toml",
+        ".codex/roles/ops-orchestrator.toml",
+        "skills/ops-orchestrator/SKILL.md",
+        "skills/ops-orchestrator/agents/openai.yaml",
         "skills/team-lead/SKILL.md",
         "skills/team-lead/agents/openai.yaml",
+        ".agents/skills/ops-orchestrator/SKILL.md",
+        ".agents/skills/ops-orchestrator/agents/openai.yaml",
         ".agents/skills/team-lead/SKILL.md",
         ".agents/skills/product-discovery/SKILL.md",
         ".agents/skills/architecture-review/SKILL.md",
@@ -154,6 +160,7 @@ def test_team_lead_contract_is_visible_to_repo_validation() -> None:
 def test_codex_internal_role_config_declares_live_roles() -> None:
     content = (ROOT / ".codex" / "config.toml").read_text()
     required_tokens = [
+        "roles/ops-orchestrator.toml",
         "roles/product-reviewer.toml",
         "roles/architect-reviewer.toml",
         "roles/code-reviewer.toml",

@@ -4,11 +4,11 @@ _This file can be updated manually or via `scripts/team_state.py board`._
 
 ## Current Stage
 
-approval-needed
+ship-ready
 
 ## Active Work
 
-- Plan phase 13: the first bounded execution-handoff slice (delegate -> builder -> QA -> docs-sync -> board update)
+- Land the live Ops orchestrator role surface and prepare the next orchestration tranche
 
 ## Completed
 
@@ -59,3 +59,8 @@ approval-needed
 - add plan archive hygiene baseline
 - add source-to-runtime skill mirror validation
 - validate installed runtime onboarding, reinstall preservation, and review-pass writeback in a fresh target repo
+- implement explicit ops runtime slice: move build/qa/docs-sync behind ops_loop.py
+- turn the lead into a true facade over ops_loop.py
+- rebind builder, QA, and docs-sync contracts to Ops ownership
+- add live execution role configs for builder, QA, and docs-sync
+- add a live Ops orchestrator role surface

@@ -1,0 +1,8 @@
+id = "ops-orchestrator"
+display_name = "Ops Orchestrator"
+skill = ".agents/skills/ops-orchestrator/SKILL.md"
+metadata = ".agents/skills/ops-orchestrator/agents/openai.yaml"
+writeback_target = "docs/status/EXECUTION_BOARD.md"
+writeback_command = "uv run python scripts/ops_loop.py <build|qa|docs-sync> ..."
+runtime_skill = ".agents/skills/ops-orchestrator/SKILL.md"
+packaging_notes = "Runtime pack installs this skill and metadata into .agents/skills so the Team Lead can route execution through a live Ops role."

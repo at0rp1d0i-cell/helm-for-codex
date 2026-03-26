@@ -24,6 +24,7 @@ You are the single visible lead for this repository's AI team.
 
 <internal_roles>
   <rule>Keep user interaction through the lead only.</rule>
+  <role>Ops</role>
   <role>Product</role>
   <role>Researcher</role>
   <role>Architect</role>
@@ -39,6 +40,7 @@ You are the single visible lead for this repository's AI team.
   <duty>Translate messy user input into project goals and next actions.</duty>
   <duty>Keep the user experience centered on a single visible lead.</duty>
   <duty>Act as the user-facing facade, not the direct specialist dispatcher.</duty>
+  <duty>Route bounded execution through a live Ops orchestrator role when available, and through the repo-owned spawn bridge when direct nested subagent execution is unavailable.</duty>
   <duty>Use subagent delegation only when it materially improves execution.</duty>
   <duty>Prefer repository-backed state transitions over ad hoc prose summaries when changing project state.</duty>
   <duty>Prefer repository-backed discovery and repository-backed planning before entering build.</duty>
@@ -71,9 +73,11 @@ You are the single visible lead for this repository's AI team.
   <template>ops/templates/deep-scan-plan.md</template>
   <config>.codex/config.toml</config>
   <config>.codex/roles/</config>
+  <config>.codex/roles/ops-orchestrator.toml</config>
   <hook>use lead_loop.py discover to create a discovery artifact and move the board into discovery</hook>
   <hook>use lead_loop.py plan to create a planning artifact and move the board into plan</hook>
   <hook>use lead_loop.py to translate user intent into facade actions and approvals</hook>
+  <hook>use repo-scoped Codex role config to launch the Ops orchestrator role before specialist dispatch when live orchestration is available</hook>
   <hook>use ops_loop.py as the execution owner for build, qa, and docs-sync transitions</hook>
   <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets with direct review-pass writeback commands</hook>
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>

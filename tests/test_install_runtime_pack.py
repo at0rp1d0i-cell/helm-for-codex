@@ -37,6 +37,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
 
     assert (target / "AGENTS.md").exists()
     assert (target / ".codex" / "config.toml").exists()
+    assert (target / ".codex" / "roles" / "ops-orchestrator.toml").exists()
     assert (target / ".codex" / "roles" / "product-reviewer.toml").exists()
     assert (target / ".codex" / "roles" / "architect-reviewer.toml").exists()
     assert (target / ".codex" / "roles" / "code-reviewer.toml").exists()
@@ -44,6 +45,8 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / ".codex" / "roles" / "qa-runner.toml").exists()
     assert (target / ".codex" / "roles" / "docs-sync.toml").exists()
 
+    assert (target / ".agents" / "skills" / "ops-orchestrator" / "SKILL.md").exists()
+    assert (target / ".agents" / "skills" / "ops-orchestrator" / "agents" / "openai.yaml").exists()
     assert (target / ".agents" / "skills" / "team-lead" / "SKILL.md").exists()
     assert (target / ".agents" / "skills" / "product-discovery" / "SKILL.md").exists()
     assert (target / ".agents" / "skills" / "architecture-review" / "SKILL.md").exists()

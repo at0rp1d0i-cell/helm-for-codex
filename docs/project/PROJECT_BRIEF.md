@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 12 baseline complete: runtime-pack installation, repo-local `.agents/skills` packaging, onboarding state, and lead-led init/re-init now exist in the preferred Codex path, and the installed runtime has been verified in a fresh target repo.
+Phase 14 baseline complete: the repository now has a true three-layer runtime surface for installed Codex use, with `Lead` as the visible entrypoint, `Ops` as a live internal orchestrator role plus repo-owned runtime, and specialist roles for review and bounded execution.
 
 ## Success Criteria
 
@@ -18,6 +18,7 @@ Phase 12 baseline complete: runtime-pack installation, repo-local `.agents/skill
 - `.agents/skills` packaging exists for the installed runtime while leaving user `skills/` source files untouched
 - onboarding state exists and deep-scan planning is part of first-contact project adoption, but the lead currently needs an explicit `init`/`force` action because onboarding state is bootstrapped immediately
 - direct role-owned canonical review-pass writeback exists for Product, Architect, and Reviewer
-- repo-scoped Codex role config exists for internal review roles
+- repo-scoped Codex role config exists for the live orchestration, review, and execution roles
 - review-result compatibility remains available
+- `Ops` now has a live repo-scoped role surface in addition to the repo-owned `scripts/ops_loop.py` runtime
 - repo validation passes

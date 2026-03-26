@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 ROLE_FILES = [
+    ROOT / "skills" / "ops-orchestrator" / "SKILL.md",
     ROOT / "skills" / "product-discovery" / "SKILL.md",
     ROOT / "skills" / "architecture-review" / "SKILL.md",
     ROOT / "skills" / "implementation-worker" / "SKILL.md",
@@ -101,6 +102,11 @@ def test_review_roles_can_write_structured_review_passes() -> None:
 
 def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
     expected = {
+        ROOT / ".codex" / "roles" / "ops-orchestrator.toml": (
+            ".agents/skills/ops-orchestrator/SKILL.md",
+            "docs/status/EXECUTION_BOARD.md",
+            "scripts/ops_loop.py",
+        ),
         ROOT / ".codex" / "roles" / "product-reviewer.toml": (
             ".agents/skills/product-discovery/SKILL.md",
             "docs/plans/review-passes/product.md",
@@ -142,3 +148,11 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
         if "reviewer" in path.name:
             assert "compatibility_writeback_target" in content
             assert "scripts/team_state.py review-result" in content
+
+
+def test_ops_orchestrator_contract_owns_dispatch_boundary() -> None:
+    content = (ROOT / "skills" / "ops-orchestrator" / "SKILL.md").read_text().lower()
+    assert "dispatch bounded work" in content
+    assert "stage advancement" in content
+    assert "report only to the lead" in content
+    assert "specialists receive bounded packets from ops" in content

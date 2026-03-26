@@ -24,13 +24,13 @@ Roles are codified as repo-local Codex skills under `.agents/skills`, and the `L
 The system is built on four layers:
 
 - `AGENTS.md` describes the operating guide and canonical state.  
-- `.codex/config.toml` plus `.codex/roles/*.toml` bind the live review and execution roles to their latest installed skills.  
+- `.codex/config.toml` plus `.codex/roles/*.toml` bind the live orchestration, review, and execution roles to their latest installed skills.  
 - `scripts/team_state.py` writes markdown artifacts such as briefs, review passes, onboarding reports, and refactor proposals.  
 - `scripts/lead_loop.py` sequences the stages (`intake → discovery → plan → build → review → qa → docs-sync → ship-ready → evolve`) and keeps `docs/status/EXECUTION_BOARD.md` up to date.
 
 The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
 
-Current live Codex role bindings cover `Product Reviewer`, `Architect Reviewer`, `Code Reviewer`, `Implementation Worker`, `QA Runner`, and `Docs Sync`. `Lead` is the visible session entrypoint rather than a spawned role, and `Ops` currently runs as the repo-owned orchestration runtime in `scripts/ops_loop.py` rather than a separate Codex role.
+Current live Codex role bindings cover `Ops Orchestrator`, `Product Reviewer`, `Architect Reviewer`, `Code Reviewer`, `Implementation Worker`, `QA Runner`, and `Docs Sync`. `Lead` is still the visible session entrypoint rather than a spawned role, while `Ops` now has both a live role surface and the repo-owned orchestration runtime in `scripts/ops_loop.py`.
 
 ## Agent Work Granularity
 

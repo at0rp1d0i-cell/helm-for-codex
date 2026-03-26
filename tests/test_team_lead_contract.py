@@ -41,6 +41,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         assert token in content
 
     role_roster = [
+        "Ops",
         "Product",
         "Researcher",
         "Architect",
@@ -64,6 +65,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "ops/templates/review-result.md",
         ".codex/config.toml",
         ".codex/roles/",
+        "ops-orchestrator",
         "scripts/team_state.py",
         "scripts/lead_loop.py",
         "scripts/ops_loop.py",
@@ -119,6 +121,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "user-facing facade" in content.lower()
     assert "does not dispatch specialist work directly" in content.lower()
     assert "routes execution through ops_loop.py" in content.lower()
+    assert "ops" in content.lower()
 
 
 def test_team_lead_openai_metadata_is_tight_and_explicit() -> None:
