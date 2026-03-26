@@ -5,8 +5,9 @@ It keeps the plans, tests, runtime scripts, repo-local skills, and canonical sta
 
 ## Team Model
 
-The user talks only to the `Lead`. The lead owns project state, orchestrates work, and delegates to internal specialists that handle narrower responsibilities:
+The user talks only to the `Lead`. The lead stays user-facing, translates intent into approved work, and routes internal execution through `Ops`. `Ops` then dispatches the narrower specialist roles:
 
+- `Ops`: dispatches bounded work, validates repo-backed handoff artifacts, and advances execution state without exposing internal chatter to the user.  
 - `Product`: scopes requests, translates them into goals, and keeps the roadmap honest.  
 - `Researcher`: surfaces papers, libraries, or precedents before committing to a build.  
 - `Architect`: defines module boundaries, interfaces, and hard constraints.  
@@ -17,7 +18,7 @@ The user talks only to the `Lead`. The lead owns project state, orchestrates wor
 - `Refactor Planner`: proposes focused cleanup when technical debt blocks safe progress.  
 - `Release Manager`: wraps up the final rollout, push, and verification steps.
 
-Roles are codified as repo-local Codex skills under `.agents/skills`, and the `Lead` routes each task through the workflow without forcing you to address multiple agents directly.
+Roles are codified as repo-local Codex skills under `.agents/skills`, and the `Lead` routes each task through `Ops` without forcing you to address multiple agents directly.
 
 ## What the Workflow Does
 
