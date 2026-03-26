@@ -176,6 +176,41 @@ def test_implementation_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Follow-Ups" in content
 
 
+def test_dispatch_packet_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "dispatch-packet",
+        "--output",
+        "docs/plans/builder-dispatch-demo.md",
+        "--title",
+        "Task 1 builder dispatch",
+        "--role",
+        "Builder",
+        "--objective",
+        "Implement the bounded task only.",
+        "--consumed-artifact",
+        "docs/plans/sprint-contract-demo.md",
+        "--constraints",
+        "Stay within the approved sprint contract.",
+        "--expected-output",
+        "Implementation report at docs/plans/implementation-report-demo.md",
+        "--writeback-target",
+        "docs/plans/implementation-report-demo.md",
+        "--completion-command",
+        "uv run python scripts/team_state.py implementation-report ...",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "builder-dispatch-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Dispatch Packet: Task 1 builder dispatch" in content
+    assert "## Role" in content
+    assert "## Consumed Artifacts" in content
+    assert "docs/plans/sprint-contract-demo.md" in content
+    assert "## Writeback Target" in content
+    assert "## Completion Command" in content
+
+
 def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

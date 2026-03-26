@@ -91,17 +91,22 @@ def test_build_creates_sprint_contract_and_updates_board(tmp_path: Path) -> None
         "docs/plans/implementation-report-phase13-task2.md",
         "--sprint-contract-path",
         "docs/plans/sprint-contract-phase13-task2.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-phase13-task2.md",
     )
 
     assert result.returncode == 0, result.stderr
     sprint_contract = tmp_path / "docs" / "plans" / "sprint-contract-phase13-task2.md"
     assert sprint_contract.exists()
+    builder_packet = tmp_path / "docs" / "plans" / "builder-dispatch-phase13-task2.md"
+    assert builder_packet.exists()
     sprint_content = sprint_contract.read_text()
     assert "# Sprint Contract: Phase 13 task 2" in sprint_content
     assert "## Planner" in sprint_content
     assert "## Generator" in sprint_content
     assert "## Evaluator" in sprint_content
     assert "docs/plans/implementation-report-phase13-task2.md" in sprint_content
+    assert "docs/plans/sprint-contract-phase13-task2.md" in builder_packet.read_text()
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nbuild" in board

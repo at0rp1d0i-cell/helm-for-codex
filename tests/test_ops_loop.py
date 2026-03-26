@@ -76,10 +76,38 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
         "docs/plans/implementation-report-ops.md",
         "--sprint-contract-path",
         "docs/plans/sprint-contract-ops.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-ops.md",
     )
     assert build.returncode == 0, build.stderr
+    builder_packet = (tmp_path / "docs" / "plans" / "builder-dispatch-ops.md").read_text()
+    assert "# Dispatch Packet: Ops task builder dispatch" in builder_packet
+    assert "docs/plans/sprint-contract-ops.md" in builder_packet
 
     write_implementation_report(tmp_path)
+
+    qa_prepare = run_ops_loop(
+        tmp_path,
+        "qa-prepare",
+        "--title",
+        "Ops task",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-ops.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-ops.md",
+        "--qa-packet-path",
+        "docs/plans/qa-dispatch-ops.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-ops.md",
+        "--environment",
+        "ops loop test repo",
+        "--scenario",
+        "Run the ops runtime QA handoff",
+    )
+    assert qa_prepare.returncode == 0, qa_prepare.stderr
+    qa_packet = (tmp_path / "docs" / "plans" / "qa-dispatch-ops.md").read_text()
+    assert "# Dispatch Packet: Ops task QA dispatch" in qa_packet
+    assert "docs/plans/implementation-report-ops.md" in qa_packet
 
     qa = run_ops_loop(
         tmp_path,
@@ -101,7 +129,28 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     )
     assert qa.returncode == 0, qa.stderr
 
-    write_qa_report(tmp_path)
+    docs_prepare = run_ops_loop(
+        tmp_path,
+        "docs-sync-prepare",
+        "--title",
+        "Ops task",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-ops.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-ops.md",
+        "--docs-sync-packet-path",
+        "docs/plans/docs-sync-dispatch-ops.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-ops.md",
+        "--docs-updated",
+        "docs/status/EXECUTION_BOARD.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+    )
+    assert docs_prepare.returncode == 0, docs_prepare.stderr
+    docs_packet = (tmp_path / "docs" / "plans" / "docs-sync-dispatch-ops.md").read_text()
+    assert "# Dispatch Packet: Ops task docs-sync dispatch" in docs_packet
+    assert "docs/plans/qa-report-ops.md" in docs_packet
 
     docs_sync = run_ops_loop(
         tmp_path,

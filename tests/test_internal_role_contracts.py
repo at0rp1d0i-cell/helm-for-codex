@@ -49,6 +49,7 @@ def test_internal_roles_use_xml_like_contracts() -> None:
 def test_implementation_worker_contract_requires_sprint_contract_and_report_path() -> None:
     content = (ROOT / "skills" / "implementation-worker" / "SKILL.md").read_text().lower()
 
+    assert "dispatch packet" in content
     assert "sprint contract" in content
     assert "implementation-report" in content
     assert "generator" in content
@@ -71,6 +72,10 @@ def test_execution_roles_report_to_ops_layer() -> None:
         assert "do not address the user directly" in content, (
             f"{path.name} must not address the user directly"
         )
+
+    assert "dispatch packet" in (ROOT / "skills" / "implementation-worker" / "SKILL.md").read_text().lower()
+    assert "dispatch packet" in (ROOT / "skills" / "qa-runner" / "SKILL.md").read_text().lower()
+    assert "dispatch packet" in (ROOT / "skills" / "docs-sync" / "SKILL.md").read_text().lower()
 
 
 def test_review_roles_can_write_structured_review_passes() -> None:
@@ -153,6 +158,7 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
 def test_ops_orchestrator_contract_owns_dispatch_boundary() -> None:
     content = (ROOT / "skills" / "ops-orchestrator" / "SKILL.md").read_text().lower()
     assert "dispatch bounded work" in content
+    assert "dispatch packets" in content
     assert "stage advancement" in content
     assert "report only to the lead" in content
     assert "specialists receive bounded packets from ops" in content

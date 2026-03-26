@@ -166,6 +166,31 @@ def cmd_docs_sync_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_dispatch_packet(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    consumed_artifacts = "\n".join(f"- {item}" for item in args.consumed_artifact)
+    content = (
+        f"# Dispatch Packet: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Objective\n\n"
+        f"{args.objective}\n\n"
+        "## Consumed Artifacts\n\n"
+        f"{consumed_artifacts}\n\n"
+        "## Constraints\n\n"
+        f"{args.constraints}\n\n"
+        "## Expected Output\n\n"
+        f"{args.expected_output}\n\n"
+        "## Writeback Target\n\n"
+        f"{args.writeback_target}\n\n"
+        "## Completion Command\n\n"
+        f"{args.completion_command}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_gate(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     review_passes = "\n".join(f"- {item}" for item in args.review_pass)
@@ -480,6 +505,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     docs_sync_report.add_argument("--follow-ups", required=True, dest="follow_ups")
     docs_sync_report.set_defaults(func=cmd_docs_sync_report)
+
+    dispatch_packet = subparsers.add_parser(
+        "dispatch-packet",
+        help="Create a specialist dispatch packet markdown",
+    )
+    dispatch_packet.add_argument("--output", required=True)
+    dispatch_packet.add_argument("--title", required=True)
+    dispatch_packet.add_argument("--role", required=True)
+    dispatch_packet.add_argument("--objective", required=True)
+    dispatch_packet.add_argument(
+        "--consumed-artifact",
+        action="append",
+        default=[],
+        required=True,
+        dest="consumed_artifact",
+    )
+    dispatch_packet.add_argument("--constraints", required=True)
+    dispatch_packet.add_argument("--expected-output", required=True, dest="expected_output")
+    dispatch_packet.add_argument("--writeback-target", required=True, dest="writeback_target")
+    dispatch_packet.add_argument("--completion-command", required=True, dest="completion_command")
+    dispatch_packet.set_defaults(func=cmd_dispatch_packet)
 
     review_gate = subparsers.add_parser("review-gate", help="Create review gate markdown")
     review_gate.add_argument("--output", required=True)

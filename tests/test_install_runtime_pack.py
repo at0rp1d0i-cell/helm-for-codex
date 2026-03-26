@@ -68,6 +68,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "scripts" / "ops_loop.py").exists()
     assert (target / "scripts" / "role_review.py").exists()
     assert (target / "ops" / "templates" / "task-brief.md").exists()
+    assert (target / "ops" / "templates" / "dispatch-packet.md").exists()
     assert (target / "ops" / "templates" / "onboarding-state.md").exists()
     assert (target / "ops" / "templates" / "deep-scan-plan.md").exists()
     assert (target / "ops" / "checks" / "check_docs_freshness.py").exists()
@@ -153,8 +154,11 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
         "docs/plans/implementation-report-phase13-task3.md",
         "--sprint-contract-path",
         "docs/plans/sprint-contract-phase13-task3.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-phase13-task3.md",
     )
     assert build.returncode == 0, build.stderr
+    assert (target / "docs" / "plans" / "builder-dispatch-phase13-task3.md").exists()
 
     (target / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
         "# Implementation Report: Phase 13 task 3\n\n"
@@ -165,6 +169,27 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
         "## Tests Run\n\nuv run pytest tests/test_lead_loop.py -q\n\n"
         "## Follow-Ups\n\nnone\n"
     )
+
+    qa_prepare = run_runtime_lead_loop(
+        target,
+        "qa-prepare",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-packet-path",
+        "docs/plans/qa-dispatch-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "Installed runtime repo",
+        "--scenario",
+        "Run the builder-to-QA handoff from the installed runtime",
+    )
+    assert qa_prepare.returncode == 0, qa_prepare.stderr
+    assert (target / "docs" / "plans" / "qa-dispatch-phase13-task3.md").exists()
 
     qa = run_runtime_lead_loop(
         target,
@@ -190,6 +215,29 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     assert "docs/plans/sprint-contract-phase13-task3.md" in report
     assert "docs/plans/implementation-report-phase13-task3.md" in report
     assert "Run the builder-to-QA handoff from the installed runtime" in report
+
+    docs_prepare = run_runtime_lead_loop(
+        target,
+        "docs-sync-prepare",
+        "--title",
+        "Phase 13 task 3",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--docs-sync-packet-path",
+        "docs/plans/docs-sync-dispatch-phase13-task3.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task3.md",
+        "--docs-updated",
+        "docs/status/EXECUTION_BOARD.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+        "--canonical-writeback",
+        "docs/status/EXECUTION_BOARD.md",
+    )
+    assert docs_prepare.returncode == 0, docs_prepare.stderr
+    assert (target / "docs" / "plans" / "docs-sync-dispatch-phase13-task3.md").exists()
 
     docs_sync = run_runtime_lead_loop(
         target,

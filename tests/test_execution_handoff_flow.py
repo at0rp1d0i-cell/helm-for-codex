@@ -69,10 +69,35 @@ def test_build_then_qa_then_docs_sync_reaches_ship_ready_with_canonical_artifact
         "docs/plans/implementation-report-phase13-task3.md",
         "--sprint-contract-path",
         "docs/plans/sprint-contract-phase13-task3.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-phase13-task3.md",
     )
 
     assert build.returncode == 0, build.stderr
+    assert (tmp_path / "docs" / "plans" / "builder-dispatch-phase13-task3.md").exists()
     write_implementation_report(tmp_path)
+
+    qa_prepare = run_lead_loop(
+        tmp_path,
+        "qa-prepare",
+        "--title",
+        "Phase 13 task 3",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase13-task3.md",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-packet-path",
+        "docs/plans/qa-dispatch-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--environment",
+        "Fresh repo checkout",
+        "--scenario",
+        "Run builder-to-QA handoff validation",
+    )
+
+    assert qa_prepare.returncode == 0, qa_prepare.stderr
+    assert (tmp_path / "docs" / "plans" / "qa-dispatch-phase13-task3.md").exists()
 
     qa = run_lead_loop(
         tmp_path,
@@ -98,6 +123,30 @@ def test_build_then_qa_then_docs_sync_reaches_ship_ready_with_canonical_artifact
     assert "docs/plans/sprint-contract-phase13-task3.md" in qa_report
     assert "docs/plans/implementation-report-phase13-task3.md" in qa_report
     assert "Run builder-to-QA handoff validation" in qa_report
+
+    docs_prepare = run_lead_loop(
+        tmp_path,
+        "docs-sync-prepare",
+        "--title",
+        "Phase 13 task 3",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase13-task3.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-phase13-task3.md",
+        "--docs-sync-packet-path",
+        "docs/plans/docs-sync-dispatch-phase13-task3.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-phase13-task3.md",
+        "--docs-updated",
+        "docs/status/EXECUTION_BOARD.md",
+        "--canonical-writeback",
+        "docs/project/PROJECT_BRIEF.md",
+        "--canonical-writeback",
+        "docs/status/EXECUTION_BOARD.md",
+    )
+
+    assert docs_prepare.returncode == 0, docs_prepare.stderr
+    assert (tmp_path / "docs" / "plans" / "docs-sync-dispatch-phase13-task3.md").exists()
 
     docs_sync = run_lead_loop(
         tmp_path,
@@ -151,6 +200,8 @@ def test_build_then_qa_failure_loops_back_to_build(tmp_path: Path) -> None:
         "docs/plans/implementation-report-phase13-task3.md",
         "--sprint-contract-path",
         "docs/plans/sprint-contract-phase13-task3.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-phase13-task3.md",
     )
 
     assert build.returncode == 0, build.stderr

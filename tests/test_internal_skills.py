@@ -68,15 +68,19 @@ def test_runtime_builder_and_lead_skill_contracts_include_phase13_handoff_terms(
     team_lead = (ROOT / ".agents" / "skills" / "team-lead" / "SKILL.md").read_text().lower()
     assert "planner owns the sprint contract" in team_lead
     assert "build" in team_lead
+    assert "qa-prepare" in team_lead
+    assert "docs-sync-prepare" in team_lead
 
     implementation_worker = (
         ROOT / ".agents" / "skills" / "implementation-worker" / "SKILL.md"
     ).read_text().lower()
     assert "do not claim feature-branch autonomy" in implementation_worker
+    assert "dispatch packet" in implementation_worker
 
 
 def test_runtime_qa_skill_contract_includes_phase13_handoff_terms() -> None:
     content = (ROOT / ".agents" / "skills" / "qa-runner" / "SKILL.md").read_text().lower()
+    assert "dispatch packet" in content
     assert "sprint contract" in content
     assert "implementation report" in content
     assert "qa-report" in content
@@ -85,6 +89,7 @@ def test_runtime_qa_skill_contract_includes_phase13_handoff_terms() -> None:
 
 def test_runtime_docs_sync_skill_contract_includes_phase13_handoff_terms() -> None:
     content = (ROOT / ".agents" / "skills" / "docs-sync" / "SKILL.md").read_text().lower()
+    assert "dispatch packet" in content
     assert "implementation report" in content
     assert "qa report" in content
     assert "docs-sync report" in content
@@ -103,3 +108,4 @@ def test_ops_orchestrator_runtime_skill_declares_lead_only_reporting() -> None:
     assert "report only to the lead" in content
     assert "spawn bridge" in content
     assert "do not address the user directly" in content
+    assert "dispatch packets" in content

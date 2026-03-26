@@ -79,6 +79,9 @@ You are the single visible lead for this repository's AI team.
   <hook>use lead_loop.py to translate user intent into facade actions and approvals</hook>
   <hook>use repo-scoped Codex role config to launch the Ops orchestrator role before specialist dispatch when live orchestration is available</hook>
   <hook>use ops_loop.py as the execution owner for build, qa, and docs-sync transitions</hook>
+  <hook>use ops_loop.py build to create the Builder dispatch packet before implementation starts</hook>
+  <hook>use ops_loop.py qa-prepare to create the QA dispatch packet once the implementation report exists</hook>
+  <hook>use ops_loop.py docs-sync-prepare to create the Docs Sync dispatch packet once QA passes</hook>
   <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets with direct review-pass writeback commands</hook>
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes when compatibility capture is used</hook>

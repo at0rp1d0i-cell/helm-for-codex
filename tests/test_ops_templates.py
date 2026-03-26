@@ -23,6 +23,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "discovery-brief.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "sprint-contract.md",
+        ROOT / "ops" / "templates" / "dispatch-packet.md",
         ROOT / "ops" / "templates" / "implementation-report.md",
         ROOT / "ops" / "templates" / "onboarding-state.md",
         ROOT / "ops" / "templates" / "onboarding-report.md",
@@ -64,6 +65,13 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "Evaluator owns verification and writeback evidence." in sprint_contract
     assert "<evaluator_role>" in sprint_contract
     assert "<acceptance_criteria>" in sprint_contract
+
+    dispatch_packet = (ROOT / "ops" / "templates" / "dispatch-packet.md").read_text()
+    assert "# Dispatch Packet: <title>" in dispatch_packet
+    assert "<role>" in dispatch_packet
+    assert "<consumed_artifacts>" in dispatch_packet
+    assert "<writeback_target>" in dispatch_packet
+    assert "<completion_command>" in dispatch_packet
 
     implementation_report = (ROOT / "ops" / "templates" / "implementation-report.md").read_text()
     assert "# Implementation Report: <title>" in implementation_report

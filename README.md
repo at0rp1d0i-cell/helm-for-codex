@@ -29,6 +29,8 @@ The system is built on four layers:
 - `scripts/team_state.py` writes markdown artifacts such as briefs, review passes, onboarding reports, and refactor proposals.  
 - `scripts/lead_loop.py` sequences the stages (`intake → discovery → plan → build → review → qa → docs-sync → ship-ready → evolve`) and keeps `docs/status/EXECUTION_BOARD.md` up to date.
 
+Inside the execution lane, `Ops` now creates explicit dispatch packets for `Builder`, `QA`, and `Docs Sync`, so specialists consume repo-backed handoffs instead of relying only on implicit bridge context.
+
 The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
 
 Current live Codex role bindings cover `Ops Orchestrator`, `Product Reviewer`, `Architect Reviewer`, `Code Reviewer`, `Implementation Worker`, `QA Runner`, and `Docs Sync`. `Lead` is still the visible session entrypoint rather than a spawned role, while `Ops` now has both a live role surface and the repo-owned orchestration runtime in `scripts/ops_loop.py`.

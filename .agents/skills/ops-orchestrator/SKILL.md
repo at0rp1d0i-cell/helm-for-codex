@@ -17,6 +17,7 @@ Own the internal orchestration lane between the user-facing Lead and the special
 
 <expected_output>
 <section>dispatch decision for the next bounded specialist task</section>
+<section>specialist dispatch packets for Builder, QA, and Docs Sync when the handoff chain advances</section>
 <section>repo-backed execution artifact updates through scripts/ops_loop.py and scripts/team_state.py</section>
 <section>gate result, escalation recommendation, or stage advancement outcome</section>
 </expected_output>

@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from types import SimpleNamespace
 
-from team_state import cmd_board, cmd_sprint_contract
+from team_state import cmd_board, cmd_dispatch_packet, cmd_sprint_contract
 
 
 def _read(path: Path) -> str:
@@ -99,6 +99,34 @@ def _board_stage(root: Path, path: str) -> str:
     return _extract_section(board, "Current Stage") if board else ""
 
 
+def _write_dispatch_packet(
+    *,
+    root: Path,
+    output: str,
+    title: str,
+    role: str,
+    objective: str,
+    consumed_artifact: list[str],
+    constraints: str,
+    expected_output: str,
+    writeback_target: str,
+    completion_command: str,
+) -> int:
+    dispatch_args = SimpleNamespace(
+        root=root,
+        output=output,
+        title=title,
+        role=role,
+        objective=objective,
+        consumed_artifact=consumed_artifact,
+        constraints=constraints,
+        expected_output=expected_output,
+        writeback_target=writeback_target,
+        completion_command=completion_command,
+    )
+    return cmd_dispatch_packet(dispatch_args)
+
+
 def cmd_build(args: argparse.Namespace) -> int:
     sprint_args = SimpleNamespace(
         root=args.root,
@@ -121,7 +149,57 @@ def cmd_build(args: argparse.Namespace) -> int:
     if rc != 0:
         return rc
 
+    rc = _write_dispatch_packet(
+        root=args.root,
+        output=args.builder_packet_path,
+        title=f"{args.title} builder dispatch",
+        role="Builder",
+        objective=args.generator,
+        consumed_artifact=[args.sprint_contract_path],
+        constraints=f"{args.scope}\n\nAcceptance contract:\n{args.acceptance}",
+        expected_output=f"Implementation report at {args.implementation_report_path}",
+        writeback_target=args.implementation_report_path,
+        completion_command=(
+            "Return the implementation handoff by writing the implementation report to "
+            f"{args.implementation_report_path}"
+        ),
+    )
+    if rc != 0:
+        return rc
+
     return _update_board(args.root, args.board_path, "build", [args.title])
+
+
+def cmd_qa_prepare(args: argparse.Namespace) -> int:
+    sprint_contract = _resolve_path(args.root, args.sprint_contract_path)
+    implementation_report = _resolve_path(args.root, args.implementation_report_path)
+    if not sprint_contract.exists():
+        raise FileNotFoundError(f"Missing sprint contract: {sprint_contract}")
+    if not implementation_report.exists():
+        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
+    _assert_consumed_sprint_contract(
+        args.root,
+        args.sprint_contract_path,
+        implementation_report,
+    )
+    return _write_dispatch_packet(
+        root=args.root,
+        output=args.qa_packet_path,
+        title=f"{args.title} QA dispatch",
+        role="QA",
+        objective="Validate the bounded task against the sprint contract and implementation report.",
+        consumed_artifact=[args.sprint_contract_path, args.implementation_report_path],
+        constraints=(
+            f"Environment: {args.environment}\n\n"
+            f"Scenarios:\n" + "\n".join(f"- {item}" for item in args.scenario)
+        ),
+        expected_output=f"QA report at {args.qa_report_path}",
+        writeback_target=args.qa_report_path,
+        completion_command=(
+            "Return QA findings by writing the QA report to "
+            f"{args.qa_report_path}"
+        ),
+    )
 
 
 def cmd_qa(args: argparse.Namespace) -> int:
@@ -223,6 +301,47 @@ def cmd_docs_sync(args: argparse.Namespace) -> int:
     return _update_board(args.root, args.board_path, "ship-ready", [args.title])
 
 
+def cmd_docs_sync_prepare(args: argparse.Namespace) -> int:
+    implementation_report = _resolve_path(args.root, args.implementation_report_path)
+    qa_report = _resolve_path(args.root, args.qa_report_path)
+    if not implementation_report.exists():
+        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
+    if not qa_report.exists():
+        raise FileNotFoundError(f"Missing QA report: {qa_report}")
+    qa_content = _read(qa_report)
+    verification_status = _normalize_verification_status(
+        _first_nonempty_line(_extract_section(qa_content, "Verification Status")),
+    )
+    if verification_status != "passed":
+        raise ValueError("QA report verification status must be passed before docs-sync prepare can proceed.")
+
+    canonical_targets = _normalize_repo_backed_targets(
+        args.canonical_writeback,
+        label="Canonical writeback targets",
+    )
+    docs_targets = args.docs_updated if args.docs_updated else ["none"]
+    return _write_dispatch_packet(
+        root=args.root,
+        output=args.docs_sync_packet_path,
+        title=f"{args.title} docs-sync dispatch",
+        role="Docs Sync",
+        objective="Sync canonical project state after QA passes without creating new scope.",
+        consumed_artifact=[args.implementation_report_path, args.qa_report_path],
+        constraints=(
+            "Docs updated:\n"
+            + "\n".join(f"- {item}" for item in docs_targets)
+            + "\n\nCanonical writeback targets:\n"
+            + "\n".join(f"- {item}" for item in canonical_targets)
+        ),
+        expected_output=f"Docs sync report at {args.docs_sync_report_path}",
+        writeback_target=args.docs_sync_report_path,
+        completion_command=(
+            "Return docs-sync evidence by writing the docs-sync report to "
+            f"{args.docs_sync_report_path}"
+        ),
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Explicit ops orchestration loop")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
@@ -244,8 +363,26 @@ def build_parser() -> argparse.ArgumentParser:
         dest="implementation_report_path",
     )
     build.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
+    build.add_argument("--builder-packet-path", required=True, dest="builder_packet_path")
     build.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     build.set_defaults(func=cmd_build)
+
+    qa_prepare = subparsers.add_parser(
+        "qa-prepare",
+        help="Create the QA dispatch packet once the implementation report exists",
+    )
+    qa_prepare.add_argument("--title", required=True)
+    qa_prepare.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
+    qa_prepare.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    qa_prepare.add_argument("--qa-packet-path", required=True, dest="qa_packet_path")
+    qa_prepare.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    qa_prepare.add_argument("--environment", required=True)
+    qa_prepare.add_argument("--scenario", action="append", default=[], required=True)
+    qa_prepare.set_defaults(func=cmd_qa_prepare)
 
     qa = subparsers.add_parser(
         "qa",
@@ -265,6 +402,37 @@ def build_parser() -> argparse.ArgumentParser:
     qa.add_argument("--verification-status", required=True, dest="verification_status")
     qa.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     qa.set_defaults(func=cmd_qa)
+
+    docs_sync_prepare = subparsers.add_parser(
+        "docs-sync-prepare",
+        help="Create the docs-sync dispatch packet once QA has passed",
+    )
+    docs_sync_prepare.add_argument("--title", required=True)
+    docs_sync_prepare.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    docs_sync_prepare.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    docs_sync_prepare.add_argument(
+        "--docs-sync-packet-path",
+        required=True,
+        dest="docs_sync_packet_path",
+    )
+    docs_sync_prepare.add_argument(
+        "--docs-sync-report-path",
+        required=True,
+        dest="docs_sync_report_path",
+    )
+    docs_sync_prepare.add_argument("--docs-updated", action="append", default=[], dest="docs_updated")
+    docs_sync_prepare.add_argument(
+        "--canonical-writeback",
+        action="append",
+        default=[],
+        required=True,
+        dest="canonical_writeback",
+    )
+    docs_sync_prepare.set_defaults(func=cmd_docs_sync_prepare)
 
     docs_sync = subparsers.add_parser(
         "docs-sync",

@@ -10,6 +10,7 @@ Act as the final consistency-evaluator and writeback lane after QA passes. Keep 
 </mission>
 
 <inputs>
+<input>Docs Sync dispatch packet from Ops, naming the consumed implementation report, QA report, and canonical writeback targets.</input>
 <input>Implementation report packet from Ops for the bounded task.</input>
 <input>QA report packet from Ops that validated the implementation report against the sprint contract.</input>
 <input>Current canonical docs and execution board state.</input>
@@ -38,5 +39,5 @@ Act as the final consistency-evaluator and writeback lane after QA passes. Keep 
 </non_goals>
 
 <reporting>
-Report only to Ops. Do not address the user directly. Evaluate the repo-backed handoff artifacts, write the docs-sync report for Ops, and leave user-facing communication to the lead.
+Report only to Ops. Do not address the user directly. Consume the docs-sync dispatch packet, evaluate the repo-backed handoff artifacts, write the docs-sync report for Ops, and leave user-facing communication to the lead.
 </reporting>
