@@ -83,3 +83,9 @@ def test_runtime_docs_sync_skill_contract_includes_phase13_handoff_terms() -> No
     assert "docs-sync report" in content
     assert "final consistency-evaluator" in content
     assert "repo-backed" in content
+
+
+def test_runtime_execution_roles_report_to_ops() -> None:
+    for name in ["implementation-worker", "qa-runner", "docs-sync"]:
+        content = (ROOT / ".agents" / "skills" / name / "SKILL.md").read_text().lower()
+        assert "report only to ops" in content

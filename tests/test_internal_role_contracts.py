@@ -34,7 +34,9 @@ def test_internal_roles_use_xml_like_contracts() -> None:
         assert "<section>" in content, f"{path.name} missing structured output sections"
         assert "<target>" in content, f"{path.name} missing writeback targets"
         assert "<item>" in content, f"{path.name} missing non-goal items"
-        assert "lead" in content.lower(), f"{path.name} must mention lead reporting"
+        assert "lead" in content.lower() or "ops" in content.lower(), (
+            f"{path.name} must mention lead or ops reporting"
+        )
         assert "do not address the user directly" in content.lower(), (
             f"{path.name} must explicitly prevent direct user-facing voice"
         )
@@ -52,6 +54,22 @@ def test_implementation_worker_contract_requires_sprint_contract_and_report_path
     assert "planner" in content
     assert "bounded task" in content
     assert "do not claim feature-branch autonomy" in content
+    assert "report only to ops" in content
+
+
+def test_execution_roles_report_to_ops_layer() -> None:
+    execution_roles = [
+        ROOT / "skills" / "implementation-worker" / "SKILL.md",
+        ROOT / "skills" / "qa-runner" / "SKILL.md",
+        ROOT / "skills" / "docs-sync" / "SKILL.md",
+    ]
+
+    for path in execution_roles:
+        content = path.read_text().lower()
+        assert "report only to ops" in content, f"{path.name} should report to ops"
+        assert "do not address the user directly" in content, (
+            f"{path.name} must not address the user directly"
+        )
 
 
 def test_review_roles_can_write_structured_review_passes() -> None:
