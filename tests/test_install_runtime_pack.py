@@ -54,6 +54,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
 
     assert (target / "scripts" / "team_state.py").exists()
     assert (target / "scripts" / "lead_loop.py").exists()
+    assert (target / "scripts" / "ops_loop.py").exists()
     assert (target / "scripts" / "role_review.py").exists()
     assert (target / "ops" / "templates" / "task-brief.md").exists()
     assert (target / "ops" / "templates" / "onboarding-state.md").exists()

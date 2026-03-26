@@ -22,6 +22,7 @@ MODULE_CONTRACT_DOCS = [
 RUNTIME_SCRIPTS = [
     "scripts/team_state.py",
     "scripts/lead_loop.py",
+    "scripts/ops_loop.py",
     "scripts/role_review.py",
 ]
 RUNTIME_DIRS = [
