@@ -64,11 +64,13 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "ops/templates/review-packet.md",
         "ops/templates/review-result.md",
         ".codex/config.toml",
+        ".codex/role_bridge.toml",
         ".codex/roles/",
         "ops-orchestrator",
         "scripts/team_state.py",
         "scripts/lead_loop.py",
         "scripts/ops_loop.py",
+        "scripts/role_bridge.py",
         "scripts/role_review.py",
         "discover",
         "plan",
@@ -123,6 +125,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert "user-facing facade" in content.lower()
     assert "does not dispatch specialist work directly" in content.lower()
     assert "routes execution through ops_loop.py" in content.lower()
+    assert "role bridge" in content.lower()
     assert "ops" in content.lower()
 
 

@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 14 baseline complete: the repository now has a true three-layer runtime surface for installed Codex use, with `Lead` as the visible entrypoint, `Ops` as a live internal orchestrator role plus repo-owned runtime, and specialist roles for review and bounded execution.
+Phase 15 baseline complete: the repository now keeps repo role names canonical through a role invocation bridge, so `Lead` and `Ops` dispatch `ops-orchestrator`, `implementation-worker`, `qa-runner`, and the review roles first, then resolve them to the currently available generic agent API only at the last hop.
 
 ## Success Criteria
 
@@ -21,4 +21,5 @@ Phase 14 baseline complete: the repository now has a true three-layer runtime su
 - repo-scoped Codex role config exists for the live orchestration, review, and execution roles
 - review-result compatibility remains available
 - `Ops` now has a live repo-scoped role surface in addition to the repo-owned `scripts/ops_loop.py` runtime
+- role invocation bridge exists and is wired into execution dispatch packets
 - repo validation passes

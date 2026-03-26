@@ -175,5 +175,40 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     assert "- Ops task" in board
 
 
+def test_ops_loop_dispatch_packets_include_logical_role_bridge(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    build = run_ops_loop(
+        tmp_path,
+        "build",
+        "--title",
+        "Ops bridge task",
+        "--planner",
+        "Lead approved a bounded task.",
+        "--generator",
+        "Builder implements the approved task.",
+        "--evaluator",
+        "QA and docs-sync evaluate the handoff chain.",
+        "--scope",
+        "Exercise bridge-aware dispatch packets only.",
+        "--acceptance",
+        "Builder packet must name the logical role and bridge resolution.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-ops-bridge.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-ops-bridge.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-ops-bridge.md",
+    )
+    assert build.returncode == 0, build.stderr
+
+    builder_packet = (tmp_path / "docs" / "plans" / "builder-dispatch-ops-bridge.md").read_text()
+    assert "## Logical Role" in builder_packet
+    assert "implementation-worker" in builder_packet
+    assert "## Invocation Bridge" in builder_packet
+    assert "- agent_type: worker" in builder_packet
+    assert "- model: gpt-5.4" in builder_packet
+
+
 def test_ops_loop_exists_for_repo_runtime() -> None:
     assert SCRIPT.exists()

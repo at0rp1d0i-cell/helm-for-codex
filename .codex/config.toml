@@ -10,3 +10,4 @@
 [packages]
 default_skill_path = ".agents/skills"
 onboarding_state = "docs/status/ONBOARDING_STATE.md"
+role_bridge = "role_bridge.toml"

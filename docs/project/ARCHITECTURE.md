@@ -18,6 +18,7 @@
 - skills
 - repo-local `.agents/skills`
 - codex role config
+- role invocation bridge
 - source skills mirror
 - ops orchestrator role
 - review packets
@@ -34,6 +35,7 @@
 - installed onboarding currently requires an explicit `init --force` because the installer bootstraps onboarding state immediately
 - source `skills/` and repo-local `.agents/skills/` must stay synchronized
 - `Lead` remains the only user-facing entrypoint, while `Ops` owns logical dispatch and stage advancement behind that facade
+- canonical repo role names are resolved through `.codex/role_bridge.toml` and `scripts/role_bridge.py` before the last-hop agent invocation
 - direct role-owned canonical review-pass writeback is the preferred live review path and works after runtime install
 - Ops, Product, Architect, Reviewer, Implementation Worker, QA Runner, and Docs Sync live roles are defined in repo-scoped Codex config
 - review-result remains supported as a compatibility and recovery path

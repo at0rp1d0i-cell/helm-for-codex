@@ -69,6 +69,10 @@ def test_ops_templates_and_checks_exist() -> None:
     dispatch_packet = (ROOT / "ops" / "templates" / "dispatch-packet.md").read_text()
     assert "# Dispatch Packet: <title>" in dispatch_packet
     assert "<role>" in dispatch_packet
+    assert "<logical_role>" in dispatch_packet
+    assert "<bridge_agent_type>" in dispatch_packet
+    assert "<bridge_model>" in dispatch_packet
+    assert "<bridge_reasoning_effort>" in dispatch_packet
     assert "<consumed_artifacts>" in dispatch_packet
     assert "<writeback_target>" in dispatch_packet
     assert "<completion_command>" in dispatch_packet

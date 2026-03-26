@@ -37,6 +37,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
 
     assert (target / "AGENTS.md").exists()
     assert (target / ".codex" / "config.toml").exists()
+    assert (target / ".codex" / "role_bridge.toml").exists()
     assert (target / ".codex" / "roles" / "ops-orchestrator.toml").exists()
     assert (target / ".codex" / "roles" / "product-reviewer.toml").exists()
     assert (target / ".codex" / "roles" / "architect-reviewer.toml").exists()
@@ -66,6 +67,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "scripts" / "team_state.py").exists()
     assert (target / "scripts" / "lead_loop.py").exists()
     assert (target / "scripts" / "ops_loop.py").exists()
+    assert (target / "scripts" / "role_bridge.py").exists()
     assert (target / "scripts" / "role_review.py").exists()
     assert (target / "ops" / "templates" / "task-brief.md").exists()
     assert (target / "ops" / "templates" / "dispatch-packet.md").exists()
@@ -159,6 +161,9 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     )
     assert build.returncode == 0, build.stderr
     assert (target / "docs" / "plans" / "builder-dispatch-phase13-task3.md").exists()
+    builder_packet = (target / "docs" / "plans" / "builder-dispatch-phase13-task3.md").read_text()
+    assert "implementation-worker" in builder_packet
+    assert "- agent_type: worker" in builder_packet
 
     (target / "docs" / "plans" / "implementation-report-phase13-task3.md").write_text(
         "# Implementation Report: Phase 13 task 3\n\n"
@@ -190,6 +195,9 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     )
     assert qa_prepare.returncode == 0, qa_prepare.stderr
     assert (target / "docs" / "plans" / "qa-dispatch-phase13-task3.md").exists()
+    qa_packet = (target / "docs" / "plans" / "qa-dispatch-phase13-task3.md").read_text()
+    assert "qa-runner" in qa_packet
+    assert "- agent_type: worker" in qa_packet
 
     qa = run_runtime_lead_loop(
         target,
@@ -238,6 +246,9 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     )
     assert docs_prepare.returncode == 0, docs_prepare.stderr
     assert (target / "docs" / "plans" / "docs-sync-dispatch-phase13-task3.md").exists()
+    docs_packet = (target / "docs" / "plans" / "docs-sync-dispatch-phase13-task3.md").read_text()
+    assert "docs-sync" in docs_packet
+    assert "- agent_type: worker" in docs_packet
 
     docs_sync = run_runtime_lead_loop(
         target,

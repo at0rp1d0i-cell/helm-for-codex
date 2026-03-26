@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from types import SimpleNamespace
 
+from role_bridge import resolve_role
 from team_state import cmd_board, cmd_dispatch_packet, cmd_sprint_contract
 
 
@@ -104,7 +105,7 @@ def _write_dispatch_packet(
     root: Path,
     output: str,
     title: str,
-    role: str,
+    logical_role: str,
     objective: str,
     consumed_artifact: list[str],
     constraints: str,
@@ -112,11 +113,16 @@ def _write_dispatch_packet(
     writeback_target: str,
     completion_command: str,
 ) -> int:
+    resolved_role = resolve_role(root, logical_role)
     dispatch_args = SimpleNamespace(
         root=root,
         output=output,
         title=title,
-        role=role,
+        role=resolved_role["display_name"],
+        logical_role=resolved_role["logical_role"],
+        bridge_agent_type=resolved_role["agent_type"],
+        bridge_model=resolved_role["model"],
+        bridge_reasoning_effort=resolved_role["reasoning_effort"],
         objective=objective,
         consumed_artifact=consumed_artifact,
         constraints=constraints,
@@ -153,7 +159,7 @@ def cmd_build(args: argparse.Namespace) -> int:
         root=args.root,
         output=args.builder_packet_path,
         title=f"{args.title} builder dispatch",
-        role="Builder",
+        logical_role="implementation-worker",
         objective=args.generator,
         consumed_artifact=[args.sprint_contract_path],
         constraints=f"{args.scope}\n\nAcceptance contract:\n{args.acceptance}",
@@ -186,7 +192,7 @@ def cmd_qa_prepare(args: argparse.Namespace) -> int:
         root=args.root,
         output=args.qa_packet_path,
         title=f"{args.title} QA dispatch",
-        role="QA",
+        logical_role="qa-runner",
         objective="Validate the bounded task against the sprint contract and implementation report.",
         consumed_artifact=[args.sprint_contract_path, args.implementation_report_path],
         constraints=(
@@ -324,7 +330,7 @@ def cmd_docs_sync_prepare(args: argparse.Namespace) -> int:
         root=args.root,
         output=args.docs_sync_packet_path,
         title=f"{args.title} docs-sync dispatch",
-        role="Docs Sync",
+        logical_role="docs-sync",
         objective="Sync canonical project state after QA passes without creating new scope.",
         consumed_artifact=[args.implementation_report_path, args.qa_report_path],
         constraints=(

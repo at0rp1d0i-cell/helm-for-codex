@@ -37,5 +37,5 @@ Own the internal orchestration lane between the user-facing Lead and the special
 </non_goals>
 
 <reporting>
-Report only to the Lead. Use a spawn bridge when direct nested subagent execution is unavailable, but keep logical dispatch ownership inside Ops. Specialists receive bounded packets from Ops rather than direct user-facing instructions from the Lead.
+Report only to the Lead. Resolve canonical repo role names through `scripts/role_bridge.py` and `.codex/role_bridge.toml` before the last-hop agent invocation. Use a spawn bridge when direct nested subagent execution is unavailable, but keep logical dispatch ownership inside Ops. Specialists receive bounded packets from Ops rather than direct user-facing instructions from the Lead.
 </reporting>

@@ -26,6 +26,7 @@ The system is built on four layers:
 
 - `AGENTS.md` describes the operating guide and canonical state.  
 - `.codex/config.toml` plus `.codex/roles/*.toml` bind the live orchestration, review, and execution roles to their latest installed skills.  
+- `.codex/role_bridge.toml` plus `scripts/role_bridge.py` keep repo role names canonical and resolve them to the currently available generic agent API surface.  
 - `scripts/team_state.py` writes markdown artifacts such as briefs, review passes, onboarding reports, and refactor proposals.  
 - `scripts/lead_loop.py` sequences the stages (`intake → discovery → plan → build → review → qa → docs-sync → ship-ready → evolve`) and keeps `docs/status/EXECUTION_BOARD.md` up to date.
 
@@ -34,6 +35,8 @@ Inside the execution lane, `Ops` now creates explicit dispatch packets for `Buil
 The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
 
 Current live Codex role bindings cover `Ops Orchestrator`, `Product Reviewer`, `Architect Reviewer`, `Code Reviewer`, `Implementation Worker`, `QA Runner`, and `Docs Sync`. `Lead` is still the visible session entrypoint rather than a spawned role, while `Ops` now has both a live role surface and the repo-owned orchestration runtime in `scripts/ops_loop.py`.
+
+Because the underlying session tool still exposes only generic agent types such as `worker` and `explorer`, the runtime now treats repo role names as the canonical orchestration surface and compiles them through the role bridge at the last hop. In other words, the real team roles live in the repo even when the final tool call still has to use a generic agent class.
 
 ## Agent Work Granularity
 
@@ -67,7 +70,7 @@ When installed, Codex only relies on:
 
 - `AGENTS.md` for guidance  
 - `.agents/skills` for role skills  
-- `.codex/config.toml` and `.codex/roles/*.toml` for live role bindings  
+- `.codex/config.toml`, `.codex/roles/*.toml`, and `.codex/role_bridge.toml` for live role bindings and logical-role-to-agent resolution  
 - canonical docs under `docs/project/` and `docs/status/` for state  
 
 Plans, tests, and design docs stay in the source repo so this runtime pack can keep evolving without dragging every historical artifact into target projects.

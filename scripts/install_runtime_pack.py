@@ -23,6 +23,7 @@ RUNTIME_SCRIPTS = [
     "scripts/team_state.py",
     "scripts/lead_loop.py",
     "scripts/ops_loop.py",
+    "scripts/role_bridge.py",
     "scripts/role_review.py",
 ]
 RUNTIME_DIRS = [
@@ -66,6 +67,7 @@ def install_codex_config(target: Path) -> None:
     codex_dir = target / ".codex"
     codex_dir.mkdir(parents=True, exist_ok=True)
     _copy_file(ROOT / ".codex" / "config.toml", codex_dir / "config.toml")
+    _copy_file(ROOT / ".codex" / "role_bridge.toml", codex_dir / "role_bridge.toml")
     (codex_dir / "roles").mkdir(parents=True, exist_ok=True)
     for role in sorted((ROOT / ".codex" / "roles").glob("*.toml")):
         _copy_file(role, codex_dir / "roles" / role.name)

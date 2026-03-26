@@ -186,6 +186,14 @@ def test_dispatch_packet_command_writes_markdown(tmp_path: Path) -> None:
         "Task 1 builder dispatch",
         "--role",
         "Builder",
+        "--logical-role",
+        "implementation-worker",
+        "--bridge-agent-type",
+        "worker",
+        "--bridge-model",
+        "gpt-5.4",
+        "--bridge-reasoning-effort",
+        "high",
         "--objective",
         "Implement the bounded task only.",
         "--consumed-artifact",
@@ -205,6 +213,12 @@ def test_dispatch_packet_command_writes_markdown(tmp_path: Path) -> None:
     content = out.read_text()
     assert "# Dispatch Packet: Task 1 builder dispatch" in content
     assert "## Role" in content
+    assert "## Logical Role" in content
+    assert "implementation-worker" in content
+    assert "## Invocation Bridge" in content
+    assert "- agent_type: worker" in content
+    assert "- model: gpt-5.4" in content
+    assert "- reasoning_effort: high" in content
     assert "## Consumed Artifacts" in content
     assert "docs/plans/sprint-contract-demo.md" in content
     assert "## Writeback Target" in content

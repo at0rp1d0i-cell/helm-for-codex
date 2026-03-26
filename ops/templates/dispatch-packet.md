@@ -4,6 +4,16 @@
 
 <role>
 
+## Logical Role
+
+<logical_role>
+
+## Invocation Bridge
+
+- agent_type: <bridge_agent_type>
+- model: <bridge_model>
+- reasoning_effort: <bridge_reasoning_effort>
+
 ## Objective
 
 <objective>

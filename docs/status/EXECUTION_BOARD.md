@@ -8,7 +8,7 @@ ship-ready
 
 ## Active Work
 
-- Land the live Ops orchestrator role surface and prepare the next orchestration tranche
+- Prepare direct live role dispatch on top of the new role invocation bridge
 
 ## Completed
 
@@ -64,3 +64,4 @@ ship-ready
 - rebind builder, QA, and docs-sync contracts to Ops ownership
 - add live execution role configs for builder, QA, and docs-sync
 - add a live Ops orchestrator role surface
+- add a repo-backed role invocation bridge for logical role dispatch

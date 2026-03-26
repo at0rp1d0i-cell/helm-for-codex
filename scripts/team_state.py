@@ -169,10 +169,19 @@ def cmd_docs_sync_report(args: argparse.Namespace) -> int:
 def cmd_dispatch_packet(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     consumed_artifacts = "\n".join(f"- {item}" for item in args.consumed_artifact)
+    bridge_agent_type = args.bridge_agent_type or "unresolved"
+    bridge_model = args.bridge_model or "unresolved"
+    bridge_reasoning_effort = args.bridge_reasoning_effort or "unresolved"
     content = (
         f"# Dispatch Packet: {args.title}\n\n"
         "## Role\n\n"
         f"{args.role}\n\n"
+        "## Logical Role\n\n"
+        f"{args.logical_role}\n\n"
+        "## Invocation Bridge\n\n"
+        f"- agent_type: {bridge_agent_type}\n"
+        f"- model: {bridge_model}\n"
+        f"- reasoning_effort: {bridge_reasoning_effort}\n\n"
         "## Objective\n\n"
         f"{args.objective}\n\n"
         "## Consumed Artifacts\n\n"
@@ -513,6 +522,10 @@ def build_parser() -> argparse.ArgumentParser:
     dispatch_packet.add_argument("--output", required=True)
     dispatch_packet.add_argument("--title", required=True)
     dispatch_packet.add_argument("--role", required=True)
+    dispatch_packet.add_argument("--logical-role", required=True, dest="logical_role")
+    dispatch_packet.add_argument("--bridge-agent-type", dest="bridge_agent_type")
+    dispatch_packet.add_argument("--bridge-model", dest="bridge_model")
+    dispatch_packet.add_argument("--bridge-reasoning-effort", dest="bridge_reasoning_effort")
     dispatch_packet.add_argument("--objective", required=True)
     dispatch_packet.add_argument(
         "--consumed-artifact",

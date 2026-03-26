@@ -70,6 +70,8 @@ def test_runtime_builder_and_lead_skill_contracts_include_phase13_handoff_terms(
     assert "build" in team_lead
     assert "qa-prepare" in team_lead
     assert "docs-sync-prepare" in team_lead
+    assert "role_bridge.py" in team_lead
+    assert "role bridge" in team_lead
 
     implementation_worker = (
         ROOT / ".agents" / "skills" / "implementation-worker" / "SKILL.md"
@@ -107,5 +109,7 @@ def test_ops_orchestrator_runtime_skill_declares_lead_only_reporting() -> None:
     content = (ROOT / ".agents" / "skills" / "ops-orchestrator" / "SKILL.md").read_text().lower()
     assert "report only to the lead" in content
     assert "spawn bridge" in content
+    assert "role_bridge.py" in content
+    assert ".codex/role_bridge.toml" in content
     assert "do not address the user directly" in content
     assert "dispatch packets" in content
