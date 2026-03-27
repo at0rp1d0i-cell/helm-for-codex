@@ -65,6 +65,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / ".agents" / "skills" / "team-lead" / "agents" / "openai.yaml").exists()
 
     assert (target / "scripts" / "team_state.py").exists()
+    assert (target / "scripts" / "bridge_runner.py").exists()
     assert (target / "scripts" / "lead_loop.py").exists()
     assert (target / "scripts" / "ops_loop.py").exists()
     assert (target / "scripts" / "role_bridge.py").exists()
@@ -256,6 +257,16 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     docs_packet = (target / "docs" / "plans" / "docs-sync-dispatch-phase13-task3.md").read_text()
     assert "docs-sync" in docs_packet
     assert "- agent_type: worker" in docs_packet
+    bridge_launch = run_runtime_lead_loop(
+        target,
+        "bridge-launch",
+        "--packet-path",
+        "docs/plans/builder-dispatch-phase13-task3.md",
+        "--output",
+        "docs/plans/bridge-launches/builder.json",
+    )
+    assert bridge_launch.returncode == 0, bridge_launch.stderr
+    assert (target / "docs" / "plans" / "bridge-launches" / "builder.json").exists()
 
     docs_sync = run_runtime_lead_loop(
         target,

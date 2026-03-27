@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 from types import SimpleNamespace
 
+from bridge_runner import cmd_render as cmd_render_bridge_launch
 from role_bridge import resolve_role
 from team_state import cmd_board, cmd_dispatch_packet, cmd_invocation_spec, cmd_sprint_contract
 
@@ -383,6 +384,16 @@ def cmd_docs_sync_prepare(args: argparse.Namespace) -> int:
     )
 
 
+def cmd_bridge_launch(args: argparse.Namespace) -> int:
+    render_args = SimpleNamespace(
+        root=args.root,
+        packet_path=args.packet_path,
+        invocation_spec_path=args.invocation_spec_path or _default_invocation_spec_path(args.packet_path),
+        output=args.output,
+    )
+    return cmd_render_bridge_launch(render_args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Explicit ops orchestration loop")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
@@ -510,6 +521,15 @@ def build_parser() -> argparse.ArgumentParser:
     docs_sync.add_argument("--follow-up", action="append", default=[], dest="follow_up")
     docs_sync.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     docs_sync.set_defaults(func=cmd_docs_sync)
+
+    bridge_launch = subparsers.add_parser(
+        "bridge-launch",
+        help="Render a reusable last-hop launch payload from a packet plus invocation spec",
+    )
+    bridge_launch.add_argument("--packet-path", required=True, dest="packet_path")
+    bridge_launch.add_argument("--invocation-spec-path", dest="invocation_spec_path")
+    bridge_launch.add_argument("--output")
+    bridge_launch.set_defaults(func=cmd_bridge_launch)
 
     return parser
 

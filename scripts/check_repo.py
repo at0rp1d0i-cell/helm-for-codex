@@ -37,6 +37,7 @@ def required_paths() -> list[Path]:
         ROOT / "ops" / "templates" / "refactor-proposal.md",
         ROOT / "ops" / "checks" / "check_docs_freshness.py",
         ROOT / "scripts" / "install_runtime_pack.py",
+        ROOT / "scripts" / "bridge_runner.py",
         ROOT / "scripts" / "ops_loop.py",
         ROOT / "scripts" / "role_bridge.py",
         ROOT / "scripts" / "team_state.py",

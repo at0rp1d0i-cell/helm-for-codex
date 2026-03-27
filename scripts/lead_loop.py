@@ -510,6 +510,20 @@ def cmd_docs_sync_prepare(args: argparse.Namespace) -> int:
     return _run_ops_loop(args, "docs-sync-prepare", command_args)
 
 
+def cmd_bridge_launch(args: argparse.Namespace) -> int:
+    command_args = [
+        "--packet-path",
+        args.packet_path,
+        *(
+            ["--invocation-spec-path", args.invocation_spec_path]
+            if args.invocation_spec_path
+            else []
+        ),
+        *(["--output", args.output] if args.output else []),
+    ]
+    return _run_ops_loop(args, "bridge-launch", command_args)
+
+
 def cmd_docs_sync(args: argparse.Namespace) -> int:
     command_args = [
         "--title",
@@ -773,6 +787,15 @@ def build_parser() -> argparse.ArgumentParser:
         dest="canonical_writeback",
     )
     docs_sync_prepare.set_defaults(func=cmd_docs_sync_prepare)
+
+    bridge_launch = subparsers.add_parser(
+        "bridge-launch",
+        help="Route a packet plus invocation spec through Ops to render a last-hop launch payload",
+    )
+    bridge_launch.add_argument("--packet-path", required=True, dest="packet_path")
+    bridge_launch.add_argument("--invocation-spec-path", dest="invocation_spec_path")
+    bridge_launch.add_argument("--output")
+    bridge_launch.set_defaults(func=cmd_bridge_launch)
 
     docs_sync = subparsers.add_parser(
         "docs-sync",

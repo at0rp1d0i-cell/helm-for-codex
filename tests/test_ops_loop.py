@@ -1,6 +1,7 @@
 import subprocess
 import sys
 from pathlib import Path
+import json
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -231,3 +232,43 @@ def test_ops_loop_dispatch_packets_include_logical_role_bridge(tmp_path: Path) -
 
 def test_ops_loop_exists_for_repo_runtime() -> None:
     assert SCRIPT.exists()
+
+
+def test_ops_loop_bridge_launch_renders_launch_payload(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    build = run_ops_loop(
+        tmp_path,
+        "build",
+        "--title",
+        "Ops bridge launch task",
+        "--planner",
+        "Lead approved a bounded task.",
+        "--generator",
+        "Builder implements the approved task.",
+        "--evaluator",
+        "QA and docs-sync evaluate the handoff chain.",
+        "--scope",
+        "Exercise the bridge launch runtime.",
+        "--acceptance",
+        "Ops can compile a reusable last-hop payload.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-ops-launch.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-ops-launch.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-ops-launch.md",
+    )
+    assert build.returncode == 0, build.stderr
+
+    launch = run_ops_loop(
+        tmp_path,
+        "bridge-launch",
+        "--packet-path",
+        "docs/plans/builder-dispatch-ops-launch.md",
+    )
+    assert launch.returncode == 0, launch.stderr
+    payload = json.loads(launch.stdout)
+    assert payload["logical_role"] == "implementation-worker"
+    assert payload["agent_type"] == "worker"
+    assert "builder-dispatch-ops-launch.md" in payload["launch_message"]

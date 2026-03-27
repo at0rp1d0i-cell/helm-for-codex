@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 17 baseline complete: the repository now pairs execution dispatch packets and live review packets with repo-backed invocation specs, so Ops can own specialist dispatch while the final bridge hop remains explicit about generic agent type, runtime skill binding, and expected writeback.
+Phase 18 baseline complete: the repository now compiles packet plus invocation-spec pairs through a reusable bridge runner, so Ops can hand the last-hop specialist launch to a shared runtime instead of reconstructing generic-agent payloads lane by lane.
 
 ## Success Criteria
 
@@ -25,4 +25,6 @@ Phase 17 baseline complete: the repository now pairs execution dispatch packets 
 - role invocation bridge now also resolves the live review lane packets for Product, Architect, and Reviewer
 - execution dispatch packets and live review packets now include runtime role binding details from the repo role config
 - execution dispatch packets and live review packets now get paired invocation specs for the final bridge hop
+- a reusable `scripts/bridge_runner.py` can validate packet/spec pairs and render a last-hop launch payload
+- `lead_loop.py bridge-launch` and `ops_loop.py bridge-launch` expose that bridge runner without pulling dispatch ownership back into the Lead
 - repo validation passes

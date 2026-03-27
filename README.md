@@ -33,6 +33,7 @@ The system is built on four layers:
 Inside the execution lane, `Ops` now creates explicit dispatch packets for `Builder`, `QA`, and `Docs Sync`, so specialists consume repo-backed handoffs instead of relying only on implicit bridge context.
 The live review lane now does the same for `Product Reviewer`, `Architect Reviewer`, and `Code Reviewer`, so review packets carry canonical logical role names plus bridge resolution instead of only human-readable labels.
 Each live packet now has a paired invocation spec. The packet remains the bounded handoff artifact; the invocation spec carries the final bridge contract: resolved generic agent type, runtime skill path, metadata path, consumed artifacts, and expected writeback. That keeps `Ops` as the dispatch owner without pretending repo-defined roles are natively spawnable.
+`scripts/bridge_runner.py` now consumes the packet plus invocation spec pair and renders a reusable last-hop launch payload. `Ops` exposes that through `ops_loop.py bridge-launch`, so the bridge hop is compiled from repo-backed artifacts instead of reconstructed ad hoc in chat.
 
 The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
 
@@ -73,6 +74,7 @@ When installed, Codex only relies on:
 - `AGENTS.md` for guidance  
 - `.agents/skills` for role skills  
 - `.codex/config.toml`, `.codex/roles/*.toml`, and `.codex/role_bridge.toml` for live role bindings and logical-role-to-agent resolution  
+- `scripts/bridge_runner.py` plus `ops_loop.py bridge-launch` for compiling repo-backed launch payloads from packet/spec pairs  
 - canonical docs under `docs/project/` and `docs/status/` for state  
 
 Plans, tests, and design docs stay in the source repo so this runtime pack can keep evolving without dragging every historical artifact into target projects.

@@ -20,6 +20,7 @@ MODULE_CONTRACT_DOCS = [
     ("docs/status/MODULE_CONTRACTS/team-lead.md", "docs/status/MODULE_CONTRACTS/team-lead.md"),
 ]
 RUNTIME_SCRIPTS = [
+    "scripts/bridge_runner.py",
     "scripts/team_state.py",
     "scripts/lead_loop.py",
     "scripts/ops_loop.py",

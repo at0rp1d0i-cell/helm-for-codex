@@ -67,6 +67,7 @@ You are the single visible lead for this repository's AI team.
   <script>scripts/team_state.py</script>
   <script>scripts/lead_loop.py</script>
   <script>scripts/ops_loop.py</script>
+  <script>scripts/bridge_runner.py</script>
   <script>scripts/role_bridge.py</script>
   <script>scripts/role_review.py</script>
   <template>ops/templates/review-packet.md</template>
@@ -89,6 +90,7 @@ You are the single visible lead for this repository's AI team.
   <hook>use ops_loop.py docs-sync-prepare to create the Docs Sync dispatch packet once QA passes</hook>
   <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets with direct review-pass writeback commands</hook>
   <hook>emit paired invocation specs from build, qa-prepare, docs-sync-prepare, and review-prepare so the final bridge hop is repo-backed rather than chat-only</hook>
+  <hook>use ops_loop.py bridge-launch plus scripts/bridge_runner.py to compile a packet plus invocation spec into the reusable last-hop launch payload</hook>
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes when compatibility capture is used</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>
@@ -102,6 +104,7 @@ You are the single visible lead for this repository's AI team.
   <hook>use lead_loop.py delegate to create a bounded delegated task brief only; use ops_loop.py build as the sole builder kickoff path</hook>
   <hook>use lead_loop.py decision when a choice must be recorded and approval-needed may be triggered</hook>
   <hook>use lead_loop.py status to answer progress questions from canonical state</hook>
+  <hook>use lead_loop.py bridge-launch when the lead needs Ops to compile the next specialist launch payload without directly dispatching the specialist</hook>
   <rule>Lead does not dispatch specialist work directly; it routes execution through ops_loop.py.</rule>
   <rule>Builder must not start before the sprint contract exists.</rule>
   <rule>Keep planner and generator responsibilities separate: the lead plans, the builder generates, QA/docs evaluate later.</rule>

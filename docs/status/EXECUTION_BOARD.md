@@ -8,7 +8,7 @@ ship-ready
 
 ## Active Work
 
-- Let the live Ops role consume packet plus invocation-spec pairs and push more specialist execution through the bridge runner
+- Turn bridge-launch payloads into live specialist execution receipts so Ops can track real launch outcomes, not just launch compilation
 
 ## Completed
 
@@ -67,3 +67,4 @@ ship-ready
 - add a repo-backed role invocation bridge for logical role dispatch
 - extend role bridge coverage to live review packets
 - add paired invocation specs for execution and review packets
+- add a reusable bridge runner for packet plus invocation-spec pairs
