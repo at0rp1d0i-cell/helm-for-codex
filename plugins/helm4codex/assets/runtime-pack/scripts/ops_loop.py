@@ -14,8 +14,12 @@ from team_state import (
     cmd_qa_report,
     cmd_release_prep_report,
     cmd_release_gate as cmd_write_release_gate,
+    cmd_sprint_gate,
+    cmd_sprint_pass,
+    cmd_sprint_proposal,
     cmd_sprint_contract,
 )
+import role_review
 
 
 def _read(path: Path) -> str:
@@ -179,6 +183,50 @@ def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
     return cmd_board(board_args)
 
 
+def _materialize_build_kickoff(args: argparse.Namespace) -> int:
+    sprint_args = SimpleNamespace(
+        root=args.root,
+        output=args.sprint_contract_path,
+        title=args.title,
+        planner=(
+            f"{args.planner}\n\n"
+            f"Implementation report path: {args.implementation_report_path}"
+        ),
+        generator=args.generator,
+        evaluator=args.evaluator,
+        scope=args.scope,
+        acceptance=(
+            f"{args.acceptance}\n\n"
+            "Builder handoff output: "
+            f"{args.implementation_report_path}"
+        ),
+    )
+    rc = cmd_sprint_contract(sprint_args)
+    if rc != 0:
+        return rc
+
+    rc = _write_dispatch_packet(
+        root=args.root,
+        output=args.builder_packet_path,
+        invocation_spec_output=args.builder_invocation_spec_path,
+        title=f"{args.title} builder dispatch",
+        logical_role="implementation-worker",
+        objective=args.generator,
+        consumed_artifact=[args.sprint_contract_path],
+        constraints=f"{args.scope}\n\nAcceptance contract:\n{args.acceptance}",
+        expected_output=f"Implementation report at {args.implementation_report_path}",
+        writeback_target=args.implementation_report_path,
+        completion_command=(
+            "Return the implementation handoff by writing the implementation report to "
+            f"{args.implementation_report_path}"
+        ),
+    )
+    if rc != 0:
+        return rc
+
+    return _update_board(args.root, args.board_path, "build", [args.title])
+
+
 def _board_stage(root: Path, path: str) -> str:
     board = _read(root / path)
     return _extract_section(board, "Current Stage") if board else ""
@@ -243,47 +291,109 @@ def _write_dispatch_packet(
 
 
 def cmd_build(args: argparse.Namespace) -> int:
-    sprint_args = SimpleNamespace(
+    return _materialize_build_kickoff(args)
+
+
+def _sprint_gate_fields(root: Path, proposal_path: str, pass_paths: list[str]) -> SimpleNamespace:
+    proposal = _read(_resolve_path(root, proposal_path))
+    scope = _extract_section(proposal, "Scope")
+    acceptance = _extract_section(proposal, "Acceptance Criteria")
+    evidence_posture = _extract_section(proposal, "Evidence Posture")
+
+    auto_decisions: list[str] = []
+    blocking_issues: list[str] = []
+    recommendations: list[str] = []
+    for relpath in pass_paths:
+        content = _read(_resolve_path(root, relpath))
+        auto_decisions.extend(_extract_list_section(content, "Auto Decisions"))
+        blocking_issues.extend(_extract_list_section(content, "Blocking Issues"))
+        recommendation = _extract_section(content, "Recommendation")
+        if recommendation:
+            recommendations.append(recommendation)
+
+    strategic_text = f"{scope}\n{acceptance}\n{evidence_posture}".lower()
+    if any(token in strategic_text for token in ["budget", "legal", "compliance", "procurement", "vendor", "third-party", "approval"]):
+        outcome = "ask-user"
+        next_step = "Escalate the strategic delivery tradeoff to the user before build."
+        unresolved_tensions = blocking_issues or ["Strategic delivery tradeoff still unresolved."]
+    elif blocking_issues:
+        outcome = "reframe-scope"
+        next_step = "Rewrite the proposal around a tighter bounded slice, then rerun sprint negotiation."
+        unresolved_tensions = blocking_issues
+    else:
+        outcome = "ready-for-build"
+        next_step = "Materialize the sprint contract and builder dispatch packet."
+        unresolved_tensions = []
+
+    negotiated_contract_changes = auto_decisions or ["No contract changes beyond the original bounded proposal."]
+    recommendation = recommendations[-1] if recommendations else next_step
+    return SimpleNamespace(
+        outcome=outcome,
+        negotiated_contract_changes=negotiated_contract_changes,
+        unresolved_tensions=unresolved_tensions,
+        recommendation=recommendation,
+        next_step=next_step,
+    )
+
+
+def cmd_sprint_negotiate(args: argparse.Namespace) -> int:
+    proposal_args = SimpleNamespace(
         root=args.root,
-        output=args.sprint_contract_path,
+        output=args.sprint_proposal_path,
         title=args.title,
-        planner=(
-            f"{args.planner}\n\n"
-            f"Implementation report path: {args.implementation_report_path}"
-        ),
-        generator=args.generator,
-        evaluator=args.evaluator,
-        scope=args.scope,
-        acceptance=(
-            f"{args.acceptance}\n\n"
-            "Builder handoff output: "
-            f"{args.implementation_report_path}"
-        ),
-    )
-    rc = cmd_sprint_contract(sprint_args)
-    if rc != 0:
-        return rc
-
-    rc = _write_dispatch_packet(
-        root=args.root,
-        output=args.builder_packet_path,
-        invocation_spec_output=args.builder_invocation_spec_path,
-        title=f"{args.title} builder dispatch",
-        logical_role="implementation-worker",
         objective=args.generator,
-        consumed_artifact=[args.sprint_contract_path],
-        constraints=f"{args.scope}\n\nAcceptance contract:\n{args.acceptance}",
-        expected_output=f"Implementation report at {args.implementation_report_path}",
-        writeback_target=args.implementation_report_path,
-        completion_command=(
-            "Return the implementation handoff by writing the implementation report to "
-            f"{args.implementation_report_path}"
-        ),
+        scope=args.scope,
+        acceptance_criteria=args.acceptance,
+        implementation_report_target=args.implementation_report_path,
+        evidence_posture=args.evidence_posture,
     )
+    rc = cmd_sprint_proposal(proposal_args)
     if rc != 0:
         return rc
 
-    return _update_board(args.root, args.board_path, "build", [args.title])
+    for role_name, output in (
+        ("Builder", args.builder_sprint_pass_path),
+        ("QA", args.qa_sprint_pass_path),
+    ):
+        role_args = SimpleNamespace(
+            root=args.root,
+            mode="sprint-contract",
+            role=role_name,
+            proposal_path=args.sprint_proposal_path,
+            output=output,
+            plan_path=None,
+            brief_path=None,
+            research_report_path=None,
+        )
+        rc = role_review.main_from_args(role_args)
+        if rc != 0:
+            return rc
+
+    gate_fields = _sprint_gate_fields(
+        args.root,
+        args.sprint_proposal_path,
+        [args.builder_sprint_pass_path, args.qa_sprint_pass_path],
+    )
+    gate_args = SimpleNamespace(
+        root=args.root,
+        output=args.sprint_gate_path,
+        title=args.title,
+        sprint_proposal=args.sprint_proposal_path,
+        sprint_pass=[args.builder_sprint_pass_path, args.qa_sprint_pass_path],
+        negotiated_contract_change=gate_fields.negotiated_contract_changes,
+        unresolved_tension=gate_fields.unresolved_tensions,
+        outcome=gate_fields.outcome,
+        next_step=gate_fields.next_step,
+    )
+    rc = cmd_sprint_gate(gate_args)
+    if rc != 0:
+        return rc
+
+    if gate_fields.outcome == "ready-for-build":
+        return _materialize_build_kickoff(args)
+    if gate_fields.outcome == "ask-user":
+        return _update_board(args.root, args.board_path, "approval-needed", [args.title])
+    return _update_board(args.root, args.board_path, "plan", [args.title])
 
 
 def cmd_qa_prepare(args: argparse.Namespace) -> int:
@@ -718,6 +828,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     build.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     build.set_defaults(func=cmd_build)
+
+    sprint_negotiate = subparsers.add_parser(
+        "sprint-negotiate",
+        help="Negotiate a sprint proposal through Builder and QA pressure before materializing build kickoff",
+    )
+    sprint_negotiate.add_argument("--title", required=True)
+    sprint_negotiate.add_argument("--planner", required=True)
+    sprint_negotiate.add_argument("--generator", required=True)
+    sprint_negotiate.add_argument("--evaluator", required=True)
+    sprint_negotiate.add_argument("--scope", required=True)
+    sprint_negotiate.add_argument("--acceptance", required=True)
+    sprint_negotiate.add_argument("--evidence-posture", required=True, dest="evidence_posture")
+    sprint_negotiate.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    sprint_negotiate.add_argument("--sprint-proposal-path", required=True, dest="sprint_proposal_path")
+    sprint_negotiate.add_argument("--builder-sprint-pass-path", required=True, dest="builder_sprint_pass_path")
+    sprint_negotiate.add_argument("--qa-sprint-pass-path", required=True, dest="qa_sprint_pass_path")
+    sprint_negotiate.add_argument("--sprint-gate-path", required=True, dest="sprint_gate_path")
+    sprint_negotiate.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
+    sprint_negotiate.add_argument("--builder-packet-path", required=True, dest="builder_packet_path")
+    sprint_negotiate.add_argument(
+        "--builder-invocation-spec-path",
+        dest="builder_invocation_spec_path",
+    )
+    sprint_negotiate.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    sprint_negotiate.set_defaults(func=cmd_sprint_negotiate)
 
     qa_prepare = subparsers.add_parser(
         "qa-prepare",

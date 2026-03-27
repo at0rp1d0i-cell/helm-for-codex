@@ -11,6 +11,7 @@ Validate user flows and regression behavior as the evaluator for the bounded tas
 
 <inputs>
 <input>QA dispatch packet from Ops, naming the sprint contract, implementation report, environment, and scenarios.</input>
+<input>The sprint contract is expected to have cleared pre-build sprint negotiation so verification scope is evaluable.</input>
 <input>Consumed sprint contract from the Ops-owned handoff.</input>
 <input>Consumed implementation report from the builder handoff.</input>
 </inputs>
@@ -34,6 +35,7 @@ Validate user flows and regression behavior as the evaluator for the bounded tas
 <item>Do not classify unverified assumptions as defects.</item>
 <item>Do not change implementation without Ops direction.</item>
 <item>Do not act as the builder; stay in the evaluator role.</item>
+<item>Do not accept sprint contracts whose verification posture is still unresolved at negotiation time.</item>
 <item>Do not claim placeholder paths are captured browser evidence.</item>
 </non_goals>
 

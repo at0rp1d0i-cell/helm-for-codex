@@ -577,6 +577,50 @@ def cmd_build(args: argparse.Namespace) -> int:
     )
 
 
+def cmd_sprint_negotiate(args: argparse.Namespace) -> int:
+    return _run_ops_loop(
+        args,
+        "sprint-negotiate",
+        [
+            "--title",
+            args.title,
+            "--planner",
+            args.planner,
+            "--generator",
+            args.generator,
+            "--evaluator",
+            args.evaluator,
+            "--scope",
+            args.scope,
+            "--acceptance",
+            args.acceptance,
+            "--evidence-posture",
+            args.evidence_posture,
+            "--implementation-report-path",
+            args.implementation_report_path,
+            "--sprint-proposal-path",
+            args.sprint_proposal_path,
+            "--builder-sprint-pass-path",
+            args.builder_sprint_pass_path,
+            "--qa-sprint-pass-path",
+            args.qa_sprint_pass_path,
+            "--sprint-gate-path",
+            args.sprint_gate_path,
+            "--sprint-contract-path",
+            args.sprint_contract_path,
+            "--builder-packet-path",
+            args.builder_packet_path,
+            *(
+                ["--builder-invocation-spec-path", args.builder_invocation_spec_path]
+                if args.builder_invocation_spec_path
+                else []
+            ),
+            "--board-path",
+            args.board_path,
+        ],
+    )
+
+
 def cmd_qa_prepare(args: argparse.Namespace) -> int:
     command_args = [
         "--title",
@@ -1397,6 +1441,32 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--builder-invocation-spec-path", dest="builder_invocation_spec_path")
     build.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     build.set_defaults(func=cmd_build)
+
+    sprint_negotiate = subparsers.add_parser(
+        "sprint-negotiate",
+        help="Negotiate a sprint proposal through Builder and QA pressure before build",
+    )
+    sprint_negotiate.add_argument("--title", required=True)
+    sprint_negotiate.add_argument("--planner", required=True)
+    sprint_negotiate.add_argument("--generator", required=True)
+    sprint_negotiate.add_argument("--evaluator", required=True)
+    sprint_negotiate.add_argument("--scope", required=True)
+    sprint_negotiate.add_argument("--acceptance", required=True)
+    sprint_negotiate.add_argument("--evidence-posture", required=True, dest="evidence_posture")
+    sprint_negotiate.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    sprint_negotiate.add_argument("--sprint-proposal-path", required=True, dest="sprint_proposal_path")
+    sprint_negotiate.add_argument("--builder-sprint-pass-path", required=True, dest="builder_sprint_pass_path")
+    sprint_negotiate.add_argument("--qa-sprint-pass-path", required=True, dest="qa_sprint_pass_path")
+    sprint_negotiate.add_argument("--sprint-gate-path", required=True, dest="sprint_gate_path")
+    sprint_negotiate.add_argument("--sprint-contract-path", required=True, dest="sprint_contract_path")
+    sprint_negotiate.add_argument("--builder-packet-path", required=True, dest="builder_packet_path")
+    sprint_negotiate.add_argument("--builder-invocation-spec-path", dest="builder_invocation_spec_path")
+    sprint_negotiate.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    sprint_negotiate.set_defaults(func=cmd_sprint_negotiate)
 
     qa_prepare = subparsers.add_parser(
         "qa-prepare",

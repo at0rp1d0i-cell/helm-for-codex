@@ -113,6 +113,52 @@ def test_build_creates_sprint_contract_and_updates_board(tmp_path: Path) -> None
     assert "- Phase 13 task 2" in board
 
 
+def test_sprint_negotiate_routes_through_ops_and_materializes_build(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "sprint-negotiate",
+        "--title",
+        "Phase 23 negotiated task",
+        "--planner",
+        "Lead proposes one bounded sprint slice.",
+        "--generator",
+        "Builder implements the bounded task only.",
+        "--evaluator",
+        "QA validates the bounded task only.",
+        "--scope",
+        "Implement one bounded sprint negotiation lane only.",
+        "--acceptance",
+        "Targeted tests verify the lane and implementation handoff.",
+        "--evidence-posture",
+        "Targeted regression evidence and QA report are required.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-phase23.md",
+        "--sprint-proposal-path",
+        "docs/plans/sprint-proposal-phase23.md",
+        "--builder-sprint-pass-path",
+        "docs/plans/sprint-passes/builder-phase23.md",
+        "--qa-sprint-pass-path",
+        "docs/plans/sprint-passes/qa-phase23.md",
+        "--sprint-gate-path",
+        "docs/plans/sprint-gate-phase23.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-phase23.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-phase23.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "docs" / "plans" / "sprint-proposal-phase23.md").exists()
+    assert (tmp_path / "docs" / "plans" / "sprint-gate-phase23.md").exists()
+    assert (tmp_path / "docs" / "plans" / "sprint-contract-phase23.md").exists()
+    assert (tmp_path / "docs" / "plans" / "builder-dispatch-phase23.md").exists()
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nbuild" in board
+    assert "- Phase 23 negotiated task" in board
+
+
 def test_qa_creates_report_and_moves_board_to_qa(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
     (tmp_path / "docs" / "plans" / "sprint-contract-phase13-task3.md").write_text(

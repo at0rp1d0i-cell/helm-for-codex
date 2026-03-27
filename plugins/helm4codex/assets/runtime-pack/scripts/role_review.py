@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 from types import SimpleNamespace
 
-from team_state import cmd_review_pass
+from team_state import cmd_review_pass, cmd_sprint_pass
 
 
 def _read(path: Path) -> str:
@@ -121,9 +121,70 @@ def _resolve_office_hours_pass(args: argparse.Namespace) -> SimpleNamespace:
     )
 
 
+def _resolve_sprint_contract_pass(args: argparse.Namespace) -> SimpleNamespace:
+    proposal = _read(args.root / args.proposal_path)
+    objective = _extract_section(proposal, "Objective")
+    scope = _extract_section(proposal, "Scope")
+    acceptance = _extract_section(proposal, "Acceptance Criteria")
+    implementation_report_target = _extract_section(proposal, "Implementation Report Target")
+    evidence_posture = _extract_section(proposal, "Evidence Posture")
+    lowered_scope = scope.lower()
+    lowered_acceptance = acceptance.lower()
+    lowered_evidence = evidence_posture.lower()
+
+    if args.role == "Builder":
+        findings = [
+            f"Scope pressure: {scope or 'missing scope'}",
+            f"Implementation handoff target: {implementation_report_target or 'missing implementation-report target'}",
+        ]
+        auto_decisions = ["Keep the implementation-report target explicit in the final sprint contract."]
+        blocking_issues: list[str] = []
+        if any(token in lowered_scope for token in ["all", "everything", "platform", "every workflow"]):
+            blocking_issues.append("Scope is too broad for one bounded implementation slice.")
+        if "bounded" not in lowered_scope and "one" not in lowered_scope:
+            blocking_issues.append("Scope does not clearly describe a bounded first slice.")
+        recommendation = (
+            "Reframe scope before build"
+            if blocking_issues
+            else "Proceed to sprint contract materialization"
+        )
+        focus = "Implementation feasibility and bounded delivery pressure"
+    else:
+        findings = [
+            f"Acceptance pressure: {acceptance or 'missing acceptance criteria'}",
+            f"Evidence posture: {evidence_posture or 'missing evidence posture'}",
+        ]
+        auto_decisions = ["Keep verification and evidence posture explicit in the final sprint contract."]
+        blocking_issues = []
+        if not any(token in lowered_acceptance for token in ["test", "verify", "report", "qa", "evidence"]):
+            blocking_issues.append("Acceptance criteria are not observable enough for QA.")
+        if not any(token in lowered_evidence for token in ["scenario", "report", "evidence", "manifest", "targeted"]):
+            blocking_issues.append("Evidence posture is too weak to support evaluator handoff.")
+        recommendation = (
+            "Tighten acceptance and evidence posture before build"
+            if blocking_issues
+            else "Proceed to sprint contract materialization"
+        )
+        focus = "Evaluability, verification readiness, and evidence pressure"
+
+    return SimpleNamespace(
+        root=args.root,
+        output=args.output,
+        title=f"{args.role} sprint pass",
+        role=args.role,
+        focus=focus,
+        finding=findings,
+        auto_decision=auto_decisions,
+        blocking_issue=blocking_issues,
+        recommendation=recommendation,
+    )
+
+
 def _resolve_role_pass(args: argparse.Namespace) -> SimpleNamespace:
     if args.mode == "office-hours":
         return _resolve_office_hours_pass(args)
+    if args.mode == "sprint-contract":
+        return _resolve_sprint_contract_pass(args)
 
     plan = _read(args.root / args.plan_path)
     brief = _read(args.root / "docs" / "project" / "PROJECT_BRIEF.md")
@@ -191,11 +252,12 @@ def _resolve_role_pass(args: argparse.Namespace) -> SimpleNamespace:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run deterministic role review pass")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
-    parser.add_argument("--mode", choices=["plan-review", "office-hours"], default="plan-review")
-    parser.add_argument("--role", choices=["Product", "Architect", "Reviewer", "Design"], required=True)
+    parser.add_argument("--mode", choices=["plan-review", "office-hours", "sprint-contract"], default="plan-review")
+    parser.add_argument("--role", choices=["Product", "Architect", "Reviewer", "Design", "Builder", "QA"], required=True)
     parser.add_argument("--plan-path")
     parser.add_argument("--brief-path", dest="brief_path")
     parser.add_argument("--research-report-path", dest="research_report_path")
+    parser.add_argument("--proposal-path", dest="proposal_path")
     parser.add_argument("--output", required=True)
     return parser
 
@@ -206,7 +268,11 @@ def main_from_args(args: argparse.Namespace) -> int:
         raise ValueError("--plan-path is required for plan-review mode")
     if args.mode == "office-hours" and not args.brief_path:
         raise ValueError("--brief-path is required for office-hours mode")
+    if args.mode == "sprint-contract" and not args.proposal_path:
+        raise ValueError("--proposal-path is required for sprint-contract mode")
     pass_args = _resolve_role_pass(args)
+    if args.mode == "sprint-contract":
+        return cmd_sprint_pass(pass_args)
     return cmd_review_pass(pass_args)
 
 

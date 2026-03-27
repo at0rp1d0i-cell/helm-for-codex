@@ -211,6 +211,145 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     assert "- Ops task" in board
 
 
+def test_ops_loop_sprint_negotiate_materializes_build_when_ready(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_ops_loop(
+        tmp_path,
+        "sprint-negotiate",
+        "--title",
+        "Negotiated ops task",
+        "--planner",
+        "Lead proposes one bounded delivery slice.",
+        "--generator",
+        "Builder implements the bounded lane.",
+        "--evaluator",
+        "QA validates the bounded lane.",
+        "--scope",
+        "Implement one bounded sprint negotiation lane only.",
+        "--acceptance",
+        "Targeted tests verify the lane and implementation report handoff.",
+        "--evidence-posture",
+        "Targeted regression evidence and QA report are required.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-negotiated.md",
+        "--sprint-proposal-path",
+        "docs/plans/sprint-proposal-negotiated.md",
+        "--builder-sprint-pass-path",
+        "docs/plans/sprint-passes/builder.md",
+        "--qa-sprint-pass-path",
+        "docs/plans/sprint-passes/qa.md",
+        "--sprint-gate-path",
+        "docs/plans/sprint-gate-negotiated.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-negotiated.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-negotiated.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "docs" / "plans" / "sprint-proposal-negotiated.md").exists()
+    assert (tmp_path / "docs" / "plans" / "sprint-passes" / "builder.md").exists()
+    assert (tmp_path / "docs" / "plans" / "sprint-passes" / "qa.md").exists()
+    gate = (tmp_path / "docs" / "plans" / "sprint-gate-negotiated.md").read_text()
+    assert "# Sprint Gate: Negotiated ops task" in gate
+    assert "## Outcome\n\nready-for-build" in gate
+    assert (tmp_path / "docs" / "plans" / "sprint-contract-negotiated.md").exists()
+    assert (tmp_path / "docs" / "plans" / "builder-dispatch-negotiated.md").exists()
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nbuild" in board
+    assert "- Negotiated ops task" in board
+
+
+def test_ops_loop_sprint_negotiate_reframes_scope_when_blocked(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_ops_loop(
+        tmp_path,
+        "sprint-negotiate",
+        "--title",
+        "Broad ops task",
+        "--planner",
+        "Lead proposes a task.",
+        "--generator",
+        "Builder implements the task.",
+        "--evaluator",
+        "QA validates the task.",
+        "--scope",
+        "Build a full platform for every workflow.",
+        "--acceptance",
+        "Targeted tests verify the lane and implementation report handoff.",
+        "--evidence-posture",
+        "Targeted regression evidence and QA report are required.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-broad.md",
+        "--sprint-proposal-path",
+        "docs/plans/sprint-proposal-broad.md",
+        "--builder-sprint-pass-path",
+        "docs/plans/sprint-passes/builder-broad.md",
+        "--qa-sprint-pass-path",
+        "docs/plans/sprint-passes/qa-broad.md",
+        "--sprint-gate-path",
+        "docs/plans/sprint-gate-broad.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-broad.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-broad.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    gate = (tmp_path / "docs" / "plans" / "sprint-gate-broad.md").read_text()
+    assert "## Outcome\n\nreframe-scope" in gate
+    assert not (tmp_path / "docs" / "plans" / "sprint-contract-broad.md").exists()
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- Broad ops task" in board
+
+
+def test_ops_loop_sprint_negotiate_asks_user_for_strategic_tradeoff(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_ops_loop(
+        tmp_path,
+        "sprint-negotiate",
+        "--title",
+        "Strategic ops task",
+        "--planner",
+        "Lead proposes a task.",
+        "--generator",
+        "Builder implements the task.",
+        "--evaluator",
+        "QA validates the task.",
+        "--scope",
+        "Implement one bounded release lane.",
+        "--acceptance",
+        "Targeted tests verify the lane and implementation report handoff.",
+        "--evidence-posture",
+        "Budget and compliance approval are required before evaluator signoff.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-strategic.md",
+        "--sprint-proposal-path",
+        "docs/plans/sprint-proposal-strategic.md",
+        "--builder-sprint-pass-path",
+        "docs/plans/sprint-passes/builder-strategic.md",
+        "--qa-sprint-pass-path",
+        "docs/plans/sprint-passes/qa-strategic.md",
+        "--sprint-gate-path",
+        "docs/plans/sprint-gate-strategic.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-strategic.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-strategic.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    gate = (tmp_path / "docs" / "plans" / "sprint-gate-strategic.md").read_text()
+    assert "## Outcome\n\nask-user" in gate
+    assert not (tmp_path / "docs" / "plans" / "sprint-contract-strategic.md").exists()
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\napproval-needed" in board
+
+
 def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
     (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").write_text(
