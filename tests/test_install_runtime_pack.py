@@ -190,6 +190,9 @@ def test_installed_runtime_can_upgrade_itself(tmp_path: Path) -> None:
 
     project_brief = target / "docs" / "project" / "PROJECT_BRIEF.md"
     metadata = target / ".codex" / "helm4codex.toml"
+    (target / "pyproject.toml").write_text(
+        '[project]\nname = "pixiu"\nversion = "2.0.0"\nrequires-python = ">=3.11"\n'
+    )
     project_brief.write_text("# Project Brief\n\nlocal project state\n")
     metadata.write_text('[helm4codex]\nname = "Helm4Codex"\nversion = "0.0.2"\nlast_action = "install"\n')
 
@@ -197,6 +200,7 @@ def test_installed_runtime_can_upgrade_itself(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert "previous version: 0.0.2" in result.stdout
     assert f"current version: {VERSION}" in result.stdout
+    assert "current version: 2.0.0" not in result.stdout
     assert project_brief.read_text() == "# Project Brief\n\nlocal project state\n"
     metadata_text = metadata.read_text()
     assert f'version = "{VERSION}"' in metadata_text

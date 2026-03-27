@@ -7,6 +7,8 @@ import tomllib
 ROOT = Path(__file__).resolve().parents[1]
 METADATA_PATH = ".codex/helm4codex.toml"
 PROJECT_NAME = "Helm4Codex"
+SOURCE_PROJECT_NAME = "helm4codex"
+DEFAULT_HELM4CODEX_VERSION = "0.1.0"
 
 CANONICAL_DOCS = [
     ("docs/project/PROJECT_BRIEF.md", "docs/project/PROJECT_BRIEF.md"),
@@ -59,8 +61,10 @@ def project_version(root: Path = ROOT) -> str:
     pyproject = root / "pyproject.toml"
     if pyproject.exists():
         data = tomllib.loads(pyproject.read_text())
-        return str(data["project"]["version"])
-    return "0.1.0"
+        project = data.get("project", {})
+        if str(project.get("name", "")).lower() == SOURCE_PROJECT_NAME:
+            return str(project["version"])
+    return DEFAULT_HELM4CODEX_VERSION
 
 
 HELM4CODEX_VERSION = project_version()
