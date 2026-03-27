@@ -199,6 +199,105 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     assert "- Ops task" in board
 
 
+def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").write_text(
+        "# Execution Board\n\n"
+        "_This file can be updated manually or via `scripts/team_state.py board`._\n\n"
+        "## Current Stage\n\nship-ready\n\n"
+        "## Active Work\n\n- release candidate\n\n"
+        "## Completed\n\n- docs sync\n"
+    )
+    (tmp_path / "docs" / "plans" / "implementation-report-release.md").write_text(
+        "# Implementation Report: Release task\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-release.md\n\n"
+        "## Generator Summary\n\nReady for release.\n"
+    )
+    (tmp_path / "docs" / "plans" / "qa-report-release.md").write_text(
+        "# QA Report\n\n"
+        "## Consumed Sprint Contract\n\n"
+        "docs/plans/sprint-contract-release.md\n\n"
+        "## Consumed Implementation Report\n\n"
+        "docs/plans/implementation-report-release.md\n\n"
+        "## Verification Status\n\n"
+        "passed\n"
+    )
+    (tmp_path / "docs" / "plans" / "docs-sync-report-release.md").write_text(
+        "# Docs Sync Report: Release task\n\n"
+        "## Consumed Implementation Report\n\n"
+        "docs/plans/implementation-report-release.md\n\n"
+        "## Consumed QA Report\n\n"
+        "docs/plans/qa-report-release.md\n\n"
+        "## Docs Updated\n\n"
+        "- docs/status/EXECUTION_BOARD.md\n\n"
+        "## Canonical Writeback\n\n"
+        "- docs/project/PROJECT_BRIEF.md\n\n"
+        "## Follow-Ups\n\n"
+        "- none\n"
+    )
+
+    prepare = run_ops_loop(
+        tmp_path,
+        "release-prepare",
+        "--title",
+        "Release task",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-release.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-release.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-release.md",
+        "--release-packet-path",
+        "docs/plans/release-dispatch-release.md",
+        "--release-gate-path",
+        "docs/plans/release-gate-release.md",
+        "--readiness-checklist",
+        "tests green",
+        "--readiness-checklist",
+        "docs synced",
+    )
+    assert prepare.returncode == 0, prepare.stderr
+    packet = (tmp_path / "docs" / "plans" / "release-dispatch-release.md").read_text()
+    assert "# Dispatch Packet: Release task release dispatch" in packet
+    assert "release-manager" in packet
+    invocation = (tmp_path / "docs" / "plans" / "release-dispatch-release-invocation.md").read_text()
+    assert ".agents/skills/release-manager/SKILL.md" in invocation
+
+    gate = run_ops_loop(
+        tmp_path,
+        "release-gate",
+        "--title",
+        "Release task",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-release.md",
+        "--qa-report-path",
+        "docs/plans/qa-report-release.md",
+        "--docs-sync-report-path",
+        "docs/plans/docs-sync-report-release.md",
+        "--release-gate-path",
+        "docs/plans/release-gate-release.md",
+        "--readiness-checklist",
+        "tests green",
+        "--readiness-checklist",
+        "docs synced",
+        "--blocking-risk",
+        "release notes review pending",
+        "--mitigation",
+        "review release notes before merge",
+        "--verdict",
+        "no-go",
+        "--recommendation",
+        "Hold release until release notes review is complete",
+    )
+    assert gate.returncode == 0, gate.stderr
+    report = (tmp_path / "docs" / "plans" / "release-gate-release.md").read_text()
+    assert "## Consumed Docs Sync Report" in report
+    assert "release notes review pending" in report
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nship-ready" in board
+
+
 def test_ops_loop_dispatch_packets_include_logical_role_bridge(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
 

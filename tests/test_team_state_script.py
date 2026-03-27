@@ -535,6 +535,53 @@ def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Follow-Ups" in content
 
 
+def test_release_gate_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "release-gate",
+        "--output",
+        "docs/plans/release-gate-demo.md",
+        "--title",
+        "Task 1 release gate",
+        "--implementation-report",
+        "docs/plans/implementation-report-demo.md",
+        "--qa-report",
+        "docs/plans/qa-report-demo.md",
+        "--docs-sync-report",
+        "docs/plans/docs-sync-report-demo.md",
+        "--readiness-checklist",
+        "tests green",
+        "--readiness-checklist",
+        "docs synced",
+        "--blocking-risk",
+        "release notes still need review",
+        "--mitigation",
+        "review release notes before merge",
+        "--verdict",
+        "no-go",
+        "--recommendation",
+        "Hold release until the release notes review is complete",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "release-gate-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Release Gate: Task 1 release gate" in content
+    assert "## Consumed Implementation Report" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## Consumed QA Report" in content
+    assert "docs/plans/qa-report-demo.md" in content
+    assert "## Consumed Docs Sync Report" in content
+    assert "docs/plans/docs-sync-report-demo.md" in content
+    assert "## Readiness Checklist" in content
+    assert "tests green" in content
+    assert "## Blocking Risks" in content
+    assert "release notes still need review" in content
+    assert "## Mitigations" in content
+    assert "## Verdict" in content
+    assert "## Recommendation" in content
+
+
 def test_review_gate_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

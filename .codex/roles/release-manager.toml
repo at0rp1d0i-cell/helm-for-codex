@@ -1,0 +1,8 @@
+id = "release-manager"
+display_name = "Release Manager"
+skill = ".agents/skills/release-manager/SKILL.md"
+metadata = ".agents/skills/release-manager/agents/openai.yaml"
+writeback_target = "docs/plans/release-gate-<task>.md"
+writeback_command = "uv run python scripts/ops_loop.py release-gate --title <title> --implementation-report-path <path> --qa-report-path <path> --docs-sync-report-path <path> --release-gate-path <path> --readiness-checklist <item> --mitigation <item> --verdict <go|no-go> --recommendation <text>"
+runtime_skill = ".agents/skills/release-manager/SKILL.md"
+packaging_notes = "Runtime pack installs this skill and metadata into .agents/skills during onboarding."

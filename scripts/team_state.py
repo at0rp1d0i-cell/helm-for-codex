@@ -242,6 +242,35 @@ def cmd_docs_sync_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_release_gate(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    readiness_checklist = "\n".join(f"- {item}" for item in args.readiness_checklist)
+    blocking_risks = "\n".join(f"- {item}" for item in args.blocking_risk) if args.blocking_risk else "- none"
+    mitigations = "\n".join(f"- {item}" for item in args.mitigation) if args.mitigation else "- none"
+    content = (
+        f"# Release Gate: {args.title}\n\n"
+        "## Consumed Implementation Report\n\n"
+        f"{args.implementation_report}\n\n"
+        "## Consumed QA Report\n\n"
+        f"{args.qa_report}\n\n"
+        "## Consumed Docs Sync Report\n\n"
+        f"{args.docs_sync_report}\n\n"
+        "## Readiness Checklist\n\n"
+        f"{readiness_checklist}\n\n"
+        "## Blocking Risks\n\n"
+        f"{blocking_risks}\n\n"
+        "## Mitigations\n\n"
+        f"{mitigations}\n\n"
+        "## Verdict\n\n"
+        f"{args.verdict}\n\n"
+        "## Recommendation\n\n"
+        f"{args.recommendation}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_dispatch_packet(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     consumed_artifacts = "\n".join(f"- {item}" for item in args.consumed_artifact)
@@ -831,6 +860,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     docs_sync_report.add_argument("--follow-ups", required=True, dest="follow_ups")
     docs_sync_report.set_defaults(func=cmd_docs_sync_report)
+
+    release_gate = subparsers.add_parser(
+        "release-gate",
+        help="Create release gate markdown",
+    )
+    release_gate.add_argument("--output", required=True)
+    release_gate.add_argument("--title", required=True)
+    release_gate.add_argument(
+        "--implementation-report",
+        required=True,
+        dest="implementation_report",
+    )
+    release_gate.add_argument("--qa-report", required=True, dest="qa_report")
+    release_gate.add_argument(
+        "--docs-sync-report",
+        required=True,
+        dest="docs_sync_report",
+    )
+    release_gate.add_argument(
+        "--readiness-checklist",
+        action="append",
+        default=[],
+        required=True,
+        dest="readiness_checklist",
+    )
+    release_gate.add_argument("--blocking-risk", action="append", default=[], dest="blocking_risk")
+    release_gate.add_argument("--mitigation", action="append", default=[], dest="mitigation")
+    release_gate.add_argument("--verdict", required=True)
+    release_gate.add_argument("--recommendation", required=True)
+    release_gate.set_defaults(func=cmd_release_gate)
 
     dispatch_packet = subparsers.add_parser(
         "dispatch-packet",

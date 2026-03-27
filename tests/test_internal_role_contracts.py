@@ -148,6 +148,11 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
             "docs/plans/docs-sync-report-<task>.md",
             "scripts/ops_loop.py docs-sync",
         ),
+        ROOT / ".codex" / "roles" / "release-manager.toml": (
+            ".agents/skills/release-manager/SKILL.md",
+            "docs/plans/release-gate-<task>.md",
+            "scripts/ops_loop.py release-gate",
+        ),
     }
     for path, (skill_path, result_path, writeback_command) in expected.items():
         content = path.read_text()
