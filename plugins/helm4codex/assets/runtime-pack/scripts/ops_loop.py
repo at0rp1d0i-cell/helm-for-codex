@@ -10,6 +10,8 @@ from team_state import (
     cmd_board,
     cmd_dispatch_packet,
     cmd_invocation_spec,
+    cmd_qa_evidence,
+    cmd_qa_report,
     cmd_release_prep_report,
     cmd_release_gate as cmd_write_release_gate,
     cmd_sprint_contract,
@@ -35,6 +37,30 @@ def _default_invocation_spec_path(packet_path: str) -> str:
     if packet.parent.name.endswith("packets"):
         return str(packet.parent.parent / "invocation-specs" / packet.name)
     return str(packet.with_name(f"{packet.stem}-invocation{packet.suffix or '.md'}"))
+
+
+def _default_qa_evidence_path(qa_report_path: str) -> str:
+    report = Path(qa_report_path)
+    suffix = report.suffix or ".md"
+    name = report.name
+    if name.startswith("qa-report"):
+        evidence_name = name.replace("qa-report", "qa-evidence", 1)
+    else:
+        evidence_name = f"{report.stem}-evidence{suffix}"
+    return str(report.with_name(evidence_name))
+
+
+def _default_qa_artifact_root(qa_evidence_path: str) -> str:
+    evidence = Path(qa_evidence_path)
+    stem = evidence.stem
+    if stem.startswith("qa-evidence-"):
+        stem = stem[len("qa-evidence-") :]
+    elif stem.endswith("-evidence"):
+        stem = stem[: -len("-evidence")]
+
+    if evidence.parent.name == "plans":
+        return str(evidence.parent / "qa-artifacts" / stem)
+    return str(evidence.parent / f"{stem}-artifacts")
 
 
 def _extract_section(content: str, heading: str) -> str:
@@ -79,6 +105,13 @@ def _normalize_verification_status(value: str) -> str:
     return normalized
 
 
+def _normalize_browser_evidence_status(value: str) -> str:
+    normalized = value.strip().lower()
+    if normalized not in {"placeholder", "captured", "not-requested"}:
+        raise ValueError(f"Invalid browser evidence status: {value}")
+    return normalized
+
+
 def _normalize_repo_backed_targets(targets: list[str], *, label: str) -> list[str]:
     normalized: list[str] = []
     for target in targets:
@@ -112,6 +145,23 @@ def _assert_consumed_sprint_contract(
         raise ValueError(
             "Implementation report consumed sprint contract does not match the supplied sprint contract.",
         )
+
+
+def _qa_placeholder_contract(artifact_root: str, scenarios: list[str]) -> tuple[list[str], list[str]]:
+    screenshot_placeholders: list[str] = []
+    artifact_placeholders: list[str] = []
+    for index, scenario in enumerate(scenarios, start=1):
+        key = f"scenario-{index:02d}"
+        screenshot_placeholders.append(
+            f"{artifact_root}/screenshots/{key}.png | {scenario}",
+        )
+        artifact_placeholders.append(
+            f"{artifact_root}/dom/{key}.md | DOM snapshot placeholder for {scenario}",
+        )
+        artifact_placeholders.append(
+            f"{artifact_root}/console/{key}.log | Console log placeholder for {scenario}",
+        )
+    return screenshot_placeholders, artifact_placeholders
 
 
 def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
@@ -244,6 +294,17 @@ def cmd_qa_prepare(args: argparse.Namespace) -> int:
         args.sprint_contract_path,
         implementation_report,
     )
+    browser_evidence_status = _normalize_browser_evidence_status(args.browser_evidence_status)
+    qa_evidence_path = args.qa_evidence_path or _default_qa_evidence_path(args.qa_report_path)
+    qa_evidence_path = _normalize_repo_backed_targets(
+        [qa_evidence_path],
+        label="QA evidence path",
+    )[0]
+    artifact_root = _default_qa_artifact_root(qa_evidence_path)
+    screenshot_placeholders, artifact_placeholders = _qa_placeholder_contract(
+        artifact_root,
+        args.scenario,
+    )
     return _write_dispatch_packet(
         root=args.root,
         output=args.qa_packet_path,
@@ -254,13 +315,25 @@ def cmd_qa_prepare(args: argparse.Namespace) -> int:
         consumed_artifact=[args.sprint_contract_path, args.implementation_report_path],
         constraints=(
             f"Environment: {args.environment}\n\n"
-            f"Scenarios:\n" + "\n".join(f"- {item}" for item in args.scenario)
+            + "Scenarios:\n"
+            + "\n".join(f"- {item}" for item in args.scenario)
+            + "\n\nEvidence contract:\n"
+            + f"- qa_report: {args.qa_report_path}\n"
+            + f"- qa_evidence: {qa_evidence_path}\n"
+            + f"- browser_evidence_status: {browser_evidence_status}\n"
+            + f"- evidence_mode: {args.evidence_mode}\n\n"
+            + "Screenshot placeholders:\n"
+            + "\n".join(f"- {item}" for item in screenshot_placeholders)
+            + "\n\nAdditional artifact placeholders:\n"
+            + "\n".join(f"- {item}" for item in artifact_placeholders)
         ),
-        expected_output=f"QA report at {args.qa_report_path}",
+        expected_output=(
+            f"QA report at {args.qa_report_path} plus QA evidence at {qa_evidence_path}"
+        ),
         writeback_target=args.qa_report_path,
         completion_command=(
             "Return QA findings by writing the QA report to "
-            f"{args.qa_report_path}"
+            f"{args.qa_report_path} and the QA evidence artifact to {qa_evidence_path}"
         ),
     )
 
@@ -278,27 +351,66 @@ def cmd_qa(args: argparse.Namespace) -> int:
         implementation_report,
     )
     verification_status = _normalize_verification_status(args.verification_status)
-
-    issues = "\n".join(f"- {item}" for item in args.issue) if args.issue else "- none"
-    scenarios = "\n".join(f"- {item}" for item in args.scenario)
-    qa_report = _resolve_path(args.root, args.qa_report_path)
-    content = (
-        "# QA Report\n\n"
-        "## Consumed Sprint Contract\n\n"
-        f"{args.sprint_contract_path}\n\n"
-        "## Consumed Implementation Report\n\n"
-        f"{args.implementation_report_path}\n\n"
-        "QA must validate the generator output against the consumed artifacts before board advancement.\n\n"
-        "## Environment\n\n"
-        f"{args.environment}\n\n"
-        "## Scenarios Tested\n\n"
-        f"{scenarios}\n\n"
-        "## Issues Found\n\n"
-        f"{issues}\n\n"
-        "## Verification Status\n\n"
-        f"{verification_status}\n"
+    browser_evidence_status = _normalize_browser_evidence_status(args.browser_evidence_status)
+    qa_evidence_path = args.qa_evidence_path or _default_qa_evidence_path(args.qa_report_path)
+    qa_evidence_path = _normalize_repo_backed_targets(
+        [qa_evidence_path],
+        label="QA evidence path",
+    )[0]
+    artifact_root = _default_qa_artifact_root(qa_evidence_path)
+    screenshot_placeholders, artifact_placeholders = _qa_placeholder_contract(
+        artifact_root,
+        args.scenario,
     )
-    _write(qa_report, content)
+    qa_dispatch_packet = "none"
+    if args.qa_packet_path:
+        qa_packet = _resolve_path(args.root, args.qa_packet_path)
+        if not qa_packet.exists():
+            raise FileNotFoundError(f"Missing QA dispatch packet: {qa_packet}")
+        qa_dispatch_packet = args.qa_packet_path
+
+    report_args = SimpleNamespace(
+        root=args.root,
+        output=args.qa_report_path,
+        title=args.title,
+        sprint_contract=args.sprint_contract_path,
+        implementation_report=args.implementation_report_path,
+        qa_dispatch_packet=qa_dispatch_packet,
+        evidence_report=qa_evidence_path,
+        browser_evidence_status=browser_evidence_status,
+        environment=args.environment,
+        scenario=args.scenario,
+        issue=args.issue,
+        verification_status=verification_status,
+    )
+    rc = cmd_qa_report(report_args)
+    if rc != 0:
+        return rc
+
+    evidence_notes = list(args.evidence_note)
+    if not evidence_notes:
+        evidence_notes.append(
+            "Browser runtime capture is not wired yet; placeholder paths reserve the evidence contract.",
+        )
+    evidence_args = SimpleNamespace(
+        root=args.root,
+        output=qa_evidence_path,
+        title=args.title,
+        qa_report=args.qa_report_path,
+        qa_dispatch_packet=qa_dispatch_packet,
+        sprint_contract=args.sprint_contract_path,
+        implementation_report=args.implementation_report_path,
+        evidence_mode=args.evidence_mode,
+        browser_evidence_status=browser_evidence_status,
+        environment=args.environment,
+        scenario=args.scenario,
+        screenshot_placeholder=screenshot_placeholders,
+        artifact_placeholder=artifact_placeholders,
+        note=evidence_notes,
+    )
+    rc = cmd_qa_evidence(evidence_args)
+    if rc != 0:
+        return rc
 
     next_stage = "build" if verification_status == "failed" else "qa"
     return _update_board(args.root, args.board_path, next_stage, [args.title])
@@ -612,7 +724,14 @@ def build_parser() -> argparse.ArgumentParser:
         dest="qa_invocation_spec_path",
     )
     qa_prepare.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    qa_prepare.add_argument("--qa-evidence-path", dest="qa_evidence_path")
     qa_prepare.add_argument("--environment", required=True)
+    qa_prepare.add_argument(
+        "--browser-evidence-status",
+        default="placeholder",
+        dest="browser_evidence_status",
+    )
+    qa_prepare.add_argument("--evidence-mode", default="browser-placeholder", dest="evidence_mode")
     qa_prepare.add_argument("--scenario", action="append", default=[], required=True)
     qa_prepare.set_defaults(func=cmd_qa_prepare)
 
@@ -627,10 +746,19 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         dest="implementation_report_path",
     )
+    qa.add_argument("--qa-packet-path", dest="qa_packet_path")
     qa.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    qa.add_argument("--qa-evidence-path", dest="qa_evidence_path")
     qa.add_argument("--environment", required=True)
+    qa.add_argument(
+        "--browser-evidence-status",
+        default="placeholder",
+        dest="browser_evidence_status",
+    )
+    qa.add_argument("--evidence-mode", default="browser-placeholder", dest="evidence_mode")
     qa.add_argument("--scenario", action="append", default=[], required=True)
     qa.add_argument("--issue", action="append", default=[])
+    qa.add_argument("--evidence-note", action="append", default=[], dest="evidence_note")
     qa.add_argument("--verification-status", required=True, dest="verification_status")
     qa.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     qa.set_defaults(func=cmd_qa)

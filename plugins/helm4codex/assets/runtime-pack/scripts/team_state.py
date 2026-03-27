@@ -146,6 +146,82 @@ def cmd_implementation_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_qa_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    scenarios = "\n".join(f"- {item}" for item in args.scenario)
+    issues = "\n".join(f"- {item}" for item in args.issue) if args.issue else "- none"
+    content = (
+        f"# QA Report: {args.title}\n\n"
+        "## Consumed Sprint Contract\n\n"
+        f"{args.sprint_contract}\n\n"
+        "## Consumed Implementation Report\n\n"
+        f"{args.implementation_report}\n\n"
+        "## Consumed QA Dispatch Packet\n\n"
+        f"{args.qa_dispatch_packet}\n\n"
+        "QA must validate the generator output against the consumed artifacts before board advancement.\n\n"
+        "## QA Evidence Report\n\n"
+        f"{args.evidence_report}\n\n"
+        "## Browser Evidence Status\n\n"
+        f"{args.browser_evidence_status}\n\n"
+        "## Environment\n\n"
+        f"{args.environment}\n\n"
+        "## Scenarios Tested\n\n"
+        f"{scenarios}\n\n"
+        "## Issues Found\n\n"
+        f"{issues}\n\n"
+        "## Verification Status\n\n"
+        f"{args.verification_status}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_qa_evidence(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    scenarios = "\n".join(f"- {item}" for item in args.scenario)
+    screenshot_placeholders = (
+        "\n".join(f"- {item}" for item in args.screenshot_placeholder)
+        if args.screenshot_placeholder
+        else "- none"
+    )
+    artifact_placeholders = (
+        "\n".join(f"- {item}" for item in args.artifact_placeholder)
+        if args.artifact_placeholder
+        else "- none"
+    )
+    notes = "\n".join(f"- {item}" for item in args.note) if args.note else "- none"
+    content = (
+        f"# QA Evidence: {args.title}\n\n"
+        "## Consumed QA Report\n\n"
+        f"{args.qa_report}\n\n"
+        "## Consumed QA Dispatch Packet\n\n"
+        f"{args.qa_dispatch_packet}\n\n"
+        "## Consumed Sprint Contract\n\n"
+        f"{args.sprint_contract}\n\n"
+        "## Consumed Implementation Report\n\n"
+        f"{args.implementation_report}\n\n"
+        "This artifact reserves repo-backed browser evidence paths until live capture is wired.\n\n"
+        "## Evidence Mode\n\n"
+        f"{args.evidence_mode}\n\n"
+        "## Browser Evidence Status\n\n"
+        f"{args.browser_evidence_status}\n\n"
+        "## Environment\n\n"
+        f"{args.environment}\n\n"
+        "## Scenario Coverage\n\n"
+        f"{scenarios}\n\n"
+        "## Screenshot Placeholders\n\n"
+        f"{screenshot_placeholders}\n\n"
+        "## Additional Artifact Placeholders\n\n"
+        f"{artifact_placeholders}\n\n"
+        "## Notes\n\n"
+        f"{notes}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_docs_sync_report(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     content = (
@@ -735,6 +811,76 @@ def build_parser() -> argparse.ArgumentParser:
     implementation_report.add_argument("--tests-run", required=True, dest="tests_run")
     implementation_report.add_argument("--follow-ups", required=True, dest="follow_ups")
     implementation_report.set_defaults(func=cmd_implementation_report)
+
+    qa_report = subparsers.add_parser(
+        "qa-report",
+        help="Create QA report markdown",
+    )
+    qa_report.add_argument("--output", required=True)
+    qa_report.add_argument("--title", required=True)
+    qa_report.add_argument("--sprint-contract", required=True, dest="sprint_contract")
+    qa_report.add_argument(
+        "--implementation-report",
+        required=True,
+        dest="implementation_report",
+    )
+    qa_report.add_argument(
+        "--qa-dispatch-packet",
+        default="none",
+        dest="qa_dispatch_packet",
+    )
+    qa_report.add_argument("--evidence-report", default="none", dest="evidence_report")
+    qa_report.add_argument(
+        "--browser-evidence-status",
+        default="placeholder",
+        dest="browser_evidence_status",
+    )
+    qa_report.add_argument("--environment", required=True)
+    qa_report.add_argument("--scenario", action="append", default=[], required=True)
+    qa_report.add_argument("--issue", action="append", default=[])
+    qa_report.add_argument("--verification-status", required=True, dest="verification_status")
+    qa_report.set_defaults(func=cmd_qa_report)
+
+    qa_evidence = subparsers.add_parser(
+        "qa-evidence",
+        help="Create QA evidence companion markdown",
+    )
+    qa_evidence.add_argument("--output", required=True)
+    qa_evidence.add_argument("--title", required=True)
+    qa_evidence.add_argument("--qa-report", required=True, dest="qa_report")
+    qa_evidence.add_argument(
+        "--qa-dispatch-packet",
+        default="none",
+        dest="qa_dispatch_packet",
+    )
+    qa_evidence.add_argument("--sprint-contract", required=True, dest="sprint_contract")
+    qa_evidence.add_argument(
+        "--implementation-report",
+        required=True,
+        dest="implementation_report",
+    )
+    qa_evidence.add_argument("--evidence-mode", required=True, dest="evidence_mode")
+    qa_evidence.add_argument(
+        "--browser-evidence-status",
+        required=True,
+        dest="browser_evidence_status",
+    )
+    qa_evidence.add_argument("--environment", required=True)
+    qa_evidence.add_argument("--scenario", action="append", default=[], required=True)
+    qa_evidence.add_argument(
+        "--screenshot-placeholder",
+        action="append",
+        default=[],
+        dest="screenshot_placeholder",
+    )
+    qa_evidence.add_argument(
+        "--artifact-placeholder",
+        action="append",
+        default=[],
+        dest="artifact_placeholder",
+    )
+    qa_evidence.add_argument("--note", action="append", default=[])
+    qa_evidence.set_defaults(func=cmd_qa_evidence)
 
     docs_sync_report = subparsers.add_parser(
         "docs-sync-report",

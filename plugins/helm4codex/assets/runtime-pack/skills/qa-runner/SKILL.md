@@ -16,7 +16,8 @@ Validate user flows and regression behavior as the evaluator for the bounded tas
 </inputs>
 
 <expected_output>
-<section>canonical qa-report writeback that names the consumed sprint contract and implementation report</section>
+<section>canonical qa-report writeback that names the consumed sprint contract, implementation report, and QA evidence companion</section>
+<section>repo-backed QA evidence artifact with browser placeholder paths and capture status</section>
 <section>executed scenarios and outcomes</section>
 <section>defects with repro steps</section>
 <section>verification status after fixes</section>
@@ -24,6 +25,7 @@ Validate user flows and regression behavior as the evaluator for the bounded tas
 
 <writeback>
 <target>docs/plans/qa-report*.md</target>
+<target>docs/plans/qa-evidence*.md</target>
 <target>docs/status/EXECUTION_BOARD.md</target>
 <target>docs/project/TECH_DEBT.md</target>
 </writeback>
@@ -32,6 +34,7 @@ Validate user flows and regression behavior as the evaluator for the bounded tas
 <item>Do not classify unverified assumptions as defects.</item>
 <item>Do not change implementation without Ops direction.</item>
 <item>Do not act as the builder; stay in the evaluator role.</item>
+<item>Do not claim placeholder paths are captured browser evidence.</item>
 </non_goals>
 
 <reporting>
