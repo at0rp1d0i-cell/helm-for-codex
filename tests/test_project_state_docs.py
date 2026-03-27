@@ -63,6 +63,7 @@ def test_open_source_docs_exist() -> None:
         "docs/README.md",
         "docs/QUICKSTART.md",
         "docs/DISTRIBUTION.md",
+        "docs/UPGRADE.md",
     ]
     for relpath in required:
         assert (ROOT / relpath).exists(), f"{relpath} missing"

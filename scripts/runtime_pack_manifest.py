@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+import tomllib
 
 
 ROOT = Path(__file__).resolve().parents[1]
+METADATA_PATH = ".codex/helm4codex.toml"
+PROJECT_NAME = "Helm4Codex"
 
 CANONICAL_DOCS = [
     ("docs/project/PROJECT_BRIEF.md", "docs/project/PROJECT_BRIEF.md"),
@@ -27,6 +30,7 @@ TARGET_RUNTIME_SCRIPTS = [
     "scripts/ops_loop.py",
     "scripts/role_bridge.py",
     "scripts/role_review.py",
+    "scripts/upgrade_runtime_pack.py",
 ]
 
 PACK_ONLY_SCRIPTS = [
@@ -47,3 +51,25 @@ def skill_dirs(root: Path = ROOT) -> list[Path]:
 def pack_script_paths() -> list[str]:
     return [*TARGET_RUNTIME_SCRIPTS, *PACK_ONLY_SCRIPTS]
 
+
+def project_version(root: Path = ROOT) -> str:
+    pyproject = root / "pyproject.toml"
+    if pyproject.exists():
+        data = tomllib.loads(pyproject.read_text())
+        return str(data["project"]["version"])
+    return "0.1.0"
+
+
+HELM4CODEX_VERSION = project_version()
+
+
+def render_runtime_metadata(*, action: str, previous_version: str | None) -> str:
+    lines = [
+        "[helm4codex]",
+        f'name = "{PROJECT_NAME}"',
+        f'version = "{HELM4CODEX_VERSION}"',
+        f'last_action = "{action}"',
+    ]
+    if previous_version:
+        lines.append(f'previous_version = "{previous_version}"')
+    return "\n".join(lines) + "\n"

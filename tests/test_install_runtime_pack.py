@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import importlib.util
@@ -7,6 +8,8 @@ import importlib.util
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "install_runtime_pack.py"
+UPGRADE_SCRIPT = ROOT / "scripts" / "upgrade_runtime_pack.py"
+VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
 
 
 def run_installer(target: Path) -> subprocess.CompletedProcess[str]:
@@ -29,6 +32,16 @@ def run_runtime_lead_loop(target: Path, *args: str) -> subprocess.CompletedProce
     )
 
 
+def run_upgrader(target: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(UPGRADE_SCRIPT), "--target", str(target)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
 def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     target = tmp_path / "project"
     result = run_installer(target)
@@ -38,6 +51,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "AGENTS.md").exists()
     assert (target / ".codex" / "config.toml").exists()
     assert (target / ".codex" / "README.md").exists()
+    assert (target / ".codex" / "helm4codex.toml").exists()
     assert (target / ".codex" / "role_bridge.toml").exists()
     assert (target / ".codex" / "roles" / "ops-orchestrator.toml").exists()
     assert (target / ".codex" / "roles" / "product-reviewer.toml").exists()
@@ -71,6 +85,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "scripts" / "ops_loop.py").exists()
     assert (target / "scripts" / "role_bridge.py").exists()
     assert (target / "scripts" / "role_review.py").exists()
+    assert (target / "scripts" / "upgrade_runtime_pack.py").exists()
     assert (target / "ops" / "templates" / "task-brief.md").exists()
     assert (target / "ops" / "templates" / "dispatch-packet.md").exists()
     assert (target / "ops" / "templates" / "invocation-spec.md").exists()
@@ -114,6 +129,35 @@ def test_installer_preserves_existing_canonical_state(tmp_path: Path) -> None:
     assert project_brief.read_text() == "# Project Brief\n\ncustom project state\n"
     assert onboarding_state.read_text() == "# Onboarding State: Custom\n\nmanual state\n"
     assert agents.read_text() == "# Project AGENTS\n\ncustom guidance\n"
+
+
+def test_upgrade_refreshes_runtime_and_preserves_canonical_state(tmp_path: Path) -> None:
+    target = tmp_path / "project"
+    first = run_installer(target)
+    assert first.returncode == 0, first.stderr
+
+    project_brief = target / "docs" / "project" / "PROJECT_BRIEF.md"
+    board = target / "docs" / "status" / "EXECUTION_BOARD.md"
+    metadata = target / ".codex" / "helm4codex.toml"
+    bridge = target / "scripts" / "bridge_runner.py"
+
+    project_brief.write_text("# Project Brief\n\npreserve me\n")
+    board.write_text("# Execution Board\n\nkeep local board\n")
+    metadata.write_text('[helm4codex]\nname = "Helm4Codex"\nversion = "0.0.1"\nlast_action = "install"\n')
+    bridge.write_text("stale runtime bridge\n")
+
+    result = run_upgrader(target)
+    assert result.returncode == 0, result.stderr
+    assert "previous version: 0.0.1" in result.stdout
+    assert f"current version: {VERSION}" in result.stdout
+
+    assert project_brief.read_text() == "# Project Brief\n\npreserve me\n"
+    assert board.read_text() == "# Execution Board\n\nkeep local board\n"
+    assert "stale runtime bridge" not in bridge.read_text()
+    metadata_text = metadata.read_text()
+    assert f'version = "{VERSION}"' in metadata_text
+    assert 'last_action = "upgrade"' in metadata_text
+    assert 'previous_version = "0.0.1"' in metadata_text
 
 
 def test_copy_dir_is_noop_when_source_equals_destination(tmp_path: Path) -> None:

@@ -2,12 +2,12 @@
 
 ## Current Milestone
 
-Phase 20 in progress: package the team system for external use through a hybrid plugin + runtime-pack distribution.
+Phase 21 in progress: make Helm4Codex upgrades explicit and predictable for installed repositories.
 
 ## Later Milestones
 
 - complete plugin-backed bootstrap validation and treat it as a first-class install path
-- sharpen the external install story so users do not need source-repo knowledge to adopt the team runtime
+- sharpen the external install story so users do not need source-repo knowledge to adopt or upgrade the team runtime
 - expand validation from structural checks into richer behavior-aware orchestration checks
 - let the live `Ops Orchestrator` role own more of the dispatch path instead of relying on the remaining spawn bridge
 - drive more live dispatch through `scripts/role_bridge.py` rather than hand-written per-turn routing

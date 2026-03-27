@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 20 in progress: turn the runtime into a reusable hybrid distribution with a Codex plugin surface, a bundled bootstrap path, and a self-contained exported runtime pack.
+Phase 21 in progress: add a first-class upgrade path for already-installed Helm4Codex repositories, with explicit runtime metadata and migration guidance.
 
 ## Success Criteria
 
@@ -31,4 +31,6 @@ Phase 20 in progress: turn the runtime into a reusable hybrid distribution with 
 - a local Codex plugin package exists for discovery and bootstrap
 - the plugin bundles a self-contained runtime-pack payload instead of depending on the source repo at install time
 - a plugin bootstrap path can install the same runtime surface as the direct installer
+- an explicit upgrade command exists for already-installed repositories
+- upgrades refresh runtime-managed files while preserving canonical project state
 - repo validation passes

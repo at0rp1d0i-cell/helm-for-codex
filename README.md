@@ -63,6 +63,16 @@ python3 plugins/helm4codex/scripts/bootstrap_repo.py --target /path/to/target-re
 
 In both cases, the installed repo runtime is the real execution surface. The plugin is a packaging and bootstrap layer, not a replacement for the installed repo-local runtime.
 
+## Upgrade
+
+If a target repository already has Helm4Codex installed, update it with:
+
+```bash
+uv run python scripts/upgrade_runtime_pack.py --target /path/to/target-repo
+```
+
+This refreshes runtime-managed files while preserving the target repo's canonical project state. See [docs/UPGRADE.md](/home/torpedo/Workspace/codex_exploring/docs/UPGRADE.md).
+
 ## Quick Start
 
 1. Install Helm4Codex into a target repository.
@@ -140,6 +150,7 @@ For external users, the repository has three install-facing layers:
 - [docs/README.md](/home/torpedo/Workspace/codex_exploring/docs/README.md)
 - [docs/QUICKSTART.md](/home/torpedo/Workspace/codex_exploring/docs/QUICKSTART.md)
 - [docs/DISTRIBUTION.md](/home/torpedo/Workspace/codex_exploring/docs/DISTRIBUTION.md)
+- [docs/UPGRADE.md](/home/torpedo/Workspace/codex_exploring/docs/UPGRADE.md)
 - [CONTRIBUTING.md](/home/torpedo/Workspace/codex_exploring/CONTRIBUTING.md)
 - [CHANGELOG.md](/home/torpedo/Workspace/codex_exploring/CHANGELOG.md)
 - [SECURITY.md](/home/torpedo/Workspace/codex_exploring/SECURITY.md)

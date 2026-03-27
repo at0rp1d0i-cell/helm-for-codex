@@ -8,8 +8,8 @@ build
 
 ## Active Work
 
-- ship the hybrid distribution surface: local plugin, marketplace metadata, bootstrap script, and exported runtime-pack payload
-- verify the plugin bootstrap path installs the same runtime surface as the direct installer
+- add a first-class upgrade path for installed Helm4Codex repositories
+- verify upgrade preserves canonical state while refreshing runtime-managed files
 
 ## Completed
 
@@ -70,3 +70,5 @@ build
 - add paired invocation specs for execution and review packets
 - add a reusable bridge runner for packet plus invocation-spec pairs
 - add repo-backed execution receipts for bridge launches
+- ship the hybrid distribution surface: local plugin, marketplace metadata, bootstrap script, and exported runtime-pack payload
+- verify the plugin bootstrap path installs the same runtime surface as the direct installer

@@ -22,6 +22,7 @@ uv run python scripts/export_plugin_runtime.py --check
 - Keep `.agents/skills` as the runtime skill discovery surface.
 - Keep `.codex` for config, roles, and bridge metadata.
 - Do not hand-edit the exported plugin runtime payload unless you are also updating the source runtime and re-exporting it.
+- Keep the explicit upgrade path working for already-installed target repos.
 - Prefer bounded changes over broad speculative refactors.
 - Update user-facing docs when install paths, naming, or runtime behavior change.
 - Update tests when you change runtime-pack shape, plugin packaging, or canonical docs structure.

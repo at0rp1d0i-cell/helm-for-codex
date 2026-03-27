@@ -11,10 +11,14 @@ if str(SCRIPT_DIR) not in sys.path:
 
 from runtime_pack_manifest import (
     CANONICAL_DOCS,
+    HELM4CODEX_VERSION,
+    METADATA_PATH,
     MODULE_CONTRACT_DOCS,
+    PROJECT_NAME,
     ROOT,
     RUNTIME_DIRS,
     TARGET_RUNTIME_SCRIPTS,
+    render_runtime_metadata,
     skill_dirs,
 )
 
@@ -80,12 +84,29 @@ def install_runtime_files(target: Path) -> None:
         _copy_dir(ROOT / rel_src, target / rel_dst)
 
 
-def install_runtime_pack(target: Path) -> None:
+def read_installed_version(target: Path) -> str | None:
+    metadata = target / METADATA_PATH
+    if not metadata.exists():
+        return None
+    for line in metadata.read_text().splitlines():
+        if line.startswith("version = "):
+            return line.split("=", 1)[1].strip().strip('"')
+    return None
+
+
+def write_runtime_metadata(target: Path, *, action: str, previous_version: str | None) -> None:
+    metadata = target / METADATA_PATH
+    metadata.parent.mkdir(parents=True, exist_ok=True)
+    metadata.write_text(render_runtime_metadata(action=action, previous_version=previous_version))
+
+
+def install_runtime_pack(target: Path, *, action: str = "install", previous_version: str | None = None) -> None:
     install_project_fields(target)
     bootstrap_docs(target)
     install_skills(target)
     install_codex_config(target)
     install_runtime_files(target)
+    write_runtime_metadata(target, action=action, previous_version=previous_version)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -100,9 +121,10 @@ def main() -> int:
     if not target.exists():
         target.mkdir(parents=True)
 
-    install_runtime_pack(target)
+    action = "install"
+    install_runtime_pack(target, action=action, previous_version=None)
 
-    print(f"Runtime pack installed into {target}")
+    print(f"{PROJECT_NAME} runtime {action}ed into {target} ({HELM4CODEX_VERSION})")
     return 0
 
 
