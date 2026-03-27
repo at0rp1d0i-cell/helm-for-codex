@@ -37,6 +37,12 @@ uv run python scripts/check_installed_runtime.py
 uv run python ops/checks/check_docs_freshness.py
 ```
 
+5. Future runtime reapplication can run directly inside the installed target repository:
+
+```bash
+uv run python scripts/upgrade_runtime_pack.py
+```
+
 ## Expected Runtime Surface
 
 The target repo should now contain:

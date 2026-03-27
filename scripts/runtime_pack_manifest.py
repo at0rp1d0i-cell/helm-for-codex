@@ -24,6 +24,8 @@ MODULE_CONTRACT_DOCS = [
 ]
 
 TARGET_RUNTIME_SCRIPTS = [
+    "scripts/install_runtime_pack.py",
+    "scripts/runtime_pack_manifest.py",
     "scripts/check_installed_runtime.py",
     "scripts/bridge_runner.py",
     "scripts/team_state.py",
@@ -34,10 +36,7 @@ TARGET_RUNTIME_SCRIPTS = [
     "scripts/upgrade_runtime_pack.py",
 ]
 
-PACK_ONLY_SCRIPTS = [
-    "scripts/install_runtime_pack.py",
-    "scripts/runtime_pack_manifest.py",
-]
+PACK_ONLY_SCRIPTS = []
 
 RUNTIME_DIRS = [
     ("ops/templates", "ops/templates"),
@@ -46,7 +45,10 @@ RUNTIME_DIRS = [
 
 
 def skill_dirs(root: Path = ROOT) -> list[Path]:
-    return sorted(path for path in (root / "skills").iterdir() if (path / "SKILL.md").exists())
+    source_root = root / "skills"
+    if not source_root.exists():
+        source_root = root / ".agents" / "skills"
+    return sorted(path for path in source_root.iterdir() if (path / "SKILL.md").exists())
 
 
 def pack_script_paths() -> list[str]:

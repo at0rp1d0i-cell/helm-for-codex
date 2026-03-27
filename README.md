@@ -65,7 +65,15 @@ In both cases, the installed repo runtime is the real execution surface. The plu
 
 ## Upgrade
 
-If a target repository already has Helm4Codex installed, update it with:
+If a target repository already has Helm4Codex installed, you can reapply the checked-in runtime from inside that repository with:
+
+```bash
+uv run python scripts/upgrade_runtime_pack.py
+```
+
+Use that when the repo already contains the Helm4Codex files you want to keep, but you need to reapply runtime-managed surfaces while preserving canonical state.
+
+To install or upgrade from the Helm4Codex source repository instead, run:
 
 ```bash
 uv run python scripts/upgrade_runtime_pack.py --target /path/to/target-repo

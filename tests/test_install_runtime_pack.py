@@ -42,6 +42,16 @@ def run_upgrader(target: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+def run_installed_upgrader(target: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(target / "scripts" / "upgrade_runtime_pack.py"), "--target", str(target)],
+        cwd=target,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+
 def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     target = tmp_path / "project"
     result = run_installer(target)
@@ -80,6 +90,8 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / ".agents" / "skills" / "team-lead" / "agents" / "openai.yaml").exists()
 
     assert (target / "scripts" / "team_state.py").exists()
+    assert (target / "scripts" / "install_runtime_pack.py").exists()
+    assert (target / "scripts" / "runtime_pack_manifest.py").exists()
     assert (target / "scripts" / "check_installed_runtime.py").exists()
     assert (target / "scripts" / "bridge_runner.py").exists()
     assert (target / "scripts" / "lead_loop.py").exists()
@@ -169,6 +181,27 @@ def test_upgrade_refreshes_runtime_and_preserves_canonical_state(tmp_path: Path)
     assert f'version = "{VERSION}"' in metadata_text
     assert 'last_action = "upgrade"' in metadata_text
     assert 'previous_version = "0.0.1"' in metadata_text
+
+
+def test_installed_runtime_can_upgrade_itself(tmp_path: Path) -> None:
+    target = tmp_path / "project"
+    first = run_installer(target)
+    assert first.returncode == 0, first.stderr
+
+    project_brief = target / "docs" / "project" / "PROJECT_BRIEF.md"
+    metadata = target / ".codex" / "helm4codex.toml"
+    project_brief.write_text("# Project Brief\n\nlocal project state\n")
+    metadata.write_text('[helm4codex]\nname = "Helm4Codex"\nversion = "0.0.2"\nlast_action = "install"\n')
+
+    result = run_installed_upgrader(target)
+    assert result.returncode == 0, result.stderr
+    assert "previous version: 0.0.2" in result.stdout
+    assert f"current version: {VERSION}" in result.stdout
+    assert project_brief.read_text() == "# Project Brief\n\nlocal project state\n"
+    metadata_text = metadata.read_text()
+    assert f'version = "{VERSION}"' in metadata_text
+    assert 'last_action = "upgrade"' in metadata_text
+    assert 'previous_version = "0.0.2"' in metadata_text
 
 
 def test_copy_dir_is_noop_when_source_equals_destination(tmp_path: Path) -> None:

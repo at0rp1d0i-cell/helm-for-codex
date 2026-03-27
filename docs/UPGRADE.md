@@ -6,7 +6,13 @@ Use the upgrade path when a repository already has Helm4Codex installed and you 
 
 ## Upgrade Command
 
-Run from the Helm4Codex source repository:
+Run inside the installed target repository to reapply the checked-in Helm4Codex runtime while preserving canonical state:
+
+```bash
+uv run python scripts/upgrade_runtime_pack.py
+```
+
+Run from the Helm4Codex source repository when you want to push a newer runtime into the target repository:
 
 ```bash
 uv run python scripts/upgrade_runtime_pack.py --target /path/to/target-repo
