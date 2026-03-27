@@ -76,6 +76,9 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "researcher",
         "research-brief",
         "research-report",
+        "sprint-negotiate",
+        "sprint proposal",
+        "sprint gate",
         "discover",
         "plan",
         "build",
@@ -131,7 +134,11 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
     assert ".agents/skills" in content
     assert "deterministic fallback" in content.lower()
     assert "planner owns the sprint contract" in content.lower()
+    assert "builder feasibility" in content.lower()
+    assert "qa evaluability" in content.lower()
     assert "builder must not start before the sprint contract exists" in content.lower()
+    assert "prefer sprint negotiation over direct build" in content.lower()
+    assert "negotiated sprint contract" in content.lower()
     assert "implementation-report" in content.lower()
     assert "bounded task" in content.lower()
     assert "do not imply full feature-branch autonomy" in content.lower()

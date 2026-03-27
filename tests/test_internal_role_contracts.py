@@ -57,6 +57,8 @@ def test_implementation_worker_contract_requires_sprint_contract_and_report_path
     assert "generator" in content
     assert "planner" in content
     assert "bounded task" in content
+    assert "pre-build sprint negotiation" in content
+    assert "unnegotiated sprint proposal" in content
     assert "do not claim feature-branch autonomy" in content
     assert "report only to ops" in content
 
@@ -74,6 +76,9 @@ def test_execution_roles_report_to_ops_layer() -> None:
         assert "do not address the user directly" in content, (
             f"{path.name} must not address the user directly"
         )
+    qa_content = (ROOT / "skills" / "qa-runner" / "SKILL.md").read_text().lower()
+    assert "pre-build sprint negotiation" in qa_content
+    assert "verification posture" in qa_content
 
     assert "dispatch packet" in (ROOT / "skills" / "implementation-worker" / "SKILL.md").read_text().lower()
     assert "dispatch packet" in (ROOT / "skills" / "qa-runner" / "SKILL.md").read_text().lower()
