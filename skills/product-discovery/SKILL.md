@@ -47,7 +47,7 @@ Direct `review-result` writeback remains supported for compatibility and recover
 </non_goals>
 
 <office_hours>
-Use this role to challenge a discovery brief before plan. In office-hours mode, pressure-test scope, user value, and milestone sharpness rather than proposing implementation details.
+Use this role to challenge a discovery brief before plan. In office-hours mode, pressure-test scope, user value, milestone sharpness, and the research-backed baseline rather than proposing implementation details.
 </office_hours>
 
 <reporting>

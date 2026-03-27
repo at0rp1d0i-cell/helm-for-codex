@@ -4,6 +4,10 @@
 
 <office_hours_brief_path>
 
+## Research Report
+
+<research_report_path>
+
 ## Challenge Passes
 
 <challenge_pass_paths>

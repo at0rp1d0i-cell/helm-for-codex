@@ -20,6 +20,8 @@ from team_state import (
     cmd_office_hours_brief,
     cmd_office_hours_report,
     cmd_plan_brief,
+    cmd_research_brief,
+    cmd_research_report,
     cmd_review_gate,
     cmd_review_packet,
     cmd_review_pass as cmd_write_review_pass,
@@ -124,6 +126,8 @@ def _office_hours_paths(
     *,
     artifact_dir: str,
     brief_path: str | None = None,
+    research_brief_path: str | None = None,
+    research_report_path: str | None = None,
     gate_path: str | None = None,
     report_path: str | None = None,
     pass_dir: str | None = None,
@@ -132,6 +136,8 @@ def _office_hours_paths(
     return SimpleNamespace(
         artifact_dir=str(base),
         brief_path=brief_path or str(base / "office-hours-brief.md"),
+        research_brief_path=research_brief_path or str(base / "research-brief.md"),
+        research_report_path=research_report_path or str(base / "research-report.md"),
         gate_path=gate_path or str(base / "discovery-gate.md"),
         report_path=report_path or str(base / "office-hours-report.md"),
         pass_dir=pass_dir or str(base / "challenge-passes"),
@@ -196,6 +202,8 @@ def _write_office_hours_report(
         mode=args.mode,
         outcome=outcome,
         office_hours_brief=paths.brief_path,
+        research_brief=paths.research_brief_path,
+        research_report=paths.research_report_path,
         challenge_pass=challenge_pass_paths or [],
         discovery_gate=paths.gate_path,
         reframing_change=reframing_changes or [],
@@ -933,12 +941,20 @@ def cmd_autoplan(args: argparse.Namespace) -> int:
     )
 
 
-def _office_hours_gate_fields(root: Path, brief_path: str, pass_paths: list[str]) -> SimpleNamespace:
+def _office_hours_gate_fields(
+    root: Path,
+    brief_path: str,
+    research_report_path: str,
+    pass_paths: list[str],
+) -> SimpleNamespace:
     brief = _read(root / brief_path)
+    research = _read(root / research_report_path)
     problem = _extract_section(brief, "Problem Statement") or "Problem framing missing."
     proposal = _extract_section(brief, "Current Proposal") or "Current proposal missing."
     build_vs_buy = _extract_section(brief, "Build vs Buy Context") or "Build-vs-buy context missing."
     assumptions = _extract_list_section(brief, "Assumptions To Challenge")
+    research_recommendation = _extract_section(research, "Recommendation")
+    research_posture = _extract_section(research, "Build vs Buy Posture")
 
     taste_decisions: list[str] = []
     auto_decisions: list[str] = []
@@ -958,7 +974,11 @@ def _office_hours_gate_fields(root: Path, brief_path: str, pass_paths: list[str]
         outcome = "ask-user"
         reframed_problem = f"Confirm the strategic boundary before planning: {problem}"
         next_step = "Escalate the unresolved strategic tradeoff to the user before planning."
-    elif any(token in lowered_problem for token in ["all", "everything", "platform"]) or len(assumptions) >= 3:
+    elif (
+        any(token in lowered_problem for token in ["all", "everything", "platform"])
+        or len(assumptions) >= 3
+        or "defer broader platform scope" in research_recommendation.lower()
+    ):
         outcome = "reframe"
         reframed_problem = f"Reduce the first milestone to one critical path instead of the full proposal: {proposal}"
         next_step = "Rewrite the brief around a narrower first milestone, then rerun office-hours."
@@ -971,7 +991,7 @@ def _office_hours_gate_fields(root: Path, brief_path: str, pass_paths: list[str]
         reframed_problem = problem
         next_step = "Proceed to plan creation using the reframed brief and challenge passes."
 
-    build_vs_buy_posture = (
+    build_vs_buy_posture = research_posture or (
         "build-from-scratch remains under challenge"
         if any(token in lowered_build_vs_buy for token in ["from scratch", "custom", "reinvent"])
         else "current build-vs-buy posture is acceptable for planning"
@@ -988,11 +1008,94 @@ def _office_hours_gate_fields(root: Path, brief_path: str, pass_paths: list[str]
     )
 
 
+def _default_research_questions(args: argparse.Namespace) -> str:
+    if args.research_question:
+        return "\n".join(f"- {item}" for item in args.research_question)
+    return "- What should be built now versus adopted or deferred?\n- Which external baseline should the next plan cite explicitly?"
+
+
+def _write_deterministic_research(args: argparse.Namespace, paths: SimpleNamespace) -> int:
+    brief = _read(args.root / paths.brief_path)
+    problem = _extract_section(brief, "Problem Statement") or "Problem framing missing."
+    proposal = _extract_section(brief, "Current Proposal") or "Current proposal missing."
+    constraints = _extract_section(brief, "Constraints") or "Constraints missing."
+    build_vs_buy = _extract_section(brief, "Build vs Buy Context") or "Build-vs-buy context missing."
+    assumptions = _extract_list_section(brief, "Assumptions To Challenge")
+    lowered = f"{proposal}\n{build_vs_buy}".lower()
+    broad_scope = any(token in lowered for token in ["all", "everything", "platform"]) or len(assumptions) >= 3
+
+    if not (args.root / paths.research_brief_path).exists():
+        if not args.research_scope:
+            print(
+                "Missing research scope: provide --research-scope or an existing research brief before running office-hours.",
+                file=sys.stderr,
+            )
+            return 1
+        research_brief_args = SimpleNamespace(
+            root=args.root,
+            output=paths.research_brief_path,
+            title=args.title,
+            problem_framing=problem,
+            research_scope=args.research_scope,
+            known_constraints=constraints,
+            key_questions=_default_research_questions(args),
+            recommendation_target=paths.report_path,
+        )
+        rc = cmd_research_brief(research_brief_args)
+        if rc != 0:
+            return rc
+
+    if (args.root / paths.research_report_path).exists():
+        return 0
+
+    top_options = [
+        "Adopt a bounded repo-local baseline before wider orchestration.",
+        "Reuse existing experiment-tracking seams before committing to a full platform build.",
+    ]
+    if not broad_scope:
+        top_options[0] = "Proceed with one bounded repo-local milestone before widening scope."
+
+    recommendation = (
+        "Proceed with one bounded local milestone and defer broader platform scope."
+        if broad_scope or any(token in lowered for token in ["from scratch", "custom", "risk"])
+        else "Proceed with the current bounded milestone while preserving adoption seams."
+    )
+    posture = (
+        "Prefer a bounded local build with explicit reuse over a greenfield platform."
+        if broad_scope or any(token in lowered for token in ["from scratch", "custom", "risk"])
+        else "Current build-vs-buy posture is acceptable for planning."
+    )
+    adoption_notes = [
+        "Keep integration seams visible in the first plan.",
+        "Name the strongest external baseline in the next plan brief.",
+    ]
+    open_risks = [
+        "The operator flow is still under-specified."
+        if not any(token in f"{problem}\n{proposal}".lower() for token in ["flow", "journey", "operator", "screen"])
+        else "Broader platform scope could reappear without a milestone guardrail."
+    ]
+    report_args = SimpleNamespace(
+        root=args.root,
+        output=paths.research_report_path,
+        title=args.title,
+        problem_framing=problem,
+        research_brief=paths.research_brief_path,
+        top_option=top_options,
+        recommendation=recommendation,
+        build_vs_buy_posture=posture,
+        adoption_note=adoption_notes,
+        open_risk=open_risks,
+    )
+    return cmd_research_report(report_args)
+
+
 def cmd_office_hours(args: argparse.Namespace) -> int:
     artifact_dir = args.artifact_dir or "docs/plans/office-hours"
     paths = _office_hours_paths(
         artifact_dir=artifact_dir,
         brief_path=args.office_hours_brief_path,
+        research_brief_path=args.research_brief_path,
+        research_report_path=args.research_report_path,
         gate_path=args.discovery_gate_path,
         report_path=args.office_hours_report_path,
         pass_dir=args.challenge_pass_dir,
@@ -1068,6 +1171,10 @@ def cmd_office_hours(args: argparse.Namespace) -> int:
         if rc != 0:
             return rc
 
+    rc = _write_deterministic_research(args, paths)
+    if rc != 0:
+        return rc
+
     pass_dir = args.root / paths.pass_dir
     pass_dir.mkdir(parents=True, exist_ok=True)
     pass_paths: list[str] = []
@@ -1078,6 +1185,7 @@ def cmd_office_hours(args: argparse.Namespace) -> int:
             mode="office-hours",
             role=role_name,
             brief_path=paths.brief_path,
+            research_report_path=paths.research_report_path,
             output=output_rel,
             plan_path=None,
         )
@@ -1086,12 +1194,18 @@ def cmd_office_hours(args: argparse.Namespace) -> int:
             return rc
         pass_paths.append(output_rel)
 
-    gate_fields = _office_hours_gate_fields(args.root, paths.brief_path, pass_paths)
+    gate_fields = _office_hours_gate_fields(
+        args.root,
+        paths.brief_path,
+        paths.research_report_path,
+        pass_paths,
+    )
     gate_args = SimpleNamespace(
         root=args.root,
         output=paths.gate_path,
         title=args.title,
         office_hours_brief=paths.brief_path,
+        research_report=paths.research_report_path,
         challenge_pass=pass_paths,
         reframed_problem_statement=gate_fields.reframed_problem,
         build_vs_buy_posture=gate_fields.build_vs_buy_posture,
@@ -1186,6 +1300,8 @@ def build_parser() -> argparse.ArgumentParser:
     office_hours.add_argument("--title", required=True)
     office_hours.add_argument("--artifact-dir", dest="artifact_dir")
     office_hours.add_argument("--office-hours-brief-path", dest="office_hours_brief_path")
+    office_hours.add_argument("--research-brief-path", dest="research_brief_path")
+    office_hours.add_argument("--research-report-path", dest="research_report_path")
     office_hours.add_argument("--discovery-gate-path", dest="discovery_gate_path")
     office_hours.add_argument("--office-hours-report-path", dest="office_hours_report_path")
     office_hours.add_argument("--challenge-pass-dir", dest="challenge_pass_dir")
@@ -1200,6 +1316,8 @@ def build_parser() -> argparse.ArgumentParser:
         dest="success_criterion",
     )
     office_hours.add_argument("--build-vs-buy-context", dest="build_vs_buy_context")
+    office_hours.add_argument("--research-scope", dest="research_scope")
+    office_hours.add_argument("--research-question", action="append", default=[], dest="research_question")
     office_hours.add_argument(
         "--assumption-to-challenge",
         action="append",

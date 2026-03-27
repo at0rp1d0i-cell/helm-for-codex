@@ -189,6 +189,8 @@ def cmd_discovery_gate(args: argparse.Namespace) -> int:
         f"# Discovery Gate: {args.title}\n\n"
         "## Consumed Office-Hours Brief\n\n"
         f"{args.office_hours_brief}\n\n"
+        "## Research Report\n\n"
+        f"{args.research_report or 'not written'}\n\n"
         "## Challenge Passes\n\n"
         f"{challenge_passes}\n\n"
         "## Reframed Problem Statement\n\n"
@@ -1174,6 +1176,7 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         dest="office_hours_brief",
     )
+    discovery_gate.add_argument("--research-report", dest="research_report")
     discovery_gate.add_argument(
         "--challenge-pass",
         action="append",

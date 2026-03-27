@@ -5,6 +5,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 ROLE_FILES = [
     ROOT / "skills" / "ops-orchestrator" / "SKILL.md",
+    ROOT / "skills" / "researcher" / "SKILL.md",
     ROOT / "skills" / "product-discovery" / "SKILL.md",
     ROOT / "skills" / "design-review" / "SKILL.md",
     ROOT / "skills" / "architecture-review" / "SKILL.md",
@@ -119,6 +120,11 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
             ".agents/skills/ops-orchestrator/SKILL.md",
             "docs/status/EXECUTION_BOARD.md",
             "scripts/ops_loop.py",
+        ),
+        ROOT / ".codex" / "roles" / "researcher.toml": (
+            ".agents/skills/researcher/SKILL.md",
+            "docs/plans/office-hours/research-report.md",
+            "scripts/team_state.py research-report",
         ),
         ROOT / ".codex" / "roles" / "product-reviewer.toml": (
             ".agents/skills/product-discovery/SKILL.md",

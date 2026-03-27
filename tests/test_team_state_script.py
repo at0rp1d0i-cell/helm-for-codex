@@ -227,6 +227,8 @@ def test_discovery_gate_command_writes_markdown(tmp_path: Path) -> None:
         "Pixiu office hours",
         "--office-hours-brief",
         "docs/plans/office-hours-brief-demo.md",
+        "--research-report",
+        "docs/plans/research-report-demo.md",
         "--challenge-pass",
         "docs/plans/challenge-passes/product.md",
         "--challenge-pass",
@@ -250,6 +252,7 @@ def test_discovery_gate_command_writes_markdown(tmp_path: Path) -> None:
     content = out.read_text()
     assert "# Discovery Gate: Pixiu office hours" in content
     assert "docs/plans/office-hours-brief-demo.md" in content
+    assert "docs/plans/research-report-demo.md" in content
     assert "docs/plans/challenge-passes/design.md" in content
     assert "## Reframed Problem Statement" in content
     assert "## Build vs Buy Posture" in content

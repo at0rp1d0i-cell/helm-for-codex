@@ -576,20 +576,28 @@ def test_office_hours_run_marks_ready_for_plan_when_brief_is_sharp(tmp_path: Pat
         "One experiment can be created and reviewed end to end.",
         "--build-vs-buy-context",
         "The current build-vs-buy posture is acceptable for the first milestone.",
+        "--research-scope",
+        "Compare bounded repo-local baselines against a full experimentation platform.",
         "--assumption-to-challenge",
         "Users will accept a single-flow first release.",
     )
 
     assert result.returncode == 0, result.stderr
     brief = tmp_path / "docs" / "plans" / "office-hours" / "office-hours-brief.md"
+    research_brief = tmp_path / "docs" / "plans" / "office-hours" / "research-brief.md"
+    research_report = tmp_path / "docs" / "plans" / "office-hours" / "research-report.md"
     gate = tmp_path / "docs" / "plans" / "office-hours" / "discovery-gate.md"
     report = tmp_path / "docs" / "plans" / "office-hours" / "office-hours-report.md"
     assert brief.exists()
+    assert research_brief.exists()
+    assert research_report.exists()
     assert gate.exists()
     assert report.exists()
     report_content = report.read_text()
     assert "# Office-Hours Report: Pixiu office hours" in report_content
     assert "## Outcome\n\nready-for-plan" in report_content
+    assert "docs/plans/office-hours/research-brief.md" in report_content
+    assert "docs/plans/office-hours/research-report.md" in report_content
     assert "docs/plans/office-hours/challenge-passes/design.md" in report_content
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nplan" in board
@@ -616,6 +624,8 @@ def test_office_hours_run_marks_reframe_when_scope_is_too_broad(tmp_path: Path) 
         "Experiments feel easier to run.",
         "--build-vs-buy-context",
         "A partial in-house flow is acceptable.",
+        "--research-scope",
+        "Compare a bounded baseline against a full experimentation platform.",
         "--assumption-to-challenge",
         "Users need the whole platform immediately.",
         "--assumption-to-challenge",
@@ -626,6 +636,7 @@ def test_office_hours_run_marks_reframe_when_scope_is_too_broad(tmp_path: Path) 
 
     assert result.returncode == 0, result.stderr
     gate = (tmp_path / "docs" / "plans" / "office-hours" / "discovery-gate.md").read_text()
+    assert "docs/plans/office-hours/research-report.md" in gate
     assert "## Outcome\n\nreframe" in gate
     assert "Reduce the first milestone to one critical path" in gate
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
@@ -652,12 +663,15 @@ def test_office_hours_run_marks_ask_user_for_strategic_build_vs_buy(tmp_path: Pa
         "One experiment can be reviewed end to end.",
         "--build-vs-buy-context",
         "Budget and compliance constraints affect whether to integrate or build.",
+        "--research-scope",
+        "Review strategic adoption constraints before planning.",
         "--assumption-to-challenge",
         "The existing stack is sufficient.",
     )
 
     assert result.returncode == 0, result.stderr
     gate = (tmp_path / "docs" / "plans" / "office-hours" / "discovery-gate.md").read_text()
+    assert "docs/plans/office-hours/research-report.md" in gate
     assert "## Outcome\n\nask-user" in gate
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\napproval-needed" in board

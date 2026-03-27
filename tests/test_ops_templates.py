@@ -79,6 +79,7 @@ def test_ops_templates_and_checks_exist() -> None:
     discovery_gate = (ROOT / "ops" / "templates" / "discovery-gate.md").read_text()
     assert "# Discovery Gate: <title>" in discovery_gate
     assert "<office_hours_brief_path>" in discovery_gate
+    assert "<research_report_path>" in discovery_gate
     assert "<challenge_pass_paths>" in discovery_gate
     assert "<reframed_problem_statement>" in discovery_gate
     assert "<build_vs_buy_posture>" in discovery_gate
