@@ -11,11 +11,13 @@ plan
 - deepen browser-QA from evidence artifacts into a fuller browser-backed runtime and clearer report-only lane
 - deepen ship/release from readiness gates into a more complete daily shipping workflow
 - harden office-hours from deterministic research-backed challenge passes into live discovery roles
+- harden sprint negotiation from deterministic Builder/QA pressure into live pre-build negotiation
 
 ## Completed
 
 - add a first-class office-hours discovery lane with Product, Design, and Architect challenge pressure before plan
 - add repo-backed Researcher pressure to office-hours before Product, Design, and Architect challenge passes
+- add repo-backed sprint negotiation so Builder and QA pressure shape the sprint contract before build
 - upgrade browser-QA evidence from placeholder prose into a manifest/artifact-root contract with screenshot, DOM, and console targets
 - add a first-class ship/release workflow foundation with release gate and release prep artifacts
 - add browser-backed QA evidence so QA is a visible repo-backed trust surface

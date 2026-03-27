@@ -3,7 +3,7 @@
 ## Active Debt
 
 - deeper team orchestration (implementation → QA → docs) still lacks runtime automation; the fresh-target deep scan shows we validated installer behavior but the handoff chain must still be orchestrated and tested.
-- productized workflow maturity still lags gstack in three critical lanes: live office-hours execution, browser-backed QA evidence, and ship/release workflow.
+- productized workflow maturity still lags the target harness in three critical lanes: live office-hours execution, deeper browser-backed QA evidence, and fuller ship/release workflow. Sprint negotiation now exists, but only as deterministic pre-build pressure.
 
 ## Deferred Debt
 

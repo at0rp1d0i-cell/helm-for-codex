@@ -2,7 +2,7 @@
 
 ## Current Milestone
 
-Phase 22 in progress: build the second productization tranche after landing research-first `office-hours`, `autoplan`, browser-QA evidence, and release gate/prep workflows. The next step on the discovery side is promoting `office-hours` from deterministic research-backed passes into richer live discovery execution.
+Phase 22 in progress: build the second productization tranche after landing research-first `office-hours`, sprint negotiation, `autoplan`, browser-QA evidence, and release gate/prep workflows. The next steps are promoting `office-hours` into richer live discovery execution and turning sprint negotiation from deterministic contract pressure into live Builder/QA negotiation.
 
 ## Later Milestones
 
@@ -11,6 +11,7 @@ Phase 22 in progress: build the second productization tranche after landing rese
 - extend browser-QA evidence into a fuller browser-backed QA runtime and a clearer report-only lane
 - deepen ship/release from readiness gates into a more complete daily shipping workflow
 - harden office-hours from deterministic research-backed challenge passes into live discovery roles
+- harden sprint negotiation from deterministic Builder/QA pressure into live pre-build negotiation
 - expand validation from structural checks into richer behavior-aware orchestration checks
 - let the live `Ops Orchestrator` role own more of the dispatch path instead of relying on the remaining spawn bridge
 - drive more live dispatch through `scripts/role_bridge.py` rather than hand-written per-turn routing
