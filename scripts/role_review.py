@@ -23,12 +23,25 @@ def _extract_section(content: str, heading: str) -> str:
     return content[start:next_header].strip()
 
 
+def _extract_list_section(content: str, heading: str) -> list[str]:
+    section = _extract_section(content, heading)
+    if not section:
+        return []
+    items: list[str] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            items.append(stripped[2:].strip())
+    return items
+
+
 def _count_modules(modules: str) -> int:
     return len([item.strip() for item in modules.split(",") if item.strip()])
 
 
 def _resolve_office_hours_pass(args: argparse.Namespace) -> SimpleNamespace:
     brief = _read(args.root / args.brief_path)
+    research = _read(args.root / args.research_report_path) if args.research_report_path else ""
 
     problem = _extract_section(brief, "Problem Statement")
     target_user = _extract_section(brief, "Target User Or Operator")
@@ -37,6 +50,10 @@ def _resolve_office_hours_pass(args: argparse.Namespace) -> SimpleNamespace:
     success_criteria = _extract_section(brief, "Success Criteria")
     build_vs_buy = _extract_section(brief, "Build vs Buy Context")
     assumptions = _extract_section(brief, "Assumptions To Challenge")
+    top_options = _extract_list_section(research, "Top Options")
+    research_recommendation = _extract_section(research, "Recommendation")
+    research_posture = _extract_section(research, "Build vs Buy Posture")
+    open_risks = _extract_list_section(research, "Open Risks")
     challenge_count = len([line for line in assumptions.splitlines() if line.strip().startswith("- ")])
 
     if args.role == "Product":
@@ -44,9 +61,18 @@ def _resolve_office_hours_pass(args: argparse.Namespace) -> SimpleNamespace:
             f"Target user pressure: {target_user or 'missing target user'}",
             f"Current proposal pressure: {proposal or 'missing proposal'}",
         ]
+        if top_options:
+            findings.append(f"Research baseline pressure: {top_options[0]}")
         auto_decisions = ["Force the next plan to name one primary user and one success metric."]
         taste_decisions = []
-        if challenge_count >= 3 or "all" in proposal.lower() or "platform" in proposal.lower():
+        if top_options:
+            auto_decisions.append("Carry the strongest external baseline into the next plan brief.")
+        if (
+            challenge_count >= 3
+            or "all" in proposal.lower()
+            or "platform" in proposal.lower()
+            or ("defer broader platform scope" in research_recommendation.lower())
+        ):
             taste_decisions.append("Decide whether to narrow scope to a single user-facing milestone before planning.")
         recommendation = "Reframe around a tighter milestone" if taste_decisions else "Proceed with product framing"
         focus = "Problem framing, scope pressure, and user value"
@@ -55,10 +81,13 @@ def _resolve_office_hours_pass(args: argparse.Namespace) -> SimpleNamespace:
             f"Primary flow pressure: {proposal or problem or 'missing problem framing'}",
             f"Success-criteria pressure: {success_criteria or 'missing success criteria'}",
         ]
+        if open_risks:
+            findings.append(f"Research risk pressure: {open_risks[0]}")
         auto_decisions = ["Force the next plan to describe one critical user or operator flow."]
         taste_decisions = []
         lowered = f"{proposal}\n{problem}".lower()
-        if not any(token in lowered for token in ["flow", "screen", "ui", "interface", "operator path", "journey"]):
+        risk_lowered = "\n".join(open_risks).lower()
+        if not any(token in lowered for token in ["flow", "screen", "ui", "interface", "operator path", "journey"]) or "under-specified" in risk_lowered:
             taste_decisions.append("Decide whether the first milestone needs an explicit primary flow before planning.")
         recommendation = "Reframe around one critical flow" if taste_decisions else "Proceed with design framing"
         focus = "Comprehension, workflow clarity, and interaction pressure"
@@ -67,9 +96,13 @@ def _resolve_office_hours_pass(args: argparse.Namespace) -> SimpleNamespace:
             f"Build-vs-buy pressure: {build_vs_buy or 'missing build-vs-buy context'}",
             f"Constraint pressure: {constraints or 'missing constraints'}",
         ]
+        if research_posture:
+            findings.append(f"Research posture pressure: {research_posture}")
         auto_decisions = ["Keep build-vs-buy posture explicit in the next plan brief."]
         taste_decisions = []
-        lowered = build_vs_buy.lower()
+        lowered = f"{build_vs_buy}\n{research_posture}".lower()
+        if "bounded local build" in lowered:
+            auto_decisions.append("Carry forward the bounded local build posture into planning.")
         if "from scratch" in lowered or "custom" in lowered or "reinvent" in lowered:
             taste_decisions.append("Decide whether building from scratch is justified before planning.")
         recommendation = "Pause for architecture tradeoff confirmation" if taste_decisions else "Proceed with architecture framing"
@@ -162,6 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--role", choices=["Product", "Architect", "Reviewer", "Design"], required=True)
     parser.add_argument("--plan-path")
     parser.add_argument("--brief-path", dest="brief_path")
+    parser.add_argument("--research-report-path", dest="research_report_path")
     parser.add_argument("--output", required=True)
     return parser
 

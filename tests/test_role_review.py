@@ -54,6 +54,24 @@ def seed_repo_state(tmp_path: Path) -> None:
         "- Custom orchestration is better than integrating existing tooling.\n"
         "- The first release must solve every workflow.\n"
     )
+    (tmp_path / "docs" / "plans" / "research-report.md").write_text(
+        "# Research Report: Pixiu office-hours research\n\n"
+        "## Problem Framing\n\n"
+        "The first milestone should optimize for one repo-local experiment path.\n\n"
+        "## Research Brief\n\n"
+        "docs/plans/research-brief.md\n\n"
+        "## Top Options\n\n"
+        "- Adopt a bounded repo-local baseline before wider orchestration.\n"
+        "- Reuse existing experiment-tracking seams instead of a full platform build.\n\n"
+        "## Recommendation\n\n"
+        "Proceed with one bounded local milestone and defer broader platform scope.\n\n"
+        "## Build vs Buy Posture\n\n"
+        "Prefer a bounded local build with explicit reuse over a greenfield platform.\n\n"
+        "## Adoption Notes\n\n"
+        "- Keep integration seams visible in the first plan.\n\n"
+        "## Open Risks\n\n"
+        "- The operator flow is still under-specified.\n"
+    )
 
 
 def test_role_review_runs_product_pass(tmp_path: Path) -> None:
@@ -127,6 +145,8 @@ def test_role_review_runs_product_office_hours_pass(tmp_path: Path) -> None:
         "Product",
         "--brief-path",
         "docs/plans/office-hours-brief.md",
+        "--research-report-path",
+        "docs/plans/research-report.md",
         "--output",
         "docs/plans/challenge-pass-product.md",
     )
@@ -136,6 +156,7 @@ def test_role_review_runs_product_office_hours_pass(tmp_path: Path) -> None:
     assert "# Review Pass: Product office-hours challenge" in content
     assert "## Role\n\nProduct" in content
     assert "target user pressure" in content.lower()
+    assert "bounded repo-local baseline" in content.lower()
     assert "narrow scope" in content.lower()
 
 
@@ -150,6 +171,8 @@ def test_role_review_runs_design_office_hours_pass(tmp_path: Path) -> None:
         "Design",
         "--brief-path",
         "docs/plans/office-hours-brief.md",
+        "--research-report-path",
+        "docs/plans/research-report.md",
         "--output",
         "docs/plans/challenge-pass-design.md",
     )
@@ -158,6 +181,7 @@ def test_role_review_runs_design_office_hours_pass(tmp_path: Path) -> None:
     content = (tmp_path / "docs" / "plans" / "challenge-pass-design.md").read_text()
     assert "# Review Pass: Design office-hours challenge" in content
     assert "## Role\n\nDesign" in content
+    assert "under-specified" in content.lower()
     assert "critical user or operator flow" in content.lower()
 
 
@@ -172,6 +196,8 @@ def test_role_review_runs_architect_office_hours_pass(tmp_path: Path) -> None:
         "Architect",
         "--brief-path",
         "docs/plans/office-hours-brief.md",
+        "--research-report-path",
+        "docs/plans/research-report.md",
         "--output",
         "docs/plans/challenge-pass-architect.md",
     )
@@ -181,4 +207,5 @@ def test_role_review_runs_architect_office_hours_pass(tmp_path: Path) -> None:
     assert "# Review Pass: Architect office-hours challenge" in content
     assert "## Role\n\nArchitect" in content
     assert "build-vs-buy" in content.lower()
+    assert "bounded local build" in content.lower()
     assert "building from scratch is justified" in content.lower()
