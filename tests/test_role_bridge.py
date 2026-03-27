@@ -50,4 +50,5 @@ def test_role_bridge_list_covers_live_roles() -> None:
         "implementation-worker",
         "qa-runner",
         "docs-sync",
+        "release-manager",
     }

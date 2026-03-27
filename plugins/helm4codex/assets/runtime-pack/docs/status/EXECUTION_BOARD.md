@@ -8,11 +8,15 @@ plan
 
 ## Active Work
 
-- design and implement a first-class ship/release workflow on top of the current Lead -> Ops -> Specialists runtime
-- design browser-backed QA evidence so QA becomes a visible trust surface instead of a role contract only
+- strengthen discovery with an office-hours style product reframing loop
+- deepen browser-QA from evidence artifacts into a fuller browser-backed runtime and clearer report-only lane
+- deepen ship/release from readiness gates into a more complete daily shipping workflow
 
 ## Completed
 
+- add a first-class ship/release workflow foundation with release gate and release prep artifacts
+- add browser-backed QA evidence so QA is a visible repo-backed trust surface
+- add a first-class autoplan lane on top of review passes and taste-decision gates
 - compare Helm4Codex against the latest gstack main branch and record the workflow gaps that still matter
 - update Pixiu to the latest Helm4Codex runtime after the gap assessment is recorded
 - add an installed-runtime self-check and wire it into upgrade guidance

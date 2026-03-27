@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 22 in progress: close the productization gap with gstack without giving up Helm4Codex's stronger repo-backed orchestration model.
+Phase 22 in progress: continue closing the productization gap with gstack after landing first-class `autoplan`, browser-QA evidence, and release gate/prep loops on top of Helm4Codex's repo-backed orchestration model.
 
 ## Success Criteria
 
@@ -35,4 +35,7 @@ Phase 22 in progress: close the productization gap with gstack without giving up
 - upgrades refresh runtime-managed files while preserving canonical project state
 - installed target repos have a runtime-scoped self-check instead of depending on source-only repo validation
 - a repo-backed gstack gap assessment exists and identifies the highest-value workflow gaps to close next
+- a first-class `autoplan` lane exists on top of existing review passes and taste-decision gates
+- browser-QA evidence artifacts exist as a repo-backed trust surface, even before the full browser runtime is wired
+- a release gate and release prep report exist as repo-backed ship-readiness artifacts
 - repo validation passes
