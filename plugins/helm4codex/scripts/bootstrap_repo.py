@@ -12,7 +12,7 @@ INSTALLER = RUNTIME_PACK_ROOT / "scripts" / "install_runtime_pack.py"
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Bootstrap the Codex AI Team runtime into a repository")
+    parser = argparse.ArgumentParser(description="Bootstrap the Helm4Codex runtime into a repository")
     parser.add_argument("--target", type=Path, default=Path.cwd(), help="Target repository root")
     return parser
 
@@ -31,7 +31,7 @@ def main() -> int:
     )
     if result.returncode != 0:
         return result.returncode
-    print(f"Bootstrapped Codex AI Team runtime into {target}")
+    print(f"Bootstrapped Helm4Codex runtime into {target}")
     return 0
 
 

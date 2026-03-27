@@ -20,7 +20,7 @@ from runtime_pack_manifest import (
 )
 
 
-DEFAULT_TARGET = ROOT / "plugins" / "codex-ai-team" / "assets" / "runtime-pack"
+DEFAULT_TARGET = ROOT / "plugins" / "helm4codex" / "assets" / "runtime-pack"
 
 
 def _copy_file(src: Path, dst: Path) -> None:
@@ -62,6 +62,10 @@ def _collect_files(root: Path) -> dict[str, bytes]:
     files: dict[str, bytes] = {}
     for path in sorted(root.rglob("*")):
         if path.is_file():
+            if "__pycache__" in path.parts:
+                continue
+            if path.suffix == ".pyc":
+                continue
             files[str(path.relative_to(root))] = path.read_bytes()
     return files
 

@@ -1,29 +1,87 @@
-# Codex-Native AI Team
+# Helm4Codex
 
-This repository is both the **source** and the **dogfooding runtime** for a Codex-powered development team.  
-It keeps the plans, tests, runtime scripts, repo-local skills, and canonical state that let Codex behave not as a single super-context assistant but as a disciplined, accountable engineering team.
+Helm4Codex is a repo-backed AI engineering team for Codex.
 
-It now ships in two forms:
+It turns a repository into a structured `Lead -> Ops -> Specialists` workflow so you can talk to one responsible lead while the repo keeps the team state, handoff artifacts, review gates, and runtime configuration.
 
-- a **runtime pack** for direct installation into a repository
-- a **Codex plugin** that bootstraps that runtime pack for users who want a cleaner install surface
+## What It Is
+
+Helm4Codex is not a chat prompt pack. It installs a working team runtime into a repository:
+
+- a single visible `Lead`
+- an internal `Ops` orchestrator
+- bounded specialist roles for implementation, review, QA, docs, release, and refactor planning
+- canonical project state under `docs/project/` and `docs/status/`
+- repo-local Codex skills under `.agents/skills`
+- role and bridge config under `.codex`
+
+## Why Use It
+
+Use Helm4Codex when you want Codex to behave more like a disciplined engineering team than a single long-context assistant:
+
+- one user-facing lead instead of many agent conversations
+- repo-backed handoffs instead of hidden chat-only state
+- explicit review, QA, docs, and onboarding stages
+- bounded task dispatch instead of vague "go build the feature"
+- a reusable install surface you can carry into other repositories
 
 ## Team Model
 
-The user talks only to the `Lead`. The lead stays user-facing, translates intent into approved work, and routes internal execution through `Ops`. `Ops` then dispatches the narrower specialist roles:
+The user talks only to the `Lead`. The lead stays user-facing, translates intent into approved work, and routes internal execution through `Ops`. `Ops` dispatches the narrower specialist roles:
 
-- `Ops`: dispatches bounded work, validates repo-backed handoff artifacts, and advances execution state without exposing internal chatter to the user.  
-- `Product`: scopes requests, translates them into goals, and keeps the roadmap honest.  
-- `Researcher`: surfaces papers, libraries, or precedents before committing to a build.  
-- `Architect`: defines module boundaries, interfaces, and hard constraints.  
-- `Builder`: implements bounded tasks inside the agreed architecture and quality constraints.  
-- `Reviewer`: inspects correctness, regressions, and completeness of the proposed work.  
-- `QA`: validates flows, repro steps, and automation before merging.  
-- `Docs`: keeps canonical docs plus decision records aligned with the implementation.  
-- `Refactor Planner`: proposes focused cleanup when technical debt blocks safe progress.  
-- `Release Manager`: wraps up the final rollout, push, and verification steps.
+- `Product`
+- `Researcher`
+- `Architect`
+- `Builder`
+- `Reviewer`
+- `QA`
+- `Docs`
+- `Refactor Planner`
+- `Release Manager`
 
-Roles are codified as repo-local Codex skills under `.agents/skills`, and the `Lead` routes each task through `Ops` without forcing you to address multiple agents directly.
+Roles are codified as repo-local Codex skills under `.agents/skills`, while `.codex` holds config, live role bindings, and logical-role bridge metadata.
+
+## Install Paths
+
+Helm4Codex ships in two forms:
+
+1. **Direct runtime-pack install**
+   - best when you already have this repo locally
+   - installs the full runtime directly into a target repo
+
+```bash
+uv run python scripts/install_runtime_pack.py --target /path/to/target-repo
+```
+
+2. **Plugin bootstrap**
+   - best when you want a Codex-facing install surface
+   - the plugin bootstraps the same runtime pack into the target repo
+
+```bash
+python3 plugins/helm4codex/scripts/bootstrap_repo.py --target /path/to/target-repo
+```
+
+In both cases, the installed repo runtime is the real execution surface. The plugin is a packaging and bootstrap layer, not a replacement for the installed repo-local runtime.
+
+## Quick Start
+
+1. Install Helm4Codex into a target repository.
+2. Restart Codex in that target repo if the new repo-local skills do not appear immediately.
+3. Start with the single visible entrypoint:
+
+```text
+Use team-lead. Adopt this repository and give me the next bounded task.
+```
+
+4. Let the lead move the repo through onboarding:
+   - `detect`
+   - `shallow-scan`
+   - `deep-scan-plan`
+   - `waiting-user-alignment`
+   - `deep-scan`
+   - `adopt`
+
+For a fuller walkthrough, see [docs/QUICKSTART.md](/home/torpedo/Workspace/codex_exploring/docs/QUICKSTART.md).
 
 ## Runtime Layout
 
@@ -32,109 +90,72 @@ The runtime is split on purpose:
 - `.agents/skills/` is the canonical repo-local skill surface that Codex discovers at runtime.
 - `.codex/` holds `config.toml`, `roles/*.toml`, `role_bridge.toml`, and other project-scoped runtime configuration.
 
-This is not cosmetic. Repo skills stay in `.agents/skills` because that is the official Codex discovery path; `.codex` is reserved for configuration and role metadata.
+Repo skills stay in `.agents/skills` because that is the official Codex discovery path. `.codex` is reserved for configuration and role metadata.
 
-## Install Paths
+## How The Workflow Works
 
-Choose one of these:
+The runtime is built on four layers:
 
-1. **Direct runtime-pack install**
-   - best when you already have this repo locally
-   - installs the full runtime directly into a target repo
-2. **Plugin bootstrap**
-   - best when you want a Codex-facing install surface
-   - the plugin bootstraps the same runtime pack into the target repo
+- `AGENTS.md` describes the operating guide and canonical state.
+- `.codex/config.toml` plus `.codex/roles/*.toml` bind live orchestration and specialist roles.
+- `.codex/role_bridge.toml` plus `scripts/role_bridge.py` keep repo role names canonical and resolve them to the available agent API surface.
+- `scripts/team_state.py`, `scripts/lead_loop.py`, `scripts/ops_loop.py`, and `scripts/bridge_runner.py` create handoff artifacts, advance state, and compile live dispatch payloads.
 
-In both cases, the installed repo runtime is the real execution surface. The plugin is a packaging and bootstrap layer, not a replacement for the installed repo-local runtime.
+The current execution path supports:
 
-## What the Workflow Does
+- bounded task dispatch packets
+- paired invocation specs for live dispatch
+- review passes and review gates
+- bridge-launch payloads
+- execution receipts after live attempts
 
-The system is built on four layers:
-
-- `AGENTS.md` describes the operating guide and canonical state.  
-- `.codex/config.toml` plus `.codex/roles/*.toml` bind the live orchestration, review, and execution roles to their latest installed skills.  
-- `.codex/role_bridge.toml` plus `scripts/role_bridge.py` keep repo role names canonical and resolve them to the currently available generic agent API surface.  
-- `scripts/team_state.py` writes markdown artifacts such as briefs, review passes, onboarding reports, and refactor proposals.  
-- `scripts/lead_loop.py` sequences the stages (`intake → discovery → plan → build → review → qa → docs-sync → ship-ready → evolve`) and keeps `docs/status/EXECUTION_BOARD.md` up to date.
-
-Inside the execution lane, `Ops` now creates explicit dispatch packets for `Builder`, `QA`, and `Docs Sync`, so specialists consume repo-backed handoffs instead of relying only on implicit bridge context.
-The live review lane now does the same for `Product Reviewer`, `Architect Reviewer`, and `Code Reviewer`, so review packets carry canonical logical role names plus bridge resolution instead of only human-readable labels.
-Each live packet now has a paired invocation spec. The packet remains the bounded handoff artifact; the invocation spec carries the final bridge contract: resolved generic agent type, runtime skill path, metadata path, consumed artifacts, and expected writeback. That keeps `Ops` as the dispatch owner without pretending repo-defined roles are natively spawnable.
-`scripts/bridge_runner.py` now consumes the packet plus invocation spec pair and renders a reusable last-hop launch payload. `Ops` exposes that through `ops_loop.py bridge-launch`, so the bridge hop is compiled from repo-backed artifacts instead of reconstructed ad hoc in chat.
-After a live attempt, `ops_loop.py bridge-receipt` records an execution receipt with execution status, writeback status, and specialist notes. That gives the team a repo-backed trace of what actually happened after launch instead of leaving launch results in transient chat only.
-
-The runtime pack installer copies the necessary scripts, docs, templates, and `.agents/skills` into another repo, so Codex can onboard that project and execute exactly the same orchestration.
-
-Current live Codex role bindings cover `Ops Orchestrator`, `Product Reviewer`, `Architect Reviewer`, `Code Reviewer`, `Implementation Worker`, `QA Runner`, and `Docs Sync`. `Lead` is still the visible session entrypoint rather than a spawned role, while `Ops` now has both a live role surface and the repo-owned orchestration runtime in `scripts/ops_loop.py`.
-
-Because the underlying session tool still exposes only generic agent types such as `worker` and `explorer`, the runtime now treats repo role names as the canonical orchestration surface and compiles them through the role bridge at the last hop. In other words, the real team roles live in the repo even when the final tool call still has to use a generic agent class, and the paired invocation spec makes that bridge explicit instead of pretending the roles are natively spawnable.
+For a deeper breakdown, see [docs/DISTRIBUTION.md](/home/torpedo/Workspace/codex_exploring/docs/DISTRIBUTION.md) and [docs/project/ARCHITECTURE.md](/home/torpedo/Workspace/codex_exploring/docs/project/ARCHITECTURE.md).
 
 ## Agent Work Granularity
 
-The team favors bounded, measurable slices but currently only the `Lead/Review/Onboarding/Packaging` chain has been fully exercised. Work granularity looks like this:
+Helm4Codex currently favors bounded, measurable slices:
 
-1. **Task brief** – the smallest unit (bug fix, doc update, refactor slice) with a clear scope, constraints, and verification. Builders and QA runners operate at this level.  
-2. **Feature slice** – a concrete surface (API endpoint, screen, workflow) that may already include Builder + QA + Docs touches, but today the runtime has only locked the review/QA handoff path; docs synchronization as part of the same flow is the next tranche.  
-3. **Feature branch / PR** – assigned when a slice is owned end-to-end; the lead still orchestrates review, QA, and docs before shipping, while the implementation agent focuses on the aggregated changes across task briefs.
+1. **Task brief**
+   - the smallest unit: bug fix, doc update, refactor slice
+2. **Feature slice**
+   - a concrete surface that may include Builder + QA + Docs handoffs
+3. **Feature branch / PR**
+   - an aggregated slice that the lead still routes through review, QA, and docs before ship-ready
 
-This keeps each agent focused: they solve a small problem or slice inside a shared repository-backed plan, not a vague scope. The `Lead` stitches slices into a cohesive feature and triggers review and QA only after the slice is ready.
+This keeps agents focused: they solve a bounded problem inside a shared repo-backed plan instead of taking vague ownership of an entire codebase.
 
-## Install Into Another Repo
+## Public Distribution Surface
 
-Use the installer:
+For external users, the repository has three install-facing layers:
 
-```bash
-uv run python scripts/install_runtime_pack.py --target /path/to/target-repo
-```
-
-It bootstraps `AGENTS.md`, `.codex/config.toml` + roles, `.agents/skills`, runtime scripts, ops templates/checks, and canonical docs. Runtime-managed files refresh while existing canonical state stays intact, so rerunning the installer does not wipe a target repo’s `PROJECT_BRIEF`, `EXECUTION_BOARD`, `ONBOARDING_STATE`, or `AGENTS.md`.
-
-## Install Via Plugin
-
-This repo now includes a local Codex plugin at [`plugins/codex-ai-team`](/home/torpedo/Workspace/codex_exploring/plugins/codex-ai-team) and a repo marketplace entry at [`.agents/plugins/marketplace.json`](/home/torpedo/Workspace/codex_exploring/.agents/plugins/marketplace.json).
-
-The plugin contains:
-
-- a bootstrap skill
-- a bootstrap script
-- a bundled runtime-pack payload under `assets/runtime-pack/`
-
-The bootstrap entrypoint is:
-
-```bash
-python3 plugins/codex-ai-team/scripts/bootstrap_repo.py --target /path/to/target-repo
-```
-
-That path installs the same runtime surface as the direct installer.
-
-## First Contact And Onboarding
-
-Onboarding follows `detect → shallow-scan → deep-scan-plan → waiting-user-alignment → deep-scan → adopt`.  
-Shallow scan is repo-safe and read-only. Deep scan is planned so the lead can explain what it will verify, which probes it will run, what evidence it expects, and what requires user approval.  
-You can also trigger the same flow with `uv run python scripts/lead_loop.py init` or `--force` when the repo already has an onboarding state file.
-
-## Runtime Surface
-
-When installed, Codex only relies on:
-
-- `AGENTS.md` for guidance  
-- `.agents/skills` for role skills  
-- `.codex/config.toml`, `.codex/roles/*.toml`, and `.codex/role_bridge.toml` for live role bindings and logical-role-to-agent resolution  
-- `scripts/bridge_runner.py` plus `ops_loop.py bridge-launch` for compiling repo-backed launch payloads from packet/spec pairs  
-- `ops_loop.py bridge-receipt` for persisting the outcome of a live specialist launch into an execution receipt  
-- canonical docs under `docs/project/` and `docs/status/` for state  
-
-Plans, tests, and design docs stay in the source repo so this runtime pack can keep evolving without dragging every historical artifact into target projects.
-
-## Distribution Surface
-
-For external users, the repository now has three layers:
-
-- `plugins/codex-ai-team/`
+- `plugins/helm4codex/`
   - public Codex plugin surface
 - `.agents/plugins/marketplace.json`
   - local marketplace metadata for Codex plugin discovery during development
 - `scripts/install_runtime_pack.py`
   - direct installer for the full repo runtime
 
-The plugin exists to make installation and discovery easier. The installed runtime pack remains the canonical team runtime that users actually work inside.
+## Open Source Docs
+
+- [docs/README.md](/home/torpedo/Workspace/codex_exploring/docs/README.md)
+- [docs/QUICKSTART.md](/home/torpedo/Workspace/codex_exploring/docs/QUICKSTART.md)
+- [docs/DISTRIBUTION.md](/home/torpedo/Workspace/codex_exploring/docs/DISTRIBUTION.md)
+- [CONTRIBUTING.md](/home/torpedo/Workspace/codex_exploring/CONTRIBUTING.md)
+- [CHANGELOG.md](/home/torpedo/Workspace/codex_exploring/CHANGELOG.md)
+- [SECURITY.md](/home/torpedo/Workspace/codex_exploring/SECURITY.md)
+- [CODE_OF_CONDUCT.md](/home/torpedo/Workspace/codex_exploring/CODE_OF_CONDUCT.md)
+- [SUPPORT.md](/home/torpedo/Workspace/codex_exploring/SUPPORT.md)
+
+## Development
+
+```bash
+uv sync --dev
+uv run pytest -q
+uv run python scripts/check_repo.py
+uv run python ops/checks/check_docs_freshness.py
+uv run python scripts/export_plugin_runtime.py --check
+```
+
+## License
+
+MIT. See [LICENSE](/home/torpedo/Workspace/codex_exploring/LICENSE).

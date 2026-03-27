@@ -1,11 +1,11 @@
 ---
 name: team-runtime-bootstrap
-description: Use when Codex needs to install the Codex AI Team runtime into the current repository so `team-lead` and the internal repo-local roles become available.
+description: Use when Codex needs to install the Helm4Codex runtime into the current repository so `team-lead` and the internal repo-local roles become available.
 ---
 
 # Team Runtime Bootstrap
 
-Install the Codex AI Team runtime into the target repository.
+Install the Helm4Codex runtime into the target repository.
 
 ## When To Use
 

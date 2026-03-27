@@ -1,14 +1,14 @@
 {
-  "name": "codex-exploring-local",
+  "name": "helm4codex-local",
   "interface": {
-    "displayName": "Codex Exploring Local"
+    "displayName": "Helm4Codex Local"
   },
   "plugins": [
     {
-      "name": "codex-ai-team",
+      "name": "helm4codex",
       "source": {
         "source": "local",
-        "path": "./plugins/codex-ai-team"
+        "path": "./plugins/helm4codex"
       },
       "policy": {
         "installation": "AVAILABLE",

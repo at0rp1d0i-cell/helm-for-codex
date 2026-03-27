@@ -29,23 +29,40 @@ def test_canonical_state_docs_have_required_headings() -> None:
 def test_readme_describes_team_model_and_granularity() -> None:
     content = read("README.md")
     required = [
-        "# Codex-Native AI Team",
+        "# Helm4Codex",
         "## Team Model",
         "## Runtime Layout",
         "## Install Paths",
-        "## Install Via Plugin",
-        "## Distribution Surface",
         "## Agent Work Granularity",
+        "## Quick Start",
+        "## Public Distribution Surface",
+        "## Open Source Docs",
         "bounded task",
         "feature slice",
         "feature branch",
         "Lead",
         ".agents/skills",
         ".codex/config.toml",
-        "plugins/codex-ai-team",
+        "plugins/helm4codex",
     ]
     for token in required:
         if token.islower():
             assert token in content.lower(), f"{token} missing from README"
         else:
             assert token in content, f"{token} missing from README"
+
+
+def test_open_source_docs_exist() -> None:
+    required = [
+        "LICENSE",
+        "CONTRIBUTING.md",
+        "CHANGELOG.md",
+        "CODE_OF_CONDUCT.md",
+        "SECURITY.md",
+        "SUPPORT.md",
+        "docs/README.md",
+        "docs/QUICKSTART.md",
+        "docs/DISTRIBUTION.md",
+    ]
+    for relpath in required:
+        assert (ROOT / relpath).exists(), f"{relpath} missing"

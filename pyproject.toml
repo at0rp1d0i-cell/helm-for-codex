@@ -1,7 +1,7 @@
 [project]
-name = "codex-native-ai-team"
+name = "helm4codex"
 version = "0.1.0"
-description = "Bootstrap harness for a Codex-native AI team"
+description = "A repo-backed AI engineering team for Codex"
 requires-python = ">=3.11"
 dependencies = []
 
