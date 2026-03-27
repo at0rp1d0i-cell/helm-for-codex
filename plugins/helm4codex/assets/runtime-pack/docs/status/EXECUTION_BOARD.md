@@ -14,6 +14,7 @@ plan
 
 ## Completed
 
+- upgrade browser-QA evidence from placeholder prose into a manifest/artifact-root contract with screenshot, DOM, and console targets
 - add a first-class ship/release workflow foundation with release gate and release prep artifacts
 - add browser-backed QA evidence so QA is a visible repo-backed trust surface
 - add a first-class autoplan lane on top of review passes and taste-decision gates

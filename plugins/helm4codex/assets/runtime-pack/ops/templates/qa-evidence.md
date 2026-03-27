@@ -1,4 +1,4 @@
-# QA Evidence: <title>
+# QA Evidence Manifest: <title>
 
 ## Consumed QA Report
 
@@ -26,6 +26,10 @@ This artifact reserves repo-backed browser evidence paths until live capture is 
 
 <browser_evidence_status>
 
+## Artifact Root
+
+<artifact_root>
+
 ## Environment
 
 <environment>
@@ -34,13 +38,17 @@ This artifact reserves repo-backed browser evidence paths until live capture is 
 
 <scenario_coverage>
 
-## Screenshot Placeholders
+## Screenshot Targets
 
-<screenshot_placeholders>
+<screenshot_targets>
 
-## Additional Artifact Placeholders
+## DOM Snapshot Targets
 
-<artifact_placeholders>
+<dom_targets>
+
+## Console Log Targets
+
+<console_targets>
 
 ## Notes
 

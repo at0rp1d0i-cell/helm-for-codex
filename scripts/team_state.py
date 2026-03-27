@@ -159,10 +159,14 @@ def cmd_qa_report(args: argparse.Namespace) -> int:
         "## Consumed QA Dispatch Packet\n\n"
         f"{args.qa_dispatch_packet}\n\n"
         "QA must validate the generator output against the consumed artifacts before board advancement.\n\n"
-        "## QA Evidence Report\n\n"
-        f"{args.evidence_report}\n\n"
         "## Browser Evidence Status\n\n"
         f"{args.browser_evidence_status}\n\n"
+        "## Browser Evidence Mode\n\n"
+        f"{args.browser_evidence_mode}\n\n"
+        "## Browser Evidence Manifest\n\n"
+        f"{args.browser_evidence_manifest}\n\n"
+        "## Browser Evidence Artifact Root\n\n"
+        f"{args.browser_evidence_artifact_root}\n\n"
         "## Environment\n\n"
         f"{args.environment}\n\n"
         "## Scenarios Tested\n\n"
@@ -180,19 +184,35 @@ def cmd_qa_report(args: argparse.Namespace) -> int:
 def cmd_qa_evidence(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     scenarios = "\n".join(f"- {item}" for item in args.scenario)
-    screenshot_placeholders = (
-        "\n".join(f"- {item}" for item in args.screenshot_placeholder)
-        if args.screenshot_placeholder
+    dom_targets = list(args.dom_target)
+    console_targets = list(args.console_target)
+    for placeholder in args.artifact_placeholder:
+        value = placeholder.strip()
+        if not value:
+            continue
+        lowered = value.lower()
+        if "/dom/" in value or " dom " in lowered or lowered.endswith(".md"):
+            dom_targets.append(value)
+            continue
+        console_targets.append(value)
+    screenshot_targets = (
+        "\n".join(f"- {item}" for item in args.screenshot_target)
+        if args.screenshot_target
         else "- none"
     )
-    artifact_placeholders = (
-        "\n".join(f"- {item}" for item in args.artifact_placeholder)
-        if args.artifact_placeholder
+    dom_targets = (
+        "\n".join(f"- {item}" for item in dom_targets)
+        if dom_targets
+        else "- none"
+    )
+    console_targets = (
+        "\n".join(f"- {item}" for item in console_targets)
+        if console_targets
         else "- none"
     )
     notes = "\n".join(f"- {item}" for item in args.note) if args.note else "- none"
     content = (
-        f"# QA Evidence: {args.title}\n\n"
+        f"# QA Evidence Manifest: {args.title}\n\n"
         "## Consumed QA Report\n\n"
         f"{args.qa_report}\n\n"
         "## Consumed QA Dispatch Packet\n\n"
@@ -206,14 +226,18 @@ def cmd_qa_evidence(args: argparse.Namespace) -> int:
         f"{args.evidence_mode}\n\n"
         "## Browser Evidence Status\n\n"
         f"{args.browser_evidence_status}\n\n"
+        "## Artifact Root\n\n"
+        f"{args.artifact_root}\n\n"
         "## Environment\n\n"
         f"{args.environment}\n\n"
         "## Scenario Coverage\n\n"
         f"{scenarios}\n\n"
-        "## Screenshot Placeholders\n\n"
-        f"{screenshot_placeholders}\n\n"
-        "## Additional Artifact Placeholders\n\n"
-        f"{artifact_placeholders}\n\n"
+        "## Screenshot Targets\n\n"
+        f"{screenshot_targets}\n\n"
+        "## DOM Snapshot Targets\n\n"
+        f"{dom_targets}\n\n"
+        "## Console Log Targets\n\n"
+        f"{console_targets}\n\n"
         "## Notes\n\n"
         f"{notes}\n"
     )
@@ -829,11 +853,26 @@ def build_parser() -> argparse.ArgumentParser:
         default="none",
         dest="qa_dispatch_packet",
     )
-    qa_report.add_argument("--evidence-report", default="none", dest="evidence_report")
+    qa_report.add_argument(
+        "--browser-evidence-manifest",
+        "--evidence-report",
+        default="none",
+        dest="browser_evidence_manifest",
+    )
     qa_report.add_argument(
         "--browser-evidence-status",
         default="placeholder",
         dest="browser_evidence_status",
+    )
+    qa_report.add_argument(
+        "--browser-evidence-mode",
+        default="browser-placeholder",
+        dest="browser_evidence_mode",
+    )
+    qa_report.add_argument(
+        "--browser-evidence-artifact-root",
+        default="none",
+        dest="browser_evidence_artifact_root",
     )
     qa_report.add_argument("--environment", required=True)
     qa_report.add_argument("--scenario", action="append", default=[], required=True)
@@ -842,7 +881,8 @@ def build_parser() -> argparse.ArgumentParser:
     qa_report.set_defaults(func=cmd_qa_report)
 
     qa_evidence = subparsers.add_parser(
-        "qa-evidence",
+        "qa-evidence-manifest",
+        aliases=["qa-evidence"],
         help="Create QA evidence companion markdown",
     )
     qa_evidence.add_argument("--output", required=True)
@@ -865,13 +905,27 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         dest="browser_evidence_status",
     )
+    qa_evidence.add_argument("--artifact-root", required=True, dest="artifact_root")
     qa_evidence.add_argument("--environment", required=True)
     qa_evidence.add_argument("--scenario", action="append", default=[], required=True)
     qa_evidence.add_argument(
+        "--screenshot-target",
         "--screenshot-placeholder",
         action="append",
         default=[],
-        dest="screenshot_placeholder",
+        dest="screenshot_target",
+    )
+    qa_evidence.add_argument(
+        "--dom-target",
+        action="append",
+        default=[],
+        dest="dom_target",
+    )
+    qa_evidence.add_argument(
+        "--console-target",
+        action="append",
+        default=[],
+        dest="console_target",
     )
     qa_evidence.add_argument(
         "--artifact-placeholder",

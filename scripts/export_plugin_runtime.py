@@ -95,16 +95,40 @@ def check_runtime_pack(target: Path) -> int:
     return 0
 
 
+def _looks_like_repo_root(path: Path) -> bool:
+    return (path / "scripts" / "export_plugin_runtime.py").exists() and (
+        path / "plugins" / "helm4codex"
+    ).exists()
+
+
+def _resolve_target(path: Path | None) -> Path:
+    if path is None:
+        return DEFAULT_TARGET
+    if _looks_like_repo_root(path):
+        return path / "plugins" / "helm4codex" / "assets" / "runtime-pack"
+    return path
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Export the runtime pack into the plugin bundle")
-    parser.add_argument("--target", type=Path, default=DEFAULT_TARGET, help="Plugin runtime-pack target")
+    parser.add_argument(
+        "path",
+        nargs="?",
+        type=Path,
+        help="Plugin runtime-pack target, or repo root containing plugins/helm4codex",
+    )
+    parser.add_argument("--target", type=Path, help="Plugin runtime-pack target")
     parser.add_argument("--check", action="store_true", help="Verify the checked-in plugin runtime pack is in sync")
     return parser
 
 
 def main() -> int:
-    args = build_parser().parse_args()
-    target = args.target.resolve()
+    parser = build_parser()
+    args = parser.parse_args()
+    if args.path is not None and args.target is not None:
+        parser.error("pass either PATH or --target, not both")
+
+    target = _resolve_target(args.target or args.path).resolve()
     if args.check:
         return check_runtime_pack(target)
 

@@ -160,14 +160,17 @@ def test_qa_creates_report_and_moves_board_to_qa(tmp_path: Path) -> None:
     assert "# QA Report" in content
     assert "docs/plans/sprint-contract-phase13-task3.md" in content
     assert "docs/plans/implementation-report-phase13-task3.md" in content
-    assert "## QA Evidence Report" in content
+    assert "## Browser Evidence Manifest" in content
     assert "docs/plans/qa-evidence-phase13-task3.md" in content
+    assert "## Browser Evidence Artifact Root" in content
+    assert "docs/plans/qa-artifacts/phase13-task3" in content
     assert "Run the targeted handoff test suite" in content
     assert "passed" in content
     evidence = tmp_path / "docs" / "plans" / "qa-evidence-phase13-task3.md"
     assert evidence.exists()
     evidence_content = evidence.read_text()
-    assert "## Screenshot Placeholders" in evidence_content
+    assert "# QA Evidence Manifest: Phase 13 task 3" in evidence_content
+    assert "## Screenshot Targets" in evidence_content
     assert "docs/plans/qa-artifacts/phase13-task3/screenshots/scenario-01.png" in evidence_content
 
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()

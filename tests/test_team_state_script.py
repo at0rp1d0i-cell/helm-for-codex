@@ -243,10 +243,14 @@ def test_qa_report_command_writes_markdown(tmp_path: Path) -> None:
         "docs/plans/implementation-report-demo.md",
         "--qa-dispatch-packet",
         "docs/plans/qa-dispatch-demo.md",
-        "--evidence-report",
+        "--browser-evidence-mode",
+        "browser-placeholder",
+        "--browser-evidence-manifest",
         "docs/plans/qa-evidence-demo.md",
         "--browser-evidence-status",
         "placeholder",
+        "--browser-evidence-artifact-root",
+        "docs/plans/qa-artifacts/demo",
         "--environment",
         "Fresh repo checkout",
         "--scenario",
@@ -267,10 +271,14 @@ def test_qa_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "docs/plans/implementation-report-demo.md" in content
     assert "## Consumed QA Dispatch Packet" in content
     assert "docs/plans/qa-dispatch-demo.md" in content
-    assert "## QA Evidence Report" in content
-    assert "docs/plans/qa-evidence-demo.md" in content
     assert "## Browser Evidence Status" in content
     assert "placeholder" in content
+    assert "## Browser Evidence Mode" in content
+    assert "browser-placeholder" in content
+    assert "## Browser Evidence Manifest" in content
+    assert "docs/plans/qa-evidence-demo.md" in content
+    assert "## Browser Evidence Artifact Root" in content
+    assert "docs/plans/qa-artifacts/demo" in content
     assert "## Scenarios Tested" in content
     assert "Open the dashboard in a seeded repo" in content
     assert "## Issues Found" in content
@@ -279,10 +287,10 @@ def test_qa_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "failed" in content
 
 
-def test_qa_evidence_command_writes_markdown(tmp_path: Path) -> None:
+def test_qa_evidence_manifest_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
-        "qa-evidence",
+        "qa-evidence-manifest",
         "--output",
         "docs/plans/qa-evidence-demo.md",
         "--title",
@@ -299,13 +307,17 @@ def test_qa_evidence_command_writes_markdown(tmp_path: Path) -> None:
         "browser-placeholder",
         "--browser-evidence-status",
         "placeholder",
+        "--artifact-root",
+        "docs/plans/qa-artifacts/demo",
         "--environment",
         "Fresh repo checkout",
         "--scenario",
         "Open the dashboard in a seeded repo",
-        "--screenshot-placeholder",
+        "--screenshot-target",
         "docs/plans/qa-artifacts/demo/screenshots/scenario-01.png | Open the dashboard in a seeded repo",
-        "--artifact-placeholder",
+        "--dom-target",
+        "docs/plans/qa-artifacts/demo/dom/scenario-01.md | DOM snapshot placeholder for Open the dashboard in a seeded repo",
+        "--console-target",
         "docs/plans/qa-artifacts/demo/console/scenario-01.log | Console log placeholder for Open the dashboard in a seeded repo",
         "--note",
         "Browser runtime capture is not wired yet.",
@@ -314,7 +326,7 @@ def test_qa_evidence_command_writes_markdown(tmp_path: Path) -> None:
     out = tmp_path / "docs" / "plans" / "qa-evidence-demo.md"
     assert out.exists()
     content = out.read_text()
-    assert "# QA Evidence: Task 1 QA evidence" in content
+    assert "# QA Evidence Manifest: Task 1 QA evidence" in content
     assert "## Consumed QA Report" in content
     assert "docs/plans/qa-report-demo.md" in content
     assert "## Consumed QA Dispatch Packet" in content
@@ -325,9 +337,13 @@ def test_qa_evidence_command_writes_markdown(tmp_path: Path) -> None:
     assert "docs/plans/implementation-report-demo.md" in content
     assert "## Evidence Mode" in content
     assert "browser-placeholder" in content
-    assert "## Screenshot Placeholders" in content
+    assert "## Artifact Root" in content
+    assert "docs/plans/qa-artifacts/demo" in content
+    assert "## Screenshot Targets" in content
     assert "docs/plans/qa-artifacts/demo/screenshots/scenario-01.png" in content
-    assert "## Additional Artifact Placeholders" in content
+    assert "## DOM Snapshot Targets" in content
+    assert "docs/plans/qa-artifacts/demo/dom/scenario-01.md" in content
+    assert "## Console Log Targets" in content
     assert "docs/plans/qa-artifacts/demo/console/scenario-01.log" in content
     assert "## Notes" in content
     assert "Browser runtime capture is not wired yet." in content

@@ -123,6 +123,7 @@ def test_build_then_qa_then_docs_sync_reaches_ship_ready_with_canonical_artifact
     assert "docs/plans/sprint-contract-phase13-task3.md" in qa_report
     assert "docs/plans/implementation-report-phase13-task3.md" in qa_report
     assert "docs/plans/qa-evidence-phase13-task3.md" in qa_report
+    assert "docs/plans/qa-artifacts/phase13-task3" in qa_report
     assert "Run builder-to-QA handoff validation" in qa_report
     assert (tmp_path / "docs" / "plans" / "qa-evidence-phase13-task3.md").exists()
 

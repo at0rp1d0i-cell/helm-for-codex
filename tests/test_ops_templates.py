@@ -189,14 +189,18 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "## Consumed QA Dispatch Packet" in qa_report
     assert "<qa_dispatch_packet_path>" in qa_report
     assert "QA must validate the generator output against the consumed artifacts before board advancement." in qa_report
-    assert "## QA Evidence Report" in qa_report
-    assert "<qa_evidence_report_path>" in qa_report
     assert "## Browser Evidence Status" in qa_report
     assert "<browser_evidence_status>" in qa_report
+    assert "## Browser Evidence Mode" in qa_report
+    assert "<browser_evidence_mode>" in qa_report
+    assert "## Browser Evidence Manifest" in qa_report
+    assert "<browser_evidence_manifest_path>" in qa_report
+    assert "## Browser Evidence Artifact Root" in qa_report
+    assert "<browser_evidence_artifact_root>" in qa_report
     assert "<verification_status>" in qa_report
 
     qa_evidence = (ROOT / "ops" / "templates" / "qa-evidence.md").read_text()
-    assert "# QA Evidence" in qa_evidence
+    assert "# QA Evidence Manifest" in qa_evidence
     assert "## Consumed QA Report" in qa_evidence
     assert "<qa_report_path>" in qa_evidence
     assert "## Consumed QA Dispatch Packet" in qa_evidence
@@ -210,10 +214,14 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<evidence_mode>" in qa_evidence
     assert "## Browser Evidence Status" in qa_evidence
     assert "<browser_evidence_status>" in qa_evidence
-    assert "## Screenshot Placeholders" in qa_evidence
-    assert "<screenshot_placeholders>" in qa_evidence
-    assert "## Additional Artifact Placeholders" in qa_evidence
-    assert "<artifact_placeholders>" in qa_evidence
+    assert "## Artifact Root" in qa_evidence
+    assert "<artifact_root>" in qa_evidence
+    assert "## Screenshot Targets" in qa_evidence
+    assert "<screenshot_targets>" in qa_evidence
+    assert "## DOM Snapshot Targets" in qa_evidence
+    assert "<dom_targets>" in qa_evidence
+    assert "## Console Log Targets" in qa_evidence
+    assert "<console_targets>" in qa_evidence
     assert "## Notes" in qa_evidence
     assert "<notes>" in qa_evidence
 

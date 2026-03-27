@@ -33,6 +33,18 @@ def test_exported_plugin_runtime_pack_is_in_sync() -> None:
     assert "plugin runtime pack ok" in result.stdout
 
 
+def test_exported_plugin_runtime_pack_is_in_sync_from_repo_root_argument() -> None:
+    result = subprocess.run(
+        [sys.executable, str(EXPORT_SCRIPT), "--check", "."],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "plugin runtime pack ok" in result.stdout
+
+
 def test_plugin_bootstrap_installs_runtime_into_target_repo(tmp_path: Path) -> None:
     target = tmp_path / "repo"
     result = subprocess.run(

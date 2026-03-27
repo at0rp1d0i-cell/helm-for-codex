@@ -326,10 +326,11 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     assert "docs/plans/sprint-contract-phase13-task3.md" in report
     assert "docs/plans/implementation-report-phase13-task3.md" in report
     assert "docs/plans/qa-evidence-phase13-task3.md" in report
+    assert "docs/plans/qa-artifacts/phase13-task3" in report
     assert "Run the builder-to-QA handoff from the installed runtime" in report
     evidence = target / "docs" / "plans" / "qa-evidence-phase13-task3.md"
     assert evidence.exists()
-    assert "## Screenshot Placeholders" in evidence.read_text()
+    assert "## Screenshot Targets" in evidence.read_text()
 
     docs_prepare = run_runtime_lead_loop(
         target,

@@ -16,8 +16,8 @@ Validate user flows and regression behavior as the evaluator for the bounded tas
 </inputs>
 
 <expected_output>
-<section>canonical qa-report writeback that names the consumed sprint contract, implementation report, and QA evidence companion</section>
-<section>repo-backed QA evidence artifact with browser placeholder paths and capture status</section>
+<section>canonical qa-report writeback that names the consumed sprint contract, implementation report, and browser evidence manifest</section>
+<section>repo-backed QA evidence manifest with artifact roots, browser target paths, and capture status</section>
 <section>executed scenarios and outcomes</section>
 <section>defects with repro steps</section>
 <section>verification status after fixes</section>

@@ -2,7 +2,7 @@
 
 ## Current Milestone
 
-Phase 22 in progress: build the second productization tranche after landing `autoplan`, browser-QA evidence, and release gate/prep workflows.
+Phase 22 in progress: build the second productization tranche after landing `autoplan`, browser-QA evidence, and release gate/prep workflows. The browser-QA lane now has a stronger manifest/artifact-root contract; the next step is turning that contract into real capture and review ergonomics.
 
 ## Later Milestones
 

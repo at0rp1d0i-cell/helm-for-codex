@@ -147,21 +147,25 @@ def _assert_consumed_sprint_contract(
         )
 
 
-def _qa_placeholder_contract(artifact_root: str, scenarios: list[str]) -> tuple[list[str], list[str]]:
-    screenshot_placeholders: list[str] = []
-    artifact_placeholders: list[str] = []
+def _qa_placeholder_contract(
+    artifact_root: str,
+    scenarios: list[str],
+) -> tuple[list[str], list[str], list[str]]:
+    screenshot_targets: list[str] = []
+    dom_targets: list[str] = []
+    console_targets: list[str] = []
     for index, scenario in enumerate(scenarios, start=1):
         key = f"scenario-{index:02d}"
-        screenshot_placeholders.append(
+        screenshot_targets.append(
             f"{artifact_root}/screenshots/{key}.png | {scenario}",
         )
-        artifact_placeholders.append(
+        dom_targets.append(
             f"{artifact_root}/dom/{key}.md | DOM snapshot placeholder for {scenario}",
         )
-        artifact_placeholders.append(
+        console_targets.append(
             f"{artifact_root}/console/{key}.log | Console log placeholder for {scenario}",
         )
-    return screenshot_placeholders, artifact_placeholders
+    return screenshot_targets, dom_targets, console_targets
 
 
 def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
@@ -301,7 +305,7 @@ def cmd_qa_prepare(args: argparse.Namespace) -> int:
         label="QA evidence path",
     )[0]
     artifact_root = _default_qa_artifact_root(qa_evidence_path)
-    screenshot_placeholders, artifact_placeholders = _qa_placeholder_contract(
+    screenshot_targets, dom_targets, console_targets = _qa_placeholder_contract(
         artifact_root,
         args.scenario,
     )
@@ -319,21 +323,24 @@ def cmd_qa_prepare(args: argparse.Namespace) -> int:
             + "\n".join(f"- {item}" for item in args.scenario)
             + "\n\nEvidence contract:\n"
             + f"- qa_report: {args.qa_report_path}\n"
-            + f"- qa_evidence: {qa_evidence_path}\n"
+            + f"- browser_evidence_manifest: {qa_evidence_path}\n"
             + f"- browser_evidence_status: {browser_evidence_status}\n"
-            + f"- evidence_mode: {args.evidence_mode}\n\n"
-            + "Screenshot placeholders:\n"
-            + "\n".join(f"- {item}" for item in screenshot_placeholders)
-            + "\n\nAdditional artifact placeholders:\n"
-            + "\n".join(f"- {item}" for item in artifact_placeholders)
+            + f"- browser_evidence_mode: {args.evidence_mode}\n"
+            + f"- artifact_root: {artifact_root}\n\n"
+            + "Screenshot targets:\n"
+            + "\n".join(f"- {item}" for item in screenshot_targets)
+            + "\n\nDOM snapshot targets:\n"
+            + "\n".join(f"- {item}" for item in dom_targets)
+            + "\n\nConsole log targets:\n"
+            + "\n".join(f"- {item}" for item in console_targets)
         ),
         expected_output=(
-            f"QA report at {args.qa_report_path} plus QA evidence at {qa_evidence_path}"
+            f"QA report at {args.qa_report_path} plus browser evidence manifest at {qa_evidence_path}"
         ),
         writeback_target=args.qa_report_path,
         completion_command=(
             "Return QA findings by writing the QA report to "
-            f"{args.qa_report_path} and the QA evidence artifact to {qa_evidence_path}"
+            f"{args.qa_report_path} and the browser evidence manifest to {qa_evidence_path}"
         ),
     )
 
@@ -358,7 +365,7 @@ def cmd_qa(args: argparse.Namespace) -> int:
         label="QA evidence path",
     )[0]
     artifact_root = _default_qa_artifact_root(qa_evidence_path)
-    screenshot_placeholders, artifact_placeholders = _qa_placeholder_contract(
+    screenshot_targets, dom_targets, console_targets = _qa_placeholder_contract(
         artifact_root,
         args.scenario,
     )
@@ -376,8 +383,10 @@ def cmd_qa(args: argparse.Namespace) -> int:
         sprint_contract=args.sprint_contract_path,
         implementation_report=args.implementation_report_path,
         qa_dispatch_packet=qa_dispatch_packet,
-        evidence_report=qa_evidence_path,
         browser_evidence_status=browser_evidence_status,
+        browser_evidence_mode=args.evidence_mode,
+        browser_evidence_manifest=qa_evidence_path,
+        browser_evidence_artifact_root=artifact_root,
         environment=args.environment,
         scenario=args.scenario,
         issue=args.issue,
@@ -402,10 +411,13 @@ def cmd_qa(args: argparse.Namespace) -> int:
         implementation_report=args.implementation_report_path,
         evidence_mode=args.evidence_mode,
         browser_evidence_status=browser_evidence_status,
+        artifact_root=artifact_root,
         environment=args.environment,
         scenario=args.scenario,
-        screenshot_placeholder=screenshot_placeholders,
-        artifact_placeholder=artifact_placeholders,
+        screenshot_target=screenshot_targets,
+        dom_target=dom_targets,
+        console_target=console_targets,
+        artifact_placeholder=[],
         note=evidence_notes,
     )
     rc = cmd_qa_evidence(evidence_args)
@@ -731,7 +743,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="placeholder",
         dest="browser_evidence_status",
     )
-    qa_prepare.add_argument("--evidence-mode", default="browser-placeholder", dest="evidence_mode")
+    qa_prepare.add_argument(
+        "--browser-evidence-mode",
+        "--evidence-mode",
+        default="browser-placeholder",
+        dest="evidence_mode",
+    )
     qa_prepare.add_argument("--scenario", action="append", default=[], required=True)
     qa_prepare.set_defaults(func=cmd_qa_prepare)
 
@@ -755,7 +772,12 @@ def build_parser() -> argparse.ArgumentParser:
         default="placeholder",
         dest="browser_evidence_status",
     )
-    qa.add_argument("--evidence-mode", default="browser-placeholder", dest="evidence_mode")
+    qa.add_argument(
+        "--browser-evidence-mode",
+        "--evidence-mode",
+        default="browser-placeholder",
+        dest="evidence_mode",
+    )
     qa.add_argument("--scenario", action="append", default=[], required=True)
     qa.add_argument("--issue", action="append", default=[])
     qa.add_argument("--evidence-note", action="append", default=[], dest="evidence_note")
