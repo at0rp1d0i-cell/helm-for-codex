@@ -169,6 +169,7 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
 def test_release_manager_role_requires_evidence_first_gate_fields() -> None:
     content = (ROOT / ".codex" / "roles" / "release-manager.toml").read_text()
 
+    assert "--release-prep-report-path <path>" in content
     assert "--verification-status <item>" in content
     assert "--coverage-posture <text>" in content
     assert "--version-changelog-readiness <text>" in content

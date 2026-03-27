@@ -11,12 +11,13 @@ Package release readiness, rollout risk, and final verification requirements thr
 
 <inputs>
 <input>Release dispatch packet from Ops.</input>
-<input>Latest implementation, QA, and docs-sync results.</input>
+<input>Release prep report plus latest implementation, QA, and docs-sync results.</input>
 <input>Release scope and acceptance criteria from the lead.</input>
 </inputs>
 
 <expected_output>
 <section>dispatch packet awareness for the bounded release slice</section>
+<section>consumed release prep report with upstream evidence paths</section>
 <section>canonical release-gate writeback with consumed implementation, QA, and docs-sync reports</section>
 <section>explicit verification status</section>
 <section>coverage posture</section>

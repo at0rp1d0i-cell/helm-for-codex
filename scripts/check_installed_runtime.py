@@ -62,6 +62,7 @@ def required_paths() -> list[Path]:
         ROOT / "ops" / "templates" / "review-pass.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
+        ROOT / "ops" / "templates" / "release-prep-report.md",
         ROOT / "ops" / "templates" / "release-gate.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
         ROOT / "ops" / "checks" / "check_docs_freshness.py",

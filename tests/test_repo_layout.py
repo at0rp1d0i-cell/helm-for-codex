@@ -149,6 +149,7 @@ def test_repo_check_covers_minimum_team_shape() -> None:
         "ops/templates/review-pass.md",
         "ops/templates/review-report.md",
         "ops/templates/qa-report.md",
+        "ops/templates/release-prep-report.md",
         "ops/templates/release-gate.md",
         "ops/templates/refactor-proposal.md",
         "ops/checks/check_docs_freshness.py",

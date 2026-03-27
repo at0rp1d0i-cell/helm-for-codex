@@ -248,19 +248,38 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
         "docs/plans/qa-report-release.md",
         "--docs-sync-report-path",
         "docs/plans/docs-sync-report-release.md",
+        "--release-prep-report-path",
+        "docs/plans/release-prep-report-release.md",
         "--release-packet-path",
         "docs/plans/release-dispatch-release.md",
         "--release-gate-path",
         "docs/plans/release-gate-release.md",
+        "--verification-plan",
+        "uv run pytest -q",
+        "--verification-plan",
+        "uv run python scripts/check_repo.py",
+        "--coverage-plan",
+        "Targeted regression coverage exists for the release gate writer and ops handoff; no standalone coverage automation was added in this tranche.",
+        "--version-changelog-plan",
+        "pyproject version remains unchanged and CHANGELOG.md needs no entry until the bounded slice is merged.",
+        "--merge-pr-plan",
+        "Diff is scoped to the release-gate contract, tests, and mirrored runtime assets; PR body still needs final reviewer assignment.",
         "--readiness-checklist",
         "tests green",
         "--readiness-checklist",
         "docs synced",
+        "--follow-up",
+        "release notes review pending",
     )
     assert prepare.returncode == 0, prepare.stderr
+    prep_report = (tmp_path / "docs" / "plans" / "release-prep-report-release.md").read_text()
+    assert "# Release Prep Report: Release task" in prep_report
+    assert "uv run pytest -q" in prep_report
+    assert "release notes review pending" in prep_report
     packet = (tmp_path / "docs" / "plans" / "release-dispatch-release.md").read_text()
     assert "# Dispatch Packet: Release task release dispatch" in packet
     assert "release-manager" in packet
+    assert "docs/plans/release-prep-report-release.md" in packet
     assert "Evidence-first release gate sections:" in packet
     assert "- verification status" in packet
     assert "- merge/PR prep" in packet
@@ -272,12 +291,8 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
         "release-gate",
         "--title",
         "Release task",
-        "--implementation-report-path",
-        "docs/plans/implementation-report-release.md",
-        "--qa-report-path",
-        "docs/plans/qa-report-release.md",
-        "--docs-sync-report-path",
-        "docs/plans/docs-sync-report-release.md",
+        "--release-prep-report-path",
+        "docs/plans/release-prep-report-release.md",
         "--release-gate-path",
         "docs/plans/release-gate-release.md",
         "--verification-status",
@@ -290,10 +305,6 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
         "pyproject version remains unchanged and CHANGELOG.md needs no entry until the bounded slice is merged.",
         "--merge-pr-prep",
         "Diff is scoped to the release-gate contract, tests, and mirrored runtime assets; PR body still needs final reviewer assignment.",
-        "--readiness-checklist",
-        "tests green",
-        "--readiness-checklist",
-        "docs synced",
         "--blocking-risk",
         "release notes review pending",
         "--mitigation",
@@ -305,12 +316,16 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
     )
     assert gate.returncode == 0, gate.stderr
     report = (tmp_path / "docs" / "plans" / "release-gate-release.md").read_text()
+    assert "## Consumed Release Prep Report" in report
+    assert "docs/plans/release-prep-report-release.md" in report
     assert "## Consumed Docs Sync Report" in report
     assert "## Verification Status" in report
     assert "uv run pytest -q: passed" in report
     assert "## Coverage Posture" in report
     assert "## Version/Changelog Readiness" in report
     assert "## Merge/PR Prep" in report
+    assert "## Readiness Checklist" in report
+    assert "tests green" in report
     assert "release notes review pending" in report
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nship-ready" in board

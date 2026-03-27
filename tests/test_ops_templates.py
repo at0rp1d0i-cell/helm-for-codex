@@ -38,6 +38,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "qa-report.md",
         ROOT / "ops" / "templates" / "qa-evidence.md",
         ROOT / "ops" / "templates" / "docs-sync-report.md",
+        ROOT / "ops" / "templates" / "release-prep-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
         ROOT / "ops" / "checks" / "check_docs_freshness.py",
     ]
@@ -223,6 +224,18 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "## Consumed QA Report" in docs_sync_report
     assert "<qa_report_path>" in docs_sync_report
     assert "<canonical_writeback_target>" in docs_sync_report
+
+    release_prep_report = (ROOT / "ops" / "templates" / "release-prep-report.md").read_text()
+    assert "# Release Prep Report: <title>" in release_prep_report
+    assert "<implementation_report_path>" in release_prep_report
+    assert "<qa_report_path>" in release_prep_report
+    assert "<docs_sync_report_path>" in release_prep_report
+    assert "<verification_plan>" in release_prep_report
+    assert "<coverage_plan>" in release_prep_report
+    assert "<version_changelog_plan>" in release_prep_report
+    assert "<merge_pr_plan>" in release_prep_report
+    assert "<readiness_checklist>" in release_prep_report
+    assert "<follow_ups>" in release_prep_report
 
     refactor = (ROOT / "ops" / "templates" / "refactor-proposal.md").read_text()
     assert "# Refactor Proposal" in refactor

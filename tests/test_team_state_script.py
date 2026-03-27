@@ -535,6 +535,59 @@ def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Follow-Ups" in content
 
 
+def test_release_prep_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "release-prep-report",
+        "--output",
+        "docs/plans/release-prep-report-demo.md",
+        "--title",
+        "Task 1 release prep",
+        "--implementation-report",
+        "docs/plans/implementation-report-demo.md",
+        "--qa-report",
+        "docs/plans/qa-report-demo.md",
+        "--docs-sync-report",
+        "docs/plans/docs-sync-report-demo.md",
+        "--verification-plan",
+        "uv run pytest -q",
+        "--verification-plan",
+        "uv run python scripts/check_repo.py",
+        "--coverage-plan",
+        "Confirm targeted regression coverage matches the bounded release slice.",
+        "--version-changelog-plan",
+        "No version bump or changelog entry is needed until the tranche is merged.",
+        "--merge-pr-plan",
+        "Prepare a focused PR summary with reviewer assignment before merge.",
+        "--readiness-checklist",
+        "tests green",
+        "--readiness-checklist",
+        "docs synced",
+        "--follow-up",
+        "Release notes review still pending",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "release-prep-report-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Release Prep Report: Task 1 release prep" in content
+    assert "## Consumed Implementation Report" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## Consumed QA Report" in content
+    assert "docs/plans/qa-report-demo.md" in content
+    assert "## Consumed Docs Sync Report" in content
+    assert "docs/plans/docs-sync-report-demo.md" in content
+    assert "## Verification Plan" in content
+    assert "uv run pytest -q" in content
+    assert "## Coverage Plan" in content
+    assert "## Version/Changelog Plan" in content
+    assert "## Merge/PR Plan" in content
+    assert "## Readiness Checklist" in content
+    assert "tests green" in content
+    assert "## Follow-Ups" in content
+    assert "Release notes review still pending" in content
+
+
 def test_release_gate_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
@@ -543,6 +596,8 @@ def test_release_gate_command_writes_markdown(tmp_path: Path) -> None:
         "docs/plans/release-gate-demo.md",
         "--title",
         "Task 1 release gate",
+        "--release-prep-report",
+        "docs/plans/release-prep-report-demo.md",
         "--implementation-report",
         "docs/plans/implementation-report-demo.md",
         "--qa-report",
@@ -577,6 +632,8 @@ def test_release_gate_command_writes_markdown(tmp_path: Path) -> None:
     assert out.exists()
     content = out.read_text()
     assert "# Release Gate: Task 1 release gate" in content
+    assert "## Consumed Release Prep Report" in content
+    assert "docs/plans/release-prep-report-demo.md" in content
     assert "## Consumed Implementation Report" in content
     assert "docs/plans/implementation-report-demo.md" in content
     assert "## Consumed QA Report" in content

@@ -12,6 +12,7 @@ from team_state import (
     cmd_invocation_spec,
     cmd_qa_evidence,
     cmd_qa_report,
+    cmd_release_prep_report,
     cmd_release_gate as cmd_write_release_gate,
     cmd_sprint_contract,
 )
@@ -72,6 +73,21 @@ def _extract_section(content: str, heading: str) -> str:
     if next_header == -1:
         return content[start:].strip()
     return content[start:next_header].strip()
+
+
+def _extract_list_section(content: str, heading: str) -> list[str]:
+    section = _extract_section(content, heading)
+    if not section:
+        return []
+    items: list[str] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("- "):
+            continue
+        value = stripped[2:].strip()
+        if value and value.lower() != "none":
+            items.append(value)
+    return items
 
 
 def _first_nonempty_line(value: str) -> str:
@@ -543,6 +559,24 @@ def cmd_release_prepare(args: argparse.Namespace) -> int:
     if _board_stage(args.root, args.board_path) != "ship-ready":
         raise ValueError("Execution board must be at ship-ready stage before release-prepare can proceed.")
 
+    release_prep_args = SimpleNamespace(
+        root=args.root,
+        output=args.release_prep_report_path,
+        title=args.title,
+        implementation_report=args.implementation_report_path,
+        qa_report=args.qa_report_path,
+        docs_sync_report=args.docs_sync_report_path,
+        verification_plan=args.verification_plan,
+        coverage_plan=args.coverage_plan,
+        version_changelog_plan=args.version_changelog_plan,
+        merge_pr_plan=args.merge_pr_plan,
+        readiness_checklist=args.readiness_checklist,
+        follow_up=args.follow_up,
+    )
+    rc = cmd_release_prep_report(release_prep_args)
+    if rc != 0:
+        return rc
+
     checklist = "\n".join(f"- {item}" for item in args.readiness_checklist)
     return _write_dispatch_packet(
         root=args.root,
@@ -552,11 +586,13 @@ def cmd_release_prepare(args: argparse.Namespace) -> int:
         logical_role="release-manager",
         objective="Evaluate release readiness for the bounded slice without expanding into deploy automation.",
         consumed_artifact=[
+            args.release_prep_report_path,
             args.implementation_report_path,
             args.qa_report_path,
             args.docs_sync_report_path,
         ],
         constraints=(
+            "Use the release prep report as the canonical release planning baseline.\n\n"
             "Release readiness checklist:\n"
             + checklist
             + "\n\nEvidence-first release gate sections:\n"
@@ -576,9 +612,37 @@ def cmd_release_prepare(args: argparse.Namespace) -> int:
 
 
 def cmd_release_gate(args: argparse.Namespace) -> int:
-    implementation_report = _resolve_path(args.root, args.implementation_report_path)
-    qa_report = _resolve_path(args.root, args.qa_report_path)
-    docs_sync_report = _resolve_path(args.root, args.docs_sync_report_path)
+    release_prep_report = _resolve_path(args.root, args.release_prep_report_path)
+    if not release_prep_report.exists():
+        raise FileNotFoundError(f"Missing release prep report: {release_prep_report}")
+    release_prep_content = _read(release_prep_report)
+
+    implementation_report_rel = _first_nonempty_line(
+        _extract_section(release_prep_content, "Consumed Implementation Report"),
+    )
+    qa_report_rel = _first_nonempty_line(
+        _extract_section(release_prep_content, "Consumed QA Report"),
+    )
+    docs_sync_report_rel = _first_nonempty_line(
+        _extract_section(release_prep_content, "Consumed Docs Sync Report"),
+    )
+    readiness_checklist = _extract_list_section(release_prep_content, "Readiness Checklist")
+    if not implementation_report_rel:
+        raise ValueError(
+            "Release prep report consumed implementation report is missing from the release prep report.",
+        )
+    if not qa_report_rel:
+        raise ValueError("Release prep report consumed QA report is missing from the release prep report.")
+    if not docs_sync_report_rel:
+        raise ValueError(
+            "Release prep report consumed docs sync report is missing from the release prep report.",
+        )
+    if not readiness_checklist:
+        raise ValueError("Release prep report readiness checklist is missing from the release prep report.")
+
+    implementation_report = _resolve_path(args.root, implementation_report_rel)
+    qa_report = _resolve_path(args.root, qa_report_rel)
+    docs_sync_report = _resolve_path(args.root, docs_sync_report_rel)
     if not implementation_report.exists():
         raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
     if not qa_report.exists():
@@ -594,14 +658,15 @@ def cmd_release_gate(args: argparse.Namespace) -> int:
         root=args.root,
         output=args.release_gate_path,
         title=args.title,
-        implementation_report=args.implementation_report_path,
-        qa_report=args.qa_report_path,
-        docs_sync_report=args.docs_sync_report_path,
+        release_prep_report=args.release_prep_report_path,
+        implementation_report=implementation_report_rel,
+        qa_report=qa_report_rel,
+        docs_sync_report=docs_sync_report_rel,
         verification_status=args.verification_status,
         coverage_posture=args.coverage_posture,
         version_changelog_readiness=args.version_changelog_readiness,
         merge_pr_prep=args.merge_pr_prep,
-        readiness_checklist=args.readiness_checklist,
+        readiness_checklist=readiness_checklist,
         blocking_risk=args.blocking_risk,
         mitigation=args.mitigation,
         verdict=args.verdict,
@@ -773,6 +838,11 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         dest="docs_sync_report_path",
     )
+    release_prepare.add_argument(
+        "--release-prep-report-path",
+        required=True,
+        dest="release_prep_report_path",
+    )
     release_prepare.add_argument("--release-packet-path", required=True, dest="release_packet_path")
     release_prepare.add_argument(
         "--release-invocation-spec-path",
@@ -780,12 +850,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     release_prepare.add_argument("--release-gate-path", required=True, dest="release_gate_path")
     release_prepare.add_argument(
+        "--verification-plan",
+        action="append",
+        default=[],
+        required=True,
+        dest="verification_plan",
+    )
+    release_prepare.add_argument("--coverage-plan", required=True, dest="coverage_plan")
+    release_prepare.add_argument(
+        "--version-changelog-plan",
+        required=True,
+        dest="version_changelog_plan",
+    )
+    release_prepare.add_argument("--merge-pr-plan", required=True, dest="merge_pr_plan")
+    release_prepare.add_argument(
         "--readiness-checklist",
         action="append",
         default=[],
         required=True,
         dest="readiness_checklist",
     )
+    release_prepare.add_argument("--follow-up", action="append", default=[], dest="follow_up")
     release_prepare.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     release_prepare.set_defaults(func=cmd_release_prepare)
 
@@ -795,15 +880,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     release_gate.add_argument("--title", required=True)
     release_gate.add_argument(
-        "--implementation-report-path",
+        "--release-prep-report-path",
         required=True,
-        dest="implementation_report_path",
-    )
-    release_gate.add_argument("--qa-report-path", required=True, dest="qa_report_path")
-    release_gate.add_argument(
-        "--docs-sync-report-path",
-        required=True,
-        dest="docs_sync_report_path",
+        dest="release_prep_report_path",
     )
     release_gate.add_argument("--release-gate-path", required=True, dest="release_gate_path")
     release_gate.add_argument(
@@ -820,13 +899,6 @@ def build_parser() -> argparse.ArgumentParser:
         dest="version_changelog_readiness",
     )
     release_gate.add_argument("--merge-pr-prep", required=True, dest="merge_pr_prep")
-    release_gate.add_argument(
-        "--readiness-checklist",
-        action="append",
-        default=[],
-        required=True,
-        dest="readiness_checklist",
-    )
     release_gate.add_argument("--blocking-risk", action="append", default=[], dest="blocking_risk")
     release_gate.add_argument("--mitigation", action="append", default=[], dest="mitigation")
     release_gate.add_argument("--verdict", required=True)

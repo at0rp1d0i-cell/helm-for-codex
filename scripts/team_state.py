@@ -242,6 +242,37 @@ def cmd_docs_sync_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_release_prep_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    verification_plan = "\n".join(f"- {item}" for item in args.verification_plan)
+    readiness_checklist = "\n".join(f"- {item}" for item in args.readiness_checklist)
+    follow_ups = "\n".join(f"- {item}" for item in args.follow_up) if args.follow_up else "- none"
+    content = (
+        f"# Release Prep Report: {args.title}\n\n"
+        "## Consumed Implementation Report\n\n"
+        f"{args.implementation_report}\n\n"
+        "## Consumed QA Report\n\n"
+        f"{args.qa_report}\n\n"
+        "## Consumed Docs Sync Report\n\n"
+        f"{args.docs_sync_report}\n\n"
+        "## Verification Plan\n\n"
+        f"{verification_plan}\n\n"
+        "## Coverage Plan\n\n"
+        f"{args.coverage_plan}\n\n"
+        "## Version/Changelog Plan\n\n"
+        f"{args.version_changelog_plan}\n\n"
+        "## Merge/PR Plan\n\n"
+        f"{args.merge_pr_plan}\n\n"
+        "## Readiness Checklist\n\n"
+        f"{readiness_checklist}\n\n"
+        "## Follow-Ups\n\n"
+        f"{follow_ups}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_release_gate(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     verification_status = "\n".join(f"- {item}" for item in args.verification_status)
@@ -250,6 +281,8 @@ def cmd_release_gate(args: argparse.Namespace) -> int:
     mitigations = "\n".join(f"- {item}" for item in args.mitigation) if args.mitigation else "- none"
     content = (
         f"# Release Gate: {args.title}\n\n"
+        "## Consumed Release Prep Report\n\n"
+        f"{args.release_prep_report}\n\n"
         "## Consumed Implementation Report\n\n"
         f"{args.implementation_report}\n\n"
         "## Consumed QA Report\n\n"
@@ -870,12 +903,58 @@ def build_parser() -> argparse.ArgumentParser:
     docs_sync_report.add_argument("--follow-ups", required=True, dest="follow_ups")
     docs_sync_report.set_defaults(func=cmd_docs_sync_report)
 
+    release_prep_report = subparsers.add_parser(
+        "release-prep-report",
+        help="Create release preparation report markdown",
+    )
+    release_prep_report.add_argument("--output", required=True)
+    release_prep_report.add_argument("--title", required=True)
+    release_prep_report.add_argument(
+        "--implementation-report",
+        required=True,
+        dest="implementation_report",
+    )
+    release_prep_report.add_argument("--qa-report", required=True, dest="qa_report")
+    release_prep_report.add_argument(
+        "--docs-sync-report",
+        required=True,
+        dest="docs_sync_report",
+    )
+    release_prep_report.add_argument(
+        "--verification-plan",
+        action="append",
+        default=[],
+        required=True,
+        dest="verification_plan",
+    )
+    release_prep_report.add_argument("--coverage-plan", required=True, dest="coverage_plan")
+    release_prep_report.add_argument(
+        "--version-changelog-plan",
+        required=True,
+        dest="version_changelog_plan",
+    )
+    release_prep_report.add_argument("--merge-pr-plan", required=True, dest="merge_pr_plan")
+    release_prep_report.add_argument(
+        "--readiness-checklist",
+        action="append",
+        default=[],
+        required=True,
+        dest="readiness_checklist",
+    )
+    release_prep_report.add_argument("--follow-up", action="append", default=[], dest="follow_up")
+    release_prep_report.set_defaults(func=cmd_release_prep_report)
+
     release_gate = subparsers.add_parser(
         "release-gate",
         help="Create release gate markdown",
     )
     release_gate.add_argument("--output", required=True)
     release_gate.add_argument("--title", required=True)
+    release_gate.add_argument(
+        "--release-prep-report",
+        required=True,
+        dest="release_prep_report",
+    )
     release_gate.add_argument(
         "--implementation-report",
         required=True,

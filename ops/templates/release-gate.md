@@ -1,5 +1,9 @@
 # Release Gate: <title>
 
+## Consumed Release Prep Report
+
+<release_prep_report_path>
+
 ## Consumed Implementation Report
 
 <implementation_report_path>
