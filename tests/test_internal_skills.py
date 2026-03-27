@@ -86,6 +86,7 @@ def test_runtime_qa_skill_contract_includes_phase13_handoff_terms() -> None:
     assert "sprint contract" in content
     assert "implementation report" in content
     assert "qa-report" in content
+    assert "qa-evidence" in content
     assert "evaluator" in content
 
 

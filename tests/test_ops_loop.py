@@ -113,6 +113,8 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
     qa_packet = (tmp_path / "docs" / "plans" / "qa-dispatch-ops.md").read_text()
     assert "# Dispatch Packet: Ops task QA dispatch" in qa_packet
     assert "docs/plans/implementation-report-ops.md" in qa_packet
+    assert "qa_evidence: docs/plans/qa-evidence-ops.md" in qa_packet
+    assert "docs/plans/qa-artifacts/ops/screenshots/scenario-01.png" in qa_packet
     qa_invocation = (tmp_path / "docs" / "plans" / "qa-dispatch-ops-invocation.md").read_text()
     assert "qa-runner" in qa_invocation
     assert "docs/plans/qa-dispatch-ops.md" in qa_invocation
@@ -126,6 +128,8 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
         "docs/plans/sprint-contract-ops.md",
         "--implementation-report-path",
         "docs/plans/implementation-report-ops.md",
+        "--qa-packet-path",
+        "docs/plans/qa-dispatch-ops.md",
         "--qa-report-path",
         "docs/plans/qa-report-ops.md",
         "--environment",
@@ -136,6 +140,15 @@ def test_ops_loop_runs_build_qa_and_docs_sync_happy_path(tmp_path: Path) -> None
         "passed",
     )
     assert qa.returncode == 0, qa.stderr
+    qa_report = (tmp_path / "docs" / "plans" / "qa-report-ops.md").read_text()
+    assert "## QA Evidence Report" in qa_report
+    assert "docs/plans/qa-evidence-ops.md" in qa_report
+    assert "## Consumed QA Dispatch Packet" in qa_report
+    assert "docs/plans/qa-dispatch-ops.md" in qa_report
+    qa_evidence = (tmp_path / "docs" / "plans" / "qa-evidence-ops.md").read_text()
+    assert "# QA Evidence: Ops task" in qa_evidence
+    assert "docs/plans/qa-report-ops.md" in qa_evidence
+    assert "docs/plans/qa-artifacts/ops/screenshots/scenario-01.png" in qa_evidence
 
     docs_prepare = run_ops_loop(
         tmp_path,

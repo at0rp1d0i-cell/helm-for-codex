@@ -122,7 +122,9 @@ def test_build_then_qa_then_docs_sync_reaches_ship_ready_with_canonical_artifact
     qa_report = (tmp_path / "docs" / "plans" / "qa-report-phase13-task3.md").read_text()
     assert "docs/plans/sprint-contract-phase13-task3.md" in qa_report
     assert "docs/plans/implementation-report-phase13-task3.md" in qa_report
+    assert "docs/plans/qa-evidence-phase13-task3.md" in qa_report
     assert "Run builder-to-QA handoff validation" in qa_report
+    assert (tmp_path / "docs" / "plans" / "qa-evidence-phase13-task3.md").exists()
 
     docs_prepare = run_lead_loop(
         tmp_path,

@@ -229,6 +229,110 @@ def test_implementation_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Follow-Ups" in content
 
 
+def test_qa_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "qa-report",
+        "--output",
+        "docs/plans/qa-report-demo.md",
+        "--title",
+        "Task 1 QA report",
+        "--sprint-contract",
+        "docs/plans/sprint-contract-demo.md",
+        "--implementation-report",
+        "docs/plans/implementation-report-demo.md",
+        "--qa-dispatch-packet",
+        "docs/plans/qa-dispatch-demo.md",
+        "--evidence-report",
+        "docs/plans/qa-evidence-demo.md",
+        "--browser-evidence-status",
+        "placeholder",
+        "--environment",
+        "Fresh repo checkout",
+        "--scenario",
+        "Open the dashboard in a seeded repo",
+        "--issue",
+        "Console log placeholder still empty",
+        "--verification-status",
+        "failed",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "qa-report-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# QA Report: Task 1 QA report" in content
+    assert "## Consumed Sprint Contract" in content
+    assert "docs/plans/sprint-contract-demo.md" in content
+    assert "## Consumed Implementation Report" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## Consumed QA Dispatch Packet" in content
+    assert "docs/plans/qa-dispatch-demo.md" in content
+    assert "## QA Evidence Report" in content
+    assert "docs/plans/qa-evidence-demo.md" in content
+    assert "## Browser Evidence Status" in content
+    assert "placeholder" in content
+    assert "## Scenarios Tested" in content
+    assert "Open the dashboard in a seeded repo" in content
+    assert "## Issues Found" in content
+    assert "Console log placeholder still empty" in content
+    assert "## Verification Status" in content
+    assert "failed" in content
+
+
+def test_qa_evidence_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "qa-evidence",
+        "--output",
+        "docs/plans/qa-evidence-demo.md",
+        "--title",
+        "Task 1 QA evidence",
+        "--qa-report",
+        "docs/plans/qa-report-demo.md",
+        "--qa-dispatch-packet",
+        "docs/plans/qa-dispatch-demo.md",
+        "--sprint-contract",
+        "docs/plans/sprint-contract-demo.md",
+        "--implementation-report",
+        "docs/plans/implementation-report-demo.md",
+        "--evidence-mode",
+        "browser-placeholder",
+        "--browser-evidence-status",
+        "placeholder",
+        "--environment",
+        "Fresh repo checkout",
+        "--scenario",
+        "Open the dashboard in a seeded repo",
+        "--screenshot-placeholder",
+        "docs/plans/qa-artifacts/demo/screenshots/scenario-01.png | Open the dashboard in a seeded repo",
+        "--artifact-placeholder",
+        "docs/plans/qa-artifacts/demo/console/scenario-01.log | Console log placeholder for Open the dashboard in a seeded repo",
+        "--note",
+        "Browser runtime capture is not wired yet.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "qa-evidence-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# QA Evidence: Task 1 QA evidence" in content
+    assert "## Consumed QA Report" in content
+    assert "docs/plans/qa-report-demo.md" in content
+    assert "## Consumed QA Dispatch Packet" in content
+    assert "docs/plans/qa-dispatch-demo.md" in content
+    assert "## Consumed Sprint Contract" in content
+    assert "docs/plans/sprint-contract-demo.md" in content
+    assert "## Consumed Implementation Report" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## Evidence Mode" in content
+    assert "browser-placeholder" in content
+    assert "## Screenshot Placeholders" in content
+    assert "docs/plans/qa-artifacts/demo/screenshots/scenario-01.png" in content
+    assert "## Additional Artifact Placeholders" in content
+    assert "docs/plans/qa-artifacts/demo/console/scenario-01.log" in content
+    assert "## Notes" in content
+    assert "Browser runtime capture is not wired yet." in content
+
+
 def test_dispatch_packet_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

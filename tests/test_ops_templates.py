@@ -36,6 +36,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "review-result.md",
         ROOT / "ops" / "templates" / "review-report.md",
         ROOT / "ops" / "templates" / "qa-report.md",
+        ROOT / "ops" / "templates" / "qa-evidence.md",
         ROOT / "ops" / "templates" / "docs-sync-report.md",
         ROOT / "ops" / "templates" / "refactor-proposal.md",
         ROOT / "ops" / "checks" / "check_docs_freshness.py",
@@ -184,8 +185,36 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<sprint_contract_path>" in qa_report
     assert "## Consumed Implementation Report" in qa_report
     assert "<implementation_report_path>" in qa_report
+    assert "## Consumed QA Dispatch Packet" in qa_report
+    assert "<qa_dispatch_packet_path>" in qa_report
     assert "QA must validate the generator output against the consumed artifacts before board advancement." in qa_report
+    assert "## QA Evidence Report" in qa_report
+    assert "<qa_evidence_report_path>" in qa_report
+    assert "## Browser Evidence Status" in qa_report
+    assert "<browser_evidence_status>" in qa_report
     assert "<verification_status>" in qa_report
+
+    qa_evidence = (ROOT / "ops" / "templates" / "qa-evidence.md").read_text()
+    assert "# QA Evidence" in qa_evidence
+    assert "## Consumed QA Report" in qa_evidence
+    assert "<qa_report_path>" in qa_evidence
+    assert "## Consumed QA Dispatch Packet" in qa_evidence
+    assert "<qa_dispatch_packet_path>" in qa_evidence
+    assert "## Consumed Sprint Contract" in qa_evidence
+    assert "<sprint_contract_path>" in qa_evidence
+    assert "## Consumed Implementation Report" in qa_evidence
+    assert "<implementation_report_path>" in qa_evidence
+    assert "repo-backed browser evidence paths" in qa_evidence
+    assert "## Evidence Mode" in qa_evidence
+    assert "<evidence_mode>" in qa_evidence
+    assert "## Browser Evidence Status" in qa_evidence
+    assert "<browser_evidence_status>" in qa_evidence
+    assert "## Screenshot Placeholders" in qa_evidence
+    assert "<screenshot_placeholders>" in qa_evidence
+    assert "## Additional Artifact Placeholders" in qa_evidence
+    assert "<artifact_placeholders>" in qa_evidence
+    assert "## Notes" in qa_evidence
+    assert "<notes>" in qa_evidence
 
     docs_sync_report = (ROOT / "ops" / "templates" / "docs-sync-report.md").read_text()
     assert "# Docs Sync Report: <title>" in docs_sync_report

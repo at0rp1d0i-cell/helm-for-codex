@@ -105,6 +105,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "ops" / "templates" / "execution-receipt.md").exists()
     assert (target / "ops" / "templates" / "onboarding-state.md").exists()
     assert (target / "ops" / "templates" / "deep-scan-plan.md").exists()
+    assert (target / "ops" / "templates" / "qa-evidence.md").exists()
     assert (target / "ops" / "checks" / "check_docs_freshness.py").exists()
 
     assert (target / "docs" / "project" / "PROJECT_BRIEF.md").exists()
@@ -324,7 +325,11 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     report = (target / "docs" / "plans" / "qa-report-phase13-task3.md").read_text()
     assert "docs/plans/sprint-contract-phase13-task3.md" in report
     assert "docs/plans/implementation-report-phase13-task3.md" in report
+    assert "docs/plans/qa-evidence-phase13-task3.md" in report
     assert "Run the builder-to-QA handoff from the installed runtime" in report
+    evidence = target / "docs" / "plans" / "qa-evidence-phase13-task3.md"
+    assert evidence.exists()
+    assert "## Screenshot Placeholders" in evidence.read_text()
 
     docs_prepare = run_runtime_lead_loop(
         target,
