@@ -261,6 +261,9 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
     packet = (tmp_path / "docs" / "plans" / "release-dispatch-release.md").read_text()
     assert "# Dispatch Packet: Release task release dispatch" in packet
     assert "release-manager" in packet
+    assert "Evidence-first release gate sections:" in packet
+    assert "- verification status" in packet
+    assert "- merge/PR prep" in packet
     invocation = (tmp_path / "docs" / "plans" / "release-dispatch-release-invocation.md").read_text()
     assert ".agents/skills/release-manager/SKILL.md" in invocation
 
@@ -277,6 +280,16 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
         "docs/plans/docs-sync-report-release.md",
         "--release-gate-path",
         "docs/plans/release-gate-release.md",
+        "--verification-status",
+        "uv run pytest -q: passed",
+        "--verification-status",
+        "uv run python scripts/check_repo.py: passed",
+        "--coverage-posture",
+        "Targeted regression coverage exists for the release gate writer and ops handoff; no standalone coverage automation was added in this tranche.",
+        "--version-changelog-readiness",
+        "pyproject version remains unchanged and CHANGELOG.md needs no entry until the bounded slice is merged.",
+        "--merge-pr-prep",
+        "Diff is scoped to the release-gate contract, tests, and mirrored runtime assets; PR body still needs final reviewer assignment.",
         "--readiness-checklist",
         "tests green",
         "--readiness-checklist",
@@ -293,6 +306,11 @@ def test_ops_loop_release_prepare_and_release_gate(tmp_path: Path) -> None:
     assert gate.returncode == 0, gate.stderr
     report = (tmp_path / "docs" / "plans" / "release-gate-release.md").read_text()
     assert "## Consumed Docs Sync Report" in report
+    assert "## Verification Status" in report
+    assert "uv run pytest -q: passed" in report
+    assert "## Coverage Posture" in report
+    assert "## Version/Changelog Readiness" in report
+    assert "## Merge/PR Prep" in report
     assert "release notes review pending" in report
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nship-ready" in board

@@ -244,6 +244,7 @@ def cmd_docs_sync_report(args: argparse.Namespace) -> int:
 
 def cmd_release_gate(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
+    verification_status = "\n".join(f"- {item}" for item in args.verification_status)
     readiness_checklist = "\n".join(f"- {item}" for item in args.readiness_checklist)
     blocking_risks = "\n".join(f"- {item}" for item in args.blocking_risk) if args.blocking_risk else "- none"
     mitigations = "\n".join(f"- {item}" for item in args.mitigation) if args.mitigation else "- none"
@@ -255,6 +256,14 @@ def cmd_release_gate(args: argparse.Namespace) -> int:
         f"{args.qa_report}\n\n"
         "## Consumed Docs Sync Report\n\n"
         f"{args.docs_sync_report}\n\n"
+        "## Verification Status\n\n"
+        f"{verification_status}\n\n"
+        "## Coverage Posture\n\n"
+        f"{args.coverage_posture}\n\n"
+        "## Version/Changelog Readiness\n\n"
+        f"{args.version_changelog_readiness}\n\n"
+        "## Merge/PR Prep\n\n"
+        f"{args.merge_pr_prep}\n\n"
         "## Readiness Checklist\n\n"
         f"{readiness_checklist}\n\n"
         "## Blocking Risks\n\n"
@@ -885,6 +894,20 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         dest="readiness_checklist",
     )
+    release_gate.add_argument(
+        "--verification-status",
+        action="append",
+        default=[],
+        required=True,
+        dest="verification_status",
+    )
+    release_gate.add_argument("--coverage-posture", required=True, dest="coverage_posture")
+    release_gate.add_argument(
+        "--version-changelog-readiness",
+        required=True,
+        dest="version_changelog_readiness",
+    )
+    release_gate.add_argument("--merge-pr-prep", required=True, dest="merge_pr_prep")
     release_gate.add_argument("--blocking-risk", action="append", default=[], dest="blocking_risk")
     release_gate.add_argument("--mitigation", action="append", default=[], dest="mitigation")
     release_gate.add_argument("--verdict", required=True)

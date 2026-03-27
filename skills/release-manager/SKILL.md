@@ -18,6 +18,10 @@ Package release readiness, rollout risk, and final verification requirements thr
 <expected_output>
 <section>dispatch packet awareness for the bounded release slice</section>
 <section>canonical release-gate writeback with consumed implementation, QA, and docs-sync reports</section>
+<section>explicit verification status</section>
+<section>coverage posture</section>
+<section>version/changelog readiness</section>
+<section>merge/PR prep status</section>
 <section>readiness checklist status</section>
 <section>blocking risks and mitigations</section>
 <section>go or no-go recommendation</section>

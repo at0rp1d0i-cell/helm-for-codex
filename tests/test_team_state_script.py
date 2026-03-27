@@ -549,6 +549,16 @@ def test_release_gate_command_writes_markdown(tmp_path: Path) -> None:
         "docs/plans/qa-report-demo.md",
         "--docs-sync-report",
         "docs/plans/docs-sync-report-demo.md",
+        "--verification-status",
+        "uv run pytest -q: passed",
+        "--verification-status",
+        "uv run python scripts/check_repo.py: passed",
+        "--coverage-posture",
+        "Targeted regression coverage exists for the release gate writer and ops handoff; no standalone coverage automation was added in this tranche.",
+        "--version-changelog-readiness",
+        "pyproject version remains unchanged and CHANGELOG.md needs no entry until the bounded slice is merged.",
+        "--merge-pr-prep",
+        "Diff is scoped to the release-gate contract, tests, and mirrored runtime assets; PR body still needs final reviewer assignment.",
         "--readiness-checklist",
         "tests green",
         "--readiness-checklist",
@@ -573,6 +583,11 @@ def test_release_gate_command_writes_markdown(tmp_path: Path) -> None:
     assert "docs/plans/qa-report-demo.md" in content
     assert "## Consumed Docs Sync Report" in content
     assert "docs/plans/docs-sync-report-demo.md" in content
+    assert "## Verification Status" in content
+    assert "uv run pytest -q: passed" in content
+    assert "## Coverage Posture" in content
+    assert "## Version/Changelog Readiness" in content
+    assert "## Merge/PR Prep" in content
     assert "## Readiness Checklist" in content
     assert "tests green" in content
     assert "## Blocking Risks" in content

@@ -44,3 +44,9 @@ role_toml = "roles/docs-sync.toml"
 agent_type = "worker"
 model = "gpt-5.4"
 reasoning_effort = "medium"
+
+[roles.release-manager]
+role_toml = "roles/release-manager.toml"
+agent_type = "worker"
+model = "gpt-5.4"
+reasoning_effort = "medium"

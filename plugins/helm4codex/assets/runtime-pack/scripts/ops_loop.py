@@ -6,7 +6,13 @@ from types import SimpleNamespace
 
 from bridge_runner import cmd_render as cmd_render_bridge_launch
 from role_bridge import resolve_role
-from team_state import cmd_board, cmd_dispatch_packet, cmd_invocation_spec, cmd_sprint_contract
+from team_state import (
+    cmd_board,
+    cmd_dispatch_packet,
+    cmd_invocation_spec,
+    cmd_release_gate as cmd_write_release_gate,
+    cmd_sprint_contract,
+)
 
 
 def _read(path: Path) -> str:
@@ -412,6 +418,89 @@ def cmd_bridge_receipt(args: argparse.Namespace) -> int:
     return cmd_write_bridge_receipt(receipt_args)
 
 
+def cmd_release_prepare(args: argparse.Namespace) -> int:
+    implementation_report = _resolve_path(args.root, args.implementation_report_path)
+    qa_report = _resolve_path(args.root, args.qa_report_path)
+    docs_sync_report = _resolve_path(args.root, args.docs_sync_report_path)
+    if not implementation_report.exists():
+        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
+    if not qa_report.exists():
+        raise FileNotFoundError(f"Missing QA report: {qa_report}")
+    if not docs_sync_report.exists():
+        raise FileNotFoundError(f"Missing docs sync report: {docs_sync_report}")
+    if _board_stage(args.root, args.board_path) != "ship-ready":
+        raise ValueError("Execution board must be at ship-ready stage before release-prepare can proceed.")
+
+    checklist = "\n".join(f"- {item}" for item in args.readiness_checklist)
+    return _write_dispatch_packet(
+        root=args.root,
+        output=args.release_packet_path,
+        invocation_spec_output=args.release_invocation_spec_path,
+        title=f"{args.title} release dispatch",
+        logical_role="release-manager",
+        objective="Evaluate release readiness for the bounded slice without expanding into deploy automation.",
+        consumed_artifact=[
+            args.implementation_report_path,
+            args.qa_report_path,
+            args.docs_sync_report_path,
+        ],
+        constraints=(
+            "Release readiness checklist:\n"
+            + checklist
+            + "\n\nEvidence-first release gate sections:\n"
+            + "- verification status\n"
+            + "- coverage posture\n"
+            + "- version/changelog readiness\n"
+            + "- merge/PR prep\n\nRelease gate output:\n"
+            + args.release_gate_path
+        ),
+        expected_output=f"Release gate at {args.release_gate_path}",
+        writeback_target=args.release_gate_path,
+        completion_command=(
+            "Return release readiness by writing the release gate to "
+            f"{args.release_gate_path}"
+        ),
+    )
+
+
+def cmd_release_gate(args: argparse.Namespace) -> int:
+    implementation_report = _resolve_path(args.root, args.implementation_report_path)
+    qa_report = _resolve_path(args.root, args.qa_report_path)
+    docs_sync_report = _resolve_path(args.root, args.docs_sync_report_path)
+    if not implementation_report.exists():
+        raise FileNotFoundError(f"Missing implementation report: {implementation_report}")
+    if not qa_report.exists():
+        raise FileNotFoundError(f"Missing QA report: {qa_report}")
+    if not docs_sync_report.exists():
+        raise FileNotFoundError(f"Missing docs sync report: {docs_sync_report}")
+    if _board_stage(args.root, args.board_path) != "ship-ready":
+        raise ValueError("Execution board must be at ship-ready stage before release-gate can proceed.")
+    if args.verdict not in {"go", "no-go"}:
+        raise ValueError("Release verdict must be go or no-go.")
+
+    release_args = SimpleNamespace(
+        root=args.root,
+        output=args.release_gate_path,
+        title=args.title,
+        implementation_report=args.implementation_report_path,
+        qa_report=args.qa_report_path,
+        docs_sync_report=args.docs_sync_report_path,
+        verification_status=args.verification_status,
+        coverage_posture=args.coverage_posture,
+        version_changelog_readiness=args.version_changelog_readiness,
+        merge_pr_prep=args.merge_pr_prep,
+        readiness_checklist=args.readiness_checklist,
+        blocking_risk=args.blocking_risk,
+        mitigation=args.mitigation,
+        verdict=args.verdict,
+        recommendation=args.recommendation,
+    )
+    rc = cmd_write_release_gate(release_args)
+    if rc != 0:
+        return rc
+    return _update_board(args.root, args.board_path, "ship-ready", [args.title])
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Explicit ops orchestration loop")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
@@ -539,6 +628,83 @@ def build_parser() -> argparse.ArgumentParser:
     docs_sync.add_argument("--follow-up", action="append", default=[], dest="follow_up")
     docs_sync.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     docs_sync.set_defaults(func=cmd_docs_sync)
+
+    release_prepare = subparsers.add_parser(
+        "release-prepare",
+        help="Create the release-manager dispatch packet once docs-sync has completed",
+    )
+    release_prepare.add_argument("--title", required=True)
+    release_prepare.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    release_prepare.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    release_prepare.add_argument(
+        "--docs-sync-report-path",
+        required=True,
+        dest="docs_sync_report_path",
+    )
+    release_prepare.add_argument("--release-packet-path", required=True, dest="release_packet_path")
+    release_prepare.add_argument(
+        "--release-invocation-spec-path",
+        dest="release_invocation_spec_path",
+    )
+    release_prepare.add_argument("--release-gate-path", required=True, dest="release_gate_path")
+    release_prepare.add_argument(
+        "--readiness-checklist",
+        action="append",
+        default=[],
+        required=True,
+        dest="readiness_checklist",
+    )
+    release_prepare.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    release_prepare.set_defaults(func=cmd_release_prepare)
+
+    release_gate = subparsers.add_parser(
+        "release-gate",
+        help="Write the canonical release gate while keeping the board at ship-ready",
+    )
+    release_gate.add_argument("--title", required=True)
+    release_gate.add_argument(
+        "--implementation-report-path",
+        required=True,
+        dest="implementation_report_path",
+    )
+    release_gate.add_argument("--qa-report-path", required=True, dest="qa_report_path")
+    release_gate.add_argument(
+        "--docs-sync-report-path",
+        required=True,
+        dest="docs_sync_report_path",
+    )
+    release_gate.add_argument("--release-gate-path", required=True, dest="release_gate_path")
+    release_gate.add_argument(
+        "--verification-status",
+        action="append",
+        default=[],
+        required=True,
+        dest="verification_status",
+    )
+    release_gate.add_argument("--coverage-posture", required=True, dest="coverage_posture")
+    release_gate.add_argument(
+        "--version-changelog-readiness",
+        required=True,
+        dest="version_changelog_readiness",
+    )
+    release_gate.add_argument("--merge-pr-prep", required=True, dest="merge_pr_prep")
+    release_gate.add_argument(
+        "--readiness-checklist",
+        action="append",
+        default=[],
+        required=True,
+        dest="readiness_checklist",
+    )
+    release_gate.add_argument("--blocking-risk", action="append", default=[], dest="blocking_risk")
+    release_gate.add_argument("--mitigation", action="append", default=[], dest="mitigation")
+    release_gate.add_argument("--verdict", required=True)
+    release_gate.add_argument("--recommendation", required=True)
+    release_gate.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    release_gate.set_defaults(func=cmd_release_gate)
 
     bridge_launch = subparsers.add_parser(
         "bridge-launch",

@@ -166,6 +166,15 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
             assert "scripts/team_state.py review-result" in content
 
 
+def test_release_manager_role_requires_evidence_first_gate_fields() -> None:
+    content = (ROOT / ".codex" / "roles" / "release-manager.toml").read_text()
+
+    assert "--verification-status <item>" in content
+    assert "--coverage-posture <text>" in content
+    assert "--version-changelog-readiness <text>" in content
+    assert "--merge-pr-prep <text>" in content
+
+
 def test_ops_orchestrator_contract_owns_dispatch_boundary() -> None:
     content = (ROOT / "skills" / "ops-orchestrator" / "SKILL.md").read_text().lower()
     assert "dispatch bounded work" in content

@@ -559,7 +559,11 @@ def cmd_release_prepare(args: argparse.Namespace) -> int:
         constraints=(
             "Release readiness checklist:\n"
             + checklist
-            + "\n\nRelease gate output:\n"
+            + "\n\nEvidence-first release gate sections:\n"
+            + "- verification status\n"
+            + "- coverage posture\n"
+            + "- version/changelog readiness\n"
+            + "- merge/PR prep\n\nRelease gate output:\n"
             + args.release_gate_path
         ),
         expected_output=f"Release gate at {args.release_gate_path}",
@@ -593,6 +597,10 @@ def cmd_release_gate(args: argparse.Namespace) -> int:
         implementation_report=args.implementation_report_path,
         qa_report=args.qa_report_path,
         docs_sync_report=args.docs_sync_report_path,
+        verification_status=args.verification_status,
+        coverage_posture=args.coverage_posture,
+        version_changelog_readiness=args.version_changelog_readiness,
+        merge_pr_prep=args.merge_pr_prep,
         readiness_checklist=args.readiness_checklist,
         blocking_risk=args.blocking_risk,
         mitigation=args.mitigation,
@@ -798,6 +806,20 @@ def build_parser() -> argparse.ArgumentParser:
         dest="docs_sync_report_path",
     )
     release_gate.add_argument("--release-gate-path", required=True, dest="release_gate_path")
+    release_gate.add_argument(
+        "--verification-status",
+        action="append",
+        default=[],
+        required=True,
+        dest="verification_status",
+    )
+    release_gate.add_argument("--coverage-posture", required=True, dest="coverage_posture")
+    release_gate.add_argument(
+        "--version-changelog-readiness",
+        required=True,
+        dest="version_changelog_readiness",
+    )
+    release_gate.add_argument("--merge-pr-prep", required=True, dest="merge_pr_prep")
     release_gate.add_argument(
         "--readiness-checklist",
         action="append",
