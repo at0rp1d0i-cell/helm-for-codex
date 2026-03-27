@@ -186,6 +186,73 @@ def test_research_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Open Risks" in content
 
 
+def test_sprint_proposal_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "sprint-proposal",
+        "--output",
+        "docs/plans/sprint-proposal-demo.md",
+        "--title",
+        "Task 1 sprint proposal",
+        "--objective",
+        "Negotiate a bounded build slice before builder kickoff.",
+        "--scope",
+        "Only touch the sprint negotiation lane and related tests.",
+        "--acceptance-criteria",
+        "Proposal, passes, and gate exist before the sprint contract is materialized.",
+        "--implementation-report-target",
+        "docs/plans/implementation-report-task1.md",
+        "--evidence-posture",
+        "Targeted regression tests and a repo-backed QA handoff are required.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "sprint-proposal-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Sprint Proposal: Task 1 sprint proposal" in content
+    assert "## Objective" in content
+    assert "## Scope" in content
+    assert "## Acceptance Criteria" in content
+    assert "docs/plans/implementation-report-task1.md" in content
+    assert "## Evidence Posture" in content
+
+
+def test_sprint_gate_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "sprint-gate",
+        "--output",
+        "docs/plans/sprint-gate-demo.md",
+        "--title",
+        "Task 1 sprint negotiation",
+        "--sprint-proposal",
+        "docs/plans/sprint-proposal-demo.md",
+        "--sprint-pass",
+        "docs/plans/sprint-passes/builder.md",
+        "--sprint-pass",
+        "docs/plans/sprint-passes/qa.md",
+        "--negotiated-contract-change",
+        "Keep the task bounded to one lane.",
+        "--unresolved-tension",
+        "Decide whether to defer broader runtime polish.",
+        "--outcome",
+        "ask-user",
+        "--next-step",
+        "Escalate the remaining tradeoff before build.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "sprint-gate-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Sprint Gate: Task 1 sprint negotiation" in content
+    assert "docs/plans/sprint-proposal-demo.md" in content
+    assert "docs/plans/sprint-passes/builder.md" in content
+    assert "## Negotiated Contract Changes" in content
+    assert "## Unresolved Tensions" in content
+    assert "## Outcome" in content
+    assert "ask-user" in content
+
+
 def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
@@ -389,6 +456,36 @@ def test_sprint_contract_command_writes_markdown(tmp_path: Path) -> None:
     assert "QA and Docs consume the artifact chain before board advancement" in content
     assert "## Scope" in content
     assert "## Acceptance Criteria" in content
+
+
+def test_sprint_pass_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "sprint-pass",
+        "--output",
+        "docs/plans/sprint-pass-builder.md",
+        "--title",
+        "Builder sprint pass",
+        "--role",
+        "Builder",
+        "--focus",
+        "Implementation feasibility and bounded delivery pressure",
+        "--finding",
+        "Scope pressure: the slice is still wider than one task.",
+        "--auto-decision",
+        "Keep the implementation-report target explicit in the final sprint contract.",
+        "--blocking-issue",
+        "Scope is too broad for one bounded implementation slice.",
+        "--recommendation",
+        "Reframe scope before build",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "sprint-pass-builder.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Sprint Pass: Builder sprint pass" in content
+    assert "## Blocking Issues" in content
+    assert "Scope is too broad for one bounded implementation slice." in content
 
 
 def test_implementation_report_command_writes_markdown(tmp_path: Path) -> None:

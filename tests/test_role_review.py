@@ -209,3 +209,92 @@ def test_role_review_runs_architect_office_hours_pass(tmp_path: Path) -> None:
     assert "build-vs-buy" in content.lower()
     assert "bounded local build" in content.lower()
     assert "building from scratch is justified" in content.lower()
+
+
+def test_role_review_runs_builder_sprint_contract_pass(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "sprint-proposal.md").write_text(
+        "# Sprint Proposal: Task 1\n\n"
+        "## Objective\n\n"
+        "Materialize a bounded sprint contract.\n\n"
+        "## Scope\n\n"
+        "Build a full platform for every workflow.\n\n"
+        "## Acceptance Criteria\n\n"
+        "Proposal and contract exist.\n\n"
+        "## Implementation Report Target\n\n"
+        "docs/plans/implementation-report-task1.md\n\n"
+        "## Evidence Posture\n\n"
+        "Targeted regression tests.\n"
+    )
+
+    result = run_role_review(
+        tmp_path,
+        "--mode",
+        "sprint-contract",
+        "--role",
+        "Builder",
+        "--proposal-path",
+        "docs/plans/sprint-proposal.md",
+        "--output",
+        "docs/plans/sprint-pass-builder.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    content = (tmp_path / "docs" / "plans" / "sprint-pass-builder.md").read_text()
+    assert "# Sprint Pass: Builder sprint pass" in content
+    assert "## Role\n\nBuilder" in content
+    assert "implementation-report target" in content.lower()
+    assert "scope is too broad" in content.lower()
+
+
+def test_role_review_runs_qa_sprint_contract_pass(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "sprint-proposal.md").write_text(
+        "# Sprint Proposal: Task 1\n\n"
+        "## Objective\n\n"
+        "Materialize a bounded sprint contract.\n\n"
+        "## Scope\n\n"
+        "Only add sprint negotiation artifacts and tests.\n\n"
+        "## Acceptance Criteria\n\n"
+        "Contract exists.\n\n"
+        "## Implementation Report Target\n\n"
+        "docs/plans/implementation-report-task1.md\n\n"
+        "## Evidence Posture\n\n"
+        "Minimal notes only.\n"
+    )
+
+    result = run_role_review(
+        tmp_path,
+        "--mode",
+        "sprint-contract",
+        "--role",
+        "QA",
+        "--proposal-path",
+        "docs/plans/sprint-proposal.md",
+        "--output",
+        "docs/plans/sprint-pass-qa.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    content = (tmp_path / "docs" / "plans" / "sprint-pass-qa.md").read_text()
+    assert "# Sprint Pass: QA sprint pass" in content
+    assert "## Role\n\nQA" in content
+    assert "acceptance criteria are not observable enough for qa" in content.lower()
+    assert "evidence posture is too weak" in content.lower()
+
+
+def test_role_review_requires_proposal_path_for_sprint_contract_mode(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_role_review(
+        tmp_path,
+        "--mode",
+        "sprint-contract",
+        "--role",
+        "Builder",
+        "--output",
+        "docs/plans/sprint-pass-builder.md",
+    )
+
+    assert result.returncode != 0
+    assert "--proposal-path is required for sprint-contract mode" in result.stderr

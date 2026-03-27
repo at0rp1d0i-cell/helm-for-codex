@@ -24,6 +24,9 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "office-hours-brief.md",
         ROOT / "ops" / "templates" / "research-brief.md",
         ROOT / "ops" / "templates" / "discovery-gate.md",
+        ROOT / "ops" / "templates" / "sprint-proposal.md",
+        ROOT / "ops" / "templates" / "sprint-pass.md",
+        ROOT / "ops" / "templates" / "sprint-gate.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "sprint-contract.md",
         ROOT / "ops" / "templates" / "dispatch-packet.md",
@@ -86,6 +89,32 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<unresolved_tensions>" in discovery_gate
     assert "<outcome>" in discovery_gate
     assert "<next_step>" in discovery_gate
+
+    sprint_proposal = (ROOT / "ops" / "templates" / "sprint-proposal.md").read_text()
+    assert "# Sprint Proposal: <title>" in sprint_proposal
+    assert "<objective>" in sprint_proposal
+    assert "<scope>" in sprint_proposal
+    assert "<acceptance_criteria>" in sprint_proposal
+    assert "<implementation_report_target>" in sprint_proposal
+    assert "<evidence_posture>" in sprint_proposal
+
+    sprint_pass = (ROOT / "ops" / "templates" / "sprint-pass.md").read_text()
+    assert "# Sprint Pass: <title>" in sprint_pass
+    assert "<role>" in sprint_pass
+    assert "<focus>" in sprint_pass
+    assert "<findings>" in sprint_pass
+    assert "<auto_decisions>" in sprint_pass
+    assert "<blocking_issues>" in sprint_pass
+    assert "<recommendation>" in sprint_pass
+
+    sprint_gate = (ROOT / "ops" / "templates" / "sprint-gate.md").read_text()
+    assert "# Sprint Gate: <title>" in sprint_gate
+    assert "<sprint_proposal_path>" in sprint_gate
+    assert "<sprint_pass_paths>" in sprint_gate
+    assert "<negotiated_contract_changes>" in sprint_gate
+    assert "<unresolved_tensions>" in sprint_gate
+    assert "<outcome>" in sprint_gate
+    assert "<next_step>" in sprint_gate
 
     plan_brief = (ROOT / "ops" / "templates" / "plan-brief.md").read_text()
     assert "# Plan Brief: <title>" in plan_brief

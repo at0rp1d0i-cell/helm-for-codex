@@ -157,6 +157,26 @@ def cmd_research_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sprint_proposal(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Sprint Proposal: {args.title}\n\n"
+        "## Objective\n\n"
+        f"{args.objective}\n\n"
+        "## Scope\n\n"
+        f"{args.scope}\n\n"
+        "## Acceptance Criteria\n\n"
+        f"{args.acceptance_criteria}\n\n"
+        "## Implementation Report Target\n\n"
+        f"{args.implementation_report_target}\n\n"
+        "## Evidence Posture\n\n"
+        f"{args.evidence_posture}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_plan_brief(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     content = (
@@ -197,6 +217,39 @@ def cmd_discovery_gate(args: argparse.Namespace) -> int:
         f"{args.reframed_problem_statement}\n\n"
         "## Build vs Buy Posture\n\n"
         f"{args.build_vs_buy_posture}\n\n"
+        "## Unresolved Tensions\n\n"
+        f"{unresolved_tensions}\n\n"
+        "## Outcome\n\n"
+        f"{args.outcome}\n\n"
+        "## Next Step\n\n"
+        f"{args.next_step}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_sprint_gate(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    sprint_passes = "\n".join(f"- {item}" for item in args.sprint_pass)
+    negotiated_changes = (
+        "\n".join(f"- {item}" for item in args.negotiated_contract_change)
+        if args.negotiated_contract_change
+        else "- none"
+    )
+    unresolved_tensions = (
+        "\n".join(f"- {item}" for item in args.unresolved_tension)
+        if args.unresolved_tension
+        else "- none"
+    )
+    content = (
+        f"# Sprint Gate: {args.title}\n\n"
+        "## Consumed Sprint Proposal\n\n"
+        f"{args.sprint_proposal}\n\n"
+        "## Sprint Passes\n\n"
+        f"{sprint_passes}\n\n"
+        "## Negotiated Contract Changes\n\n"
+        f"{negotiated_changes}\n\n"
         "## Unresolved Tensions\n\n"
         f"{unresolved_tensions}\n\n"
         "## Outcome\n\n"
@@ -726,6 +779,35 @@ def cmd_review_pass(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sprint_pass(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    findings = "\n".join(f"- {item}" for item in args.finding)
+    auto_decisions = "\n".join(f"- {item}" for item in args.auto_decision)
+    blocking_issues = (
+        "\n".join(f"- {item}" for item in args.blocking_issue)
+        if args.blocking_issue
+        else "- none"
+    )
+    content = (
+        f"# Sprint Pass: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Focus\n\n"
+        f"{args.focus}\n\n"
+        "## Findings\n\n"
+        f"{findings}\n\n"
+        "## Auto Decisions\n\n"
+        f"{auto_decisions}\n\n"
+        "## Blocking Issues\n\n"
+        f"{blocking_issues}\n\n"
+        "## Recommendation\n\n"
+        f"{args.recommendation}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_result(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     findings = "\n".join(f"- {item}" for item in args.finding)
@@ -956,6 +1038,27 @@ def build_parser() -> argparse.ArgumentParser:
         dest="recommendation_target",
     )
     research_brief.set_defaults(func=cmd_research_brief)
+
+    sprint_proposal = subparsers.add_parser(
+        "sprint-proposal",
+        help="Create sprint proposal markdown",
+    )
+    sprint_proposal.add_argument("--output", required=True)
+    sprint_proposal.add_argument("--title", required=True)
+    sprint_proposal.add_argument("--objective", required=True)
+    sprint_proposal.add_argument("--scope", required=True)
+    sprint_proposal.add_argument(
+        "--acceptance-criteria",
+        required=True,
+        dest="acceptance_criteria",
+    )
+    sprint_proposal.add_argument(
+        "--implementation-report-target",
+        required=True,
+        dest="implementation_report_target",
+    )
+    sprint_proposal.add_argument("--evidence-posture", required=True, dest="evidence_posture")
+    sprint_proposal.set_defaults(func=cmd_sprint_proposal)
 
     office_hours_brief = subparsers.add_parser(
         "office-hours-brief",
@@ -1207,6 +1310,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     discovery_gate.add_argument("--next-step", required=True, dest="next_step")
     discovery_gate.set_defaults(func=cmd_discovery_gate)
+
+    sprint_gate = subparsers.add_parser(
+        "sprint-gate",
+        help="Create sprint gate markdown",
+    )
+    sprint_gate.add_argument("--output", required=True)
+    sprint_gate.add_argument("--title", required=True)
+    sprint_gate.add_argument("--sprint-proposal", required=True, dest="sprint_proposal")
+    sprint_gate.add_argument("--sprint-pass", action="append", default=[], required=True, dest="sprint_pass")
+    sprint_gate.add_argument(
+        "--negotiated-contract-change",
+        action="append",
+        default=[],
+        dest="negotiated_contract_change",
+    )
+    sprint_gate.add_argument(
+        "--unresolved-tension",
+        action="append",
+        default=[],
+        dest="unresolved_tension",
+    )
+    sprint_gate.add_argument(
+        "--outcome",
+        choices=["ready-for-build", "reframe-scope", "ask-user"],
+        required=True,
+    )
+    sprint_gate.add_argument("--next-step", required=True, dest="next_step")
+    sprint_gate.set_defaults(func=cmd_sprint_gate)
 
     docs_sync_report = subparsers.add_parser(
         "docs-sync-report",
@@ -1523,6 +1654,17 @@ def build_parser() -> argparse.ArgumentParser:
     review_pass.add_argument("--taste-decision", action="append", default=[])
     review_pass.add_argument("--recommendation", required=True)
     review_pass.set_defaults(func=cmd_review_pass)
+
+    sprint_pass = subparsers.add_parser("sprint-pass", help="Create sprint pass markdown")
+    sprint_pass.add_argument("--output", required=True)
+    sprint_pass.add_argument("--title", required=True)
+    sprint_pass.add_argument("--role", required=True)
+    sprint_pass.add_argument("--focus", required=True)
+    sprint_pass.add_argument("--finding", action="append", default=[], required=True)
+    sprint_pass.add_argument("--auto-decision", action="append", default=[], required=True, dest="auto_decision")
+    sprint_pass.add_argument("--blocking-issue", action="append", default=[], dest="blocking_issue")
+    sprint_pass.add_argument("--recommendation", required=True)
+    sprint_pass.set_defaults(func=cmd_sprint_pass)
 
     review_result = subparsers.add_parser(
         "review-result",
