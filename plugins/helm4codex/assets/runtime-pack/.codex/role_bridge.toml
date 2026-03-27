@@ -9,6 +9,12 @@ agent_type = "worker"
 model = "gpt-5.4"
 reasoning_effort = "high"
 
+[roles.researcher]
+role_toml = "roles/researcher.toml"
+agent_type = "explorer"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+
 [roles.product-reviewer]
 role_toml = "roles/product-reviewer.toml"
 agent_type = "explorer"

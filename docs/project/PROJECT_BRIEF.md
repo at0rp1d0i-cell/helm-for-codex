@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 22 in progress: continue closing the productization gap with gstack after landing first-class `office-hours`, `autoplan`, browser-QA evidence, and release gate/prep loops on top of Helm4Codex's repo-backed orchestration model.
+Phase 22 in progress: continue closing the productization gap with gstack after landing research-first `office-hours`, `autoplan`, browser-QA evidence, and release gate/prep loops on top of Helm4Codex's repo-backed orchestration model.
 
 ## Success Criteria
 
@@ -36,6 +36,8 @@ Phase 22 in progress: continue closing the productization gap with gstack after 
 - installed target repos have a runtime-scoped self-check instead of depending on source-only repo validation
 - a repo-backed gstack gap assessment exists and identifies the highest-value workflow gaps to close next
 - a first-class `office-hours` lane exists to apply Product, Design, and Architect pressure before plan
+- `office-hours` now injects repo-backed Researcher pressure before Product, Design, and Architect challenge passes run
+- a live `researcher` role surface exists in the repo role bridge and installed runtime
 - a first-class `autoplan` lane exists on top of existing review passes and taste-decision gates
 - a live `design-reviewer` role surface exists in the repo role bridge and installed runtime
 - browser-QA evidence artifacts exist as a repo-backed trust surface, even before the full browser runtime is wired

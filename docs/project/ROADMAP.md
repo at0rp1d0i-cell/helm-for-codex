@@ -2,7 +2,7 @@
 
 ## Current Milestone
 
-Phase 22 in progress: build the second productization tranche after landing `office-hours`, `autoplan`, browser-QA evidence, and release gate/prep workflows. The browser-QA lane now has a stronger manifest/artifact-root contract; the next step is turning that contract into real capture and review ergonomics.
+Phase 22 in progress: build the second productization tranche after landing research-first `office-hours`, `autoplan`, browser-QA evidence, and release gate/prep workflows. The next step on the discovery side is promoting `office-hours` from deterministic research-backed passes into richer live discovery execution.
 
 ## Later Milestones
 
@@ -10,7 +10,7 @@ Phase 22 in progress: build the second productization tranche after landing `off
 - sharpen the external install story so users do not need source-repo knowledge to adopt or upgrade the team runtime
 - extend browser-QA evidence into a fuller browser-backed QA runtime and a clearer report-only lane
 - deepen ship/release from readiness gates into a more complete daily shipping workflow
-- harden office-hours from deterministic challenge passes into live discovery roles and richer research pressure
+- harden office-hours from deterministic research-backed challenge passes into live discovery roles
 - expand validation from structural checks into richer behavior-aware orchestration checks
 - let the live `Ops Orchestrator` role own more of the dispatch path instead of relying on the remaining spawn bridge
 - drive more live dispatch through `scripts/role_bridge.py` rather than hand-written per-turn routing
