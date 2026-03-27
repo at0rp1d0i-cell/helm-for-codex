@@ -15,6 +15,12 @@ agent_type = "explorer"
 model = "gpt-5.4"
 reasoning_effort = "medium"
 
+[roles.design-reviewer]
+role_toml = "roles/design-reviewer.toml"
+agent_type = "explorer"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+
 [roles.architect-reviewer]
 role_toml = "roles/architect-reviewer.toml"
 agent_type = "explorer"

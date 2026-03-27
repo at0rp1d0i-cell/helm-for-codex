@@ -556,6 +556,141 @@ def test_plan_creates_plan_brief_and_updates_board(tmp_path: Path) -> None:
     assert "- Phase 4 orchestration slice" in board
 
 
+def test_office_hours_run_marks_ready_for_plan_when_brief_is_sharp(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "office-hours",
+        "--title",
+        "Pixiu office hours",
+        "--problem-statement",
+        "Pixiu needs a reliable experiment review loop.",
+        "--target-user",
+        "ML engineer iterating on one experiment at a time.",
+        "--current-proposal",
+        "Add one clear experiment review flow for the first milestone.",
+        "--constraint",
+        "Keep the first milestone bounded to one workflow.",
+        "--success-criterion",
+        "One experiment can be created and reviewed end to end.",
+        "--build-vs-buy-context",
+        "The current build-vs-buy posture is acceptable for the first milestone.",
+        "--assumption-to-challenge",
+        "Users will accept a single-flow first release.",
+    )
+
+    assert result.returncode == 0, result.stderr
+    brief = tmp_path / "docs" / "plans" / "office-hours" / "office-hours-brief.md"
+    gate = tmp_path / "docs" / "plans" / "office-hours" / "discovery-gate.md"
+    report = tmp_path / "docs" / "plans" / "office-hours" / "office-hours-report.md"
+    assert brief.exists()
+    assert gate.exists()
+    assert report.exists()
+    report_content = report.read_text()
+    assert "# Office-Hours Report: Pixiu office hours" in report_content
+    assert "## Outcome\n\nready-for-plan" in report_content
+    assert "docs/plans/office-hours/challenge-passes/design.md" in report_content
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- Pixiu office hours" in board
+
+
+def test_office_hours_run_marks_reframe_when_scope_is_too_broad(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "office-hours",
+        "--title",
+        "Pixiu office hours",
+        "--problem-statement",
+        "Pixiu needs a better experimentation loop for all workflows.",
+        "--target-user",
+        "ML engineer iterating locally.",
+        "--current-proposal",
+        "Build a full experimentation platform for every workflow.",
+        "--constraint",
+        "The first milestone should stay bounded.",
+        "--success-criterion",
+        "Experiments feel easier to run.",
+        "--build-vs-buy-context",
+        "A partial in-house flow is acceptable.",
+        "--assumption-to-challenge",
+        "Users need the whole platform immediately.",
+        "--assumption-to-challenge",
+        "The first release must solve every workflow.",
+        "--assumption-to-challenge",
+        "Custom orchestration is always better than integration.",
+    )
+
+    assert result.returncode == 0, result.stderr
+    gate = (tmp_path / "docs" / "plans" / "office-hours" / "discovery-gate.md").read_text()
+    assert "## Outcome\n\nreframe" in gate
+    assert "Reduce the first milestone to one critical path" in gate
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\ndiscovery" in board
+
+
+def test_office_hours_run_marks_ask_user_for_strategic_build_vs_buy(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "office-hours",
+        "--title",
+        "Pixiu office hours",
+        "--problem-statement",
+        "Pixiu needs a secure experiment review loop.",
+        "--target-user",
+        "ML engineer iterating locally.",
+        "--current-proposal",
+        "Add one clear experiment review flow for the first milestone.",
+        "--constraint",
+        "Keep the first milestone bounded.",
+        "--success-criterion",
+        "One experiment can be reviewed end to end.",
+        "--build-vs-buy-context",
+        "Budget and compliance constraints affect whether to integrate or build.",
+        "--assumption-to-challenge",
+        "The existing stack is sufficient.",
+    )
+
+    assert result.returncode == 0, result.stderr
+    gate = (tmp_path / "docs" / "plans" / "office-hours" / "discovery-gate.md").read_text()
+    assert "## Outcome\n\nask-user" in gate
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\napproval-needed" in board
+
+
+def test_office_hours_prepare_and_collect_write_repo_backed_status_reports(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    prepare = run_lead_loop(
+        tmp_path,
+        "office-hours",
+        "--mode",
+        "prepare",
+        "--title",
+        "Pixiu office hours",
+    )
+    assert prepare.returncode == 0, prepare.stderr
+    report = (tmp_path / "docs" / "plans" / "office-hours" / "office-hours-report.md").read_text()
+    assert "## Outcome\n\nin-review" in report
+
+    collect = run_lead_loop(
+        tmp_path,
+        "office-hours",
+        "--mode",
+        "collect",
+        "--title",
+        "Pixiu office hours",
+    )
+    assert collect.returncode != 0
+    report = (tmp_path / "docs" / "plans" / "office-hours" / "office-hours-report.md").read_text()
+    assert "## Outcome\n\nblocked" in report
+
+
 def test_autoplan_creates_repo_backed_lane_with_auto_clear_outcome(tmp_path: Path) -> None:
     seed_repo_state(tmp_path)
     (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(

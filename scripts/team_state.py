@@ -83,6 +83,33 @@ def cmd_discovery_brief(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_office_hours_brief(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    constraints = "\n".join(f"- {item}" for item in args.constraint)
+    success_criteria = "\n".join(f"- {item}" for item in args.success_criterion)
+    assumptions = "\n".join(f"- {item}" for item in args.assumption_to_challenge)
+    content = (
+        f"# Office-Hours Brief: {args.title}\n\n"
+        "## Problem Statement\n\n"
+        f"{args.problem_statement}\n\n"
+        "## Target User Or Operator\n\n"
+        f"{args.target_user}\n\n"
+        "## Current Proposal\n\n"
+        f"{args.current_proposal}\n\n"
+        "## Constraints\n\n"
+        f"{constraints}\n\n"
+        "## Success Criteria\n\n"
+        f"{success_criteria}\n\n"
+        "## Build vs Buy Context\n\n"
+        f"{args.build_vs_buy_context}\n\n"
+        "## Assumptions To Challenge\n\n"
+        f"{assumptions}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_plan_brief(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     content = (
@@ -97,6 +124,36 @@ def cmd_plan_brief(args: argparse.Namespace) -> int:
         f"{args.exit_criteria}\n\n"
         "## Writeback Target\n\n"
         f"{args.writeback}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_discovery_gate(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    challenge_passes = "\n".join(f"- {item}" for item in args.challenge_pass)
+    unresolved_tensions = (
+        "\n".join(f"- {item}" for item in args.unresolved_tension)
+        if args.unresolved_tension
+        else "- none"
+    )
+    content = (
+        f"# Discovery Gate: {args.title}\n\n"
+        "## Consumed Office-Hours Brief\n\n"
+        f"{args.office_hours_brief}\n\n"
+        "## Challenge Passes\n\n"
+        f"{challenge_passes}\n\n"
+        "## Reframed Problem Statement\n\n"
+        f"{args.reframed_problem_statement}\n\n"
+        "## Build vs Buy Posture\n\n"
+        f"{args.build_vs_buy_posture}\n\n"
+        "## Unresolved Tensions\n\n"
+        f"{unresolved_tensions}\n\n"
+        "## Outcome\n\n"
+        f"{args.outcome}\n\n"
+        "## Next Step\n\n"
+        f"{args.next_step}\n"
     )
     _write(out, content)
     print(f"wrote {out}")
@@ -553,6 +610,40 @@ def cmd_autoplan_report(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_office_hours_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    challenge_passes = (
+        "\n".join(f"- {item}" for item in args.challenge_pass)
+        if args.challenge_pass
+        else "- none"
+    )
+    reframing_changes = (
+        "\n".join(f"- {item}" for item in args.reframing_change)
+        if args.reframing_change
+        else "- none"
+    )
+    content = (
+        f"# Office-Hours Report: {args.title}\n\n"
+        "## Mode\n\n"
+        f"{args.mode}\n\n"
+        "## Outcome\n\n"
+        f"{args.outcome}\n\n"
+        "## Office-Hours Brief\n\n"
+        f"{args.office_hours_brief}\n\n"
+        "## Challenge Passes\n\n"
+        f"{challenge_passes}\n\n"
+        "## Discovery Gate\n\n"
+        f"{args.discovery_gate}\n\n"
+        "## Reframing Changes\n\n"
+        f"{reframing_changes}\n\n"
+        "## Next Action\n\n"
+        f"{args.next_action}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_pass(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     findings = "\n".join(f"- {item}" for item in args.finding)
@@ -796,6 +887,37 @@ def build_parser() -> argparse.ArgumentParser:
     )
     discovery_brief.set_defaults(func=cmd_discovery_brief)
 
+    office_hours_brief = subparsers.add_parser(
+        "office-hours-brief",
+        help="Create office-hours discovery brief markdown",
+    )
+    office_hours_brief.add_argument("--output", required=True)
+    office_hours_brief.add_argument("--title", required=True)
+    office_hours_brief.add_argument("--problem-statement", required=True, dest="problem_statement")
+    office_hours_brief.add_argument("--target-user", required=True, dest="target_user")
+    office_hours_brief.add_argument("--current-proposal", required=True, dest="current_proposal")
+    office_hours_brief.add_argument("--constraint", action="append", default=[], required=True)
+    office_hours_brief.add_argument(
+        "--success-criterion",
+        action="append",
+        default=[],
+        required=True,
+        dest="success_criterion",
+    )
+    office_hours_brief.add_argument(
+        "--build-vs-buy-context",
+        required=True,
+        dest="build_vs_buy_context",
+    )
+    office_hours_brief.add_argument(
+        "--assumption-to-challenge",
+        action="append",
+        default=[],
+        required=True,
+        dest="assumption_to_challenge",
+    )
+    office_hours_brief.set_defaults(func=cmd_office_hours_brief)
+
     plan_brief = subparsers.add_parser("plan-brief", help="Create plan brief markdown")
     plan_brief.add_argument("--output", required=True)
     plan_brief.add_argument("--title", required=True)
@@ -935,6 +1057,48 @@ def build_parser() -> argparse.ArgumentParser:
     )
     qa_evidence.add_argument("--note", action="append", default=[])
     qa_evidence.set_defaults(func=cmd_qa_evidence)
+
+    discovery_gate = subparsers.add_parser(
+        "discovery-gate",
+        help="Create discovery gate markdown",
+    )
+    discovery_gate.add_argument("--output", required=True)
+    discovery_gate.add_argument("--title", required=True)
+    discovery_gate.add_argument(
+        "--office-hours-brief",
+        required=True,
+        dest="office_hours_brief",
+    )
+    discovery_gate.add_argument(
+        "--challenge-pass",
+        action="append",
+        default=[],
+        required=True,
+        dest="challenge_pass",
+    )
+    discovery_gate.add_argument(
+        "--reframed-problem-statement",
+        required=True,
+        dest="reframed_problem_statement",
+    )
+    discovery_gate.add_argument(
+        "--build-vs-buy-posture",
+        required=True,
+        dest="build_vs_buy_posture",
+    )
+    discovery_gate.add_argument(
+        "--unresolved-tension",
+        action="append",
+        default=[],
+        dest="unresolved_tension",
+    )
+    discovery_gate.add_argument(
+        "--outcome",
+        choices=["reframe", "ready-for-plan", "ask-user"],
+        required=True,
+    )
+    discovery_gate.add_argument("--next-step", required=True, dest="next_step")
+    discovery_gate.set_defaults(func=cmd_discovery_gate)
 
     docs_sync_report = subparsers.add_parser(
         "docs-sync-report",
@@ -1197,6 +1361,47 @@ def build_parser() -> argparse.ArgumentParser:
     autoplan_report.add_argument("--next-action", dest="next_action")
     autoplan_report.add_argument("--next-step", dest="next_step")
     autoplan_report.set_defaults(func=cmd_autoplan_report)
+
+    office_hours_report = subparsers.add_parser(
+        "office-hours-report",
+        help="Create office-hours report markdown",
+    )
+    office_hours_report.add_argument("--output", required=True)
+    office_hours_report.add_argument("--title", required=True)
+    office_hours_report.add_argument(
+        "--mode",
+        choices=["run", "prepare", "collect"],
+        default="run",
+    )
+    office_hours_report.add_argument(
+        "--outcome",
+        choices=["reframe", "ready-for-plan", "ask-user", "blocked", "in-review"],
+        required=True,
+    )
+    office_hours_report.add_argument(
+        "--office-hours-brief",
+        required=True,
+        dest="office_hours_brief",
+    )
+    office_hours_report.add_argument(
+        "--challenge-pass",
+        action="append",
+        default=[],
+        dest="challenge_pass",
+    )
+    office_hours_report.add_argument(
+        "--discovery-gate",
+        required=True,
+        dest="discovery_gate",
+    )
+    office_hours_report.add_argument(
+        "--reframing-change",
+        action="append",
+        default=[],
+        dest="reframing_change",
+    )
+    office_hours_report.add_argument("--next-action", required=True, dest="next_action")
+    office_hours_report.set_defaults(func=cmd_office_hours_report)
 
     review_pass = subparsers.add_parser("review-pass", help="Create review pass markdown")
     review_pass.add_argument("--output", required=True)

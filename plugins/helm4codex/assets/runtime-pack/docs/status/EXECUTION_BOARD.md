@@ -8,12 +8,13 @@ plan
 
 ## Active Work
 
-- strengthen discovery with an office-hours style product reframing loop
 - deepen browser-QA from evidence artifacts into a fuller browser-backed runtime and clearer report-only lane
 - deepen ship/release from readiness gates into a more complete daily shipping workflow
+- harden office-hours from deterministic challenge passes into live discovery roles and richer research pressure
 
 ## Completed
 
+- add a first-class office-hours discovery lane with Product, Design, and Architect challenge pressure before plan
 - upgrade browser-QA evidence from placeholder prose into a manifest/artifact-root contract with screenshot, DOM, and console targets
 - add a first-class ship/release workflow foundation with release gate and release prep artifacts
 - add browser-backed QA evidence so QA is a visible repo-backed trust surface

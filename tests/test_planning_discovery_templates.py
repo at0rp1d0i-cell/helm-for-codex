@@ -18,3 +18,18 @@ def test_autoplan_template_exists_with_outcome_placeholders() -> None:
     assert "<auto_decisions>" in content
     assert "<taste_decisions>" in content
     assert "<next_action>" in content
+
+
+def test_office_hours_template_exists_with_outcome_placeholders() -> None:
+    template = ROOT / "planning" / "discovery" / "templates" / "office-hours-report.md"
+    assert template.exists()
+
+    content = template.read_text()
+    assert "# Office-Hours Report: <title>" in content
+    assert "<mode>" in content
+    assert "<outcome>" in content
+    assert "<office_hours_brief_path>" in content
+    assert "<challenge_pass_paths>" in content
+    assert "<discovery_gate_path>" in content
+    assert "<reframing_changes>" in content
+    assert "<next_action>" in content

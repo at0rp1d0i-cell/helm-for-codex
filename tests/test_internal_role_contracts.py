@@ -6,6 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ROLE_FILES = [
     ROOT / "skills" / "ops-orchestrator" / "SKILL.md",
     ROOT / "skills" / "product-discovery" / "SKILL.md",
+    ROOT / "skills" / "design-review" / "SKILL.md",
     ROOT / "skills" / "architecture-review" / "SKILL.md",
     ROOT / "skills" / "implementation-worker" / "SKILL.md",
     ROOT / "skills" / "code-reviewer" / "SKILL.md",
@@ -81,6 +82,7 @@ def test_execution_roles_report_to_ops_layer() -> None:
 def test_review_roles_can_write_structured_review_passes() -> None:
     review_roles = {
         ROOT / "skills" / "product-discovery" / "SKILL.md": "Product",
+        ROOT / "skills" / "design-review" / "SKILL.md": "Design",
         ROOT / "skills" / "architecture-review" / "SKILL.md": "Architect",
         ROOT / "skills" / "code-reviewer" / "SKILL.md": "Reviewer",
     }
@@ -121,6 +123,11 @@ def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
         ROOT / ".codex" / "roles" / "product-reviewer.toml": (
             ".agents/skills/product-discovery/SKILL.md",
             "docs/plans/review-passes/product.md",
+            "scripts/team_state.py review-pass",
+        ),
+        ROOT / ".codex" / "roles" / "design-reviewer.toml": (
+            ".agents/skills/design-review/SKILL.md",
+            "docs/plans/review-passes/design.md",
             "scripts/team_state.py review-pass",
         ),
         ROOT / ".codex" / "roles" / "architect-reviewer.toml": (

@@ -8,6 +8,7 @@ def test_internal_skills_exist_with_frontmatter() -> None:
     expected = [
         "ops-orchestrator",
         "product-discovery",
+        "design-review",
         "architecture-review",
         "implementation-worker",
         "code-reviewer",
@@ -26,6 +27,7 @@ def test_internal_skill_openai_metadata_exists_for_live_roles() -> None:
     roles = {
         "ops-orchestrator": "Ops Orchestrator",
         "product-discovery": "Product Reviewer",
+        "design-review": "Design Reviewer",
         "architecture-review": "Architect Reviewer",
         "code-reviewer": "Code Reviewer",
         "implementation-worker": "Implementation Worker",

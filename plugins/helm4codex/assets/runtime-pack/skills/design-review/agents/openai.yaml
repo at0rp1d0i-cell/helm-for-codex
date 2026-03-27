@@ -1,0 +1,3 @@
+display_name: Design Reviewer
+description: Internal design review role for structured discovery and review-pass writeback
+allow_implicit_invocation: false

@@ -45,6 +45,7 @@ def test_role_bridge_list_covers_live_roles() -> None:
     assert roles == {
         "ops-orchestrator",
         "product-reviewer",
+        "design-reviewer",
         "architect-reviewer",
         "code-reviewer",
         "implementation-worker",

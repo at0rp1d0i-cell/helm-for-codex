@@ -1,6 +1,7 @@
 [roles]
 "ops-orchestrator" = "roles/ops-orchestrator.toml"
 "product-reviewer" = "roles/product-reviewer.toml"
+"design-reviewer" = "roles/design-reviewer.toml"
 "architect-reviewer" = "roles/architect-reviewer.toml"
 "code-reviewer" = "roles/code-reviewer.toml"
 "implementation-worker" = "roles/implementation-worker.toml"

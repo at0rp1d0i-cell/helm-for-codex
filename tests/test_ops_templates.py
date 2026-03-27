@@ -21,6 +21,8 @@ def test_ops_templates_and_checks_exist() -> None:
     required = [
         ROOT / "ops" / "templates" / "task-brief.md",
         ROOT / "ops" / "templates" / "discovery-brief.md",
+        ROOT / "ops" / "templates" / "office-hours-brief.md",
+        ROOT / "ops" / "templates" / "discovery-gate.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "sprint-contract.md",
         ROOT / "ops" / "templates" / "dispatch-packet.md",
@@ -54,6 +56,26 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "# Discovery Brief: <title>" in discovery_brief
     assert "<problem_signal>" in discovery_brief
     assert "<recommendation_target>" in discovery_brief
+
+    office_hours_brief = (ROOT / "ops" / "templates" / "office-hours-brief.md").read_text()
+    assert "# Office-Hours Brief: <title>" in office_hours_brief
+    assert "<problem_statement>" in office_hours_brief
+    assert "<target_user>" in office_hours_brief
+    assert "<current_proposal>" in office_hours_brief
+    assert "<constraints>" in office_hours_brief
+    assert "<success_criteria>" in office_hours_brief
+    assert "<build_vs_buy_context>" in office_hours_brief
+    assert "<assumptions_to_challenge>" in office_hours_brief
+
+    discovery_gate = (ROOT / "ops" / "templates" / "discovery-gate.md").read_text()
+    assert "# Discovery Gate: <title>" in discovery_gate
+    assert "<office_hours_brief_path>" in discovery_gate
+    assert "<challenge_pass_paths>" in discovery_gate
+    assert "<reframed_problem_statement>" in discovery_gate
+    assert "<build_vs_buy_posture>" in discovery_gate
+    assert "<unresolved_tensions>" in discovery_gate
+    assert "<outcome>" in discovery_gate
+    assert "<next_step>" in discovery_gate
 
     plan_brief = (ROOT / "ops" / "templates" / "plan-brief.md").read_text()
     assert "# Plan Brief: <title>" in plan_brief

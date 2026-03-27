@@ -79,6 +79,43 @@ def test_discovery_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Recommendation Target" in content
 
 
+def test_office_hours_brief_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "office-hours-brief",
+        "--output",
+        "docs/plans/office-hours-brief-demo.md",
+        "--title",
+        "Pixiu office hours",
+        "--problem-statement",
+        "The project needs a sharper daily experimentation loop.",
+        "--target-user",
+        "ML engineer running local experiments",
+        "--current-proposal",
+        "Build a full experimentation platform for every workflow.",
+        "--constraint",
+        "Keep the first milestone within one bounded slice.",
+        "--success-criterion",
+        "One experiment can be created and reviewed without manual glue.",
+        "--build-vs-buy-context",
+        "A partial in-house flow is acceptable, but building a full platform from scratch is risky.",
+        "--assumption-to-challenge",
+        "Users need the whole platform immediately.",
+        "--assumption-to-challenge",
+        "Custom orchestration is better than integrating existing tooling.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "office-hours-brief-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Office-Hours Brief: Pixiu office hours" in content
+    assert "## Problem Statement" in content
+    assert "## Target User Or Operator" in content
+    assert "## Current Proposal" in content
+    assert "## Build vs Buy Context" in content
+    assert "## Assumptions To Challenge" in content
+
+
 def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
@@ -108,6 +145,84 @@ def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Modules In Scope" in content
     assert "## Exit Criteria" in content
     assert "## Writeback Target" in content
+
+
+def test_discovery_gate_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "discovery-gate",
+        "--output",
+        "docs/plans/discovery-gate-demo.md",
+        "--title",
+        "Pixiu office hours",
+        "--office-hours-brief",
+        "docs/plans/office-hours-brief-demo.md",
+        "--challenge-pass",
+        "docs/plans/challenge-passes/product.md",
+        "--challenge-pass",
+        "docs/plans/challenge-passes/design.md",
+        "--challenge-pass",
+        "docs/plans/challenge-passes/architect.md",
+        "--reframed-problem-statement",
+        "Focus the first milestone on one critical experiment path.",
+        "--build-vs-buy-posture",
+        "Current build-vs-buy posture is acceptable for planning.",
+        "--unresolved-tension",
+        "Decide whether to narrow scope before planning.",
+        "--outcome",
+        "reframe",
+        "--next-step",
+        "Rewrite the brief around one user-facing milestone.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "discovery-gate-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Discovery Gate: Pixiu office hours" in content
+    assert "docs/plans/office-hours-brief-demo.md" in content
+    assert "docs/plans/challenge-passes/design.md" in content
+    assert "## Reframed Problem Statement" in content
+    assert "## Build vs Buy Posture" in content
+    assert "## Outcome" in content
+    assert "reframe" in content
+
+
+def test_office_hours_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "office-hours-report",
+        "--output",
+        "docs/plans/office-hours-report-demo.md",
+        "--title",
+        "Pixiu office hours",
+        "--mode",
+        "run",
+        "--outcome",
+        "ready-for-plan",
+        "--office-hours-brief",
+        "docs/plans/office-hours-brief-demo.md",
+        "--challenge-pass",
+        "docs/plans/challenge-passes/product.md",
+        "--challenge-pass",
+        "docs/plans/challenge-passes/design.md",
+        "--discovery-gate",
+        "docs/plans/discovery-gate-demo.md",
+        "--reframing-change",
+        "Narrowed the first milestone to one critical experiment path.",
+        "--next-action",
+        "Write the plan brief for the narrowed milestone.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "office-hours-report-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Office-Hours Report: Pixiu office hours" in content
+    assert "## Outcome" in content
+    assert "ready-for-plan" in content
+    assert "docs/plans/office-hours-brief-demo.md" in content
+    assert "docs/plans/discovery-gate-demo.md" in content
+    assert "## Reframing Changes" in content
+    assert "## Next Action" in content
 
 
 def test_autoplan_report_command_writes_markdown_with_discovery_and_decisions(

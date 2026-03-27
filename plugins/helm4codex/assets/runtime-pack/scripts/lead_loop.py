@@ -13,9 +13,12 @@ from team_state import (
     cmd_board,
     cmd_decision,
     cmd_discovery_brief,
+    cmd_discovery_gate,
     cmd_invocation_spec,
     cmd_onboarding_report,
     cmd_onboarding_state,
+    cmd_office_hours_brief,
+    cmd_office_hours_report,
     cmd_plan_brief,
     cmd_review_gate,
     cmd_review_packet,
@@ -28,6 +31,12 @@ AUTOPLAN_ROLE_FILES = [
     ("Product", "product.md"),
     ("Architect", "architect.md"),
     ("Reviewer", "reviewer.md"),
+]
+
+OFFICE_HOURS_ROLE_FILES = [
+    ("Product", "product.md"),
+    ("Design", "design.md"),
+    ("Architect", "architect.md"),
 ]
 
 
@@ -111,6 +120,28 @@ def _autoplan_paths(
     )
 
 
+def _office_hours_paths(
+    *,
+    artifact_dir: str,
+    brief_path: str | None = None,
+    gate_path: str | None = None,
+    report_path: str | None = None,
+    pass_dir: str | None = None,
+) -> SimpleNamespace:
+    base = Path(artifact_dir)
+    return SimpleNamespace(
+        artifact_dir=str(base),
+        brief_path=brief_path or str(base / "office-hours-brief.md"),
+        gate_path=gate_path or str(base / "discovery-gate.md"),
+        report_path=report_path or str(base / "office-hours-report.md"),
+        pass_dir=pass_dir or str(base / "challenge-passes"),
+        pass_paths=[
+            str(Path(pass_dir or str(base / "challenge-passes")) / filename)
+            for _, filename in OFFICE_HOURS_ROLE_FILES
+        ],
+    )
+
+
 def _write_autoplan_report(
     args: argparse.Namespace,
     paths: SimpleNamespace,
@@ -149,9 +180,37 @@ def _write_autoplan_report(
     return cmd_autoplan_report(report_args)
 
 
+def _write_office_hours_report(
+    args: argparse.Namespace,
+    paths: SimpleNamespace,
+    *,
+    outcome: str,
+    next_action: str,
+    reframing_changes: list[str] | None = None,
+    challenge_pass_paths: list[str] | None = None,
+) -> int:
+    report_args = SimpleNamespace(
+        root=args.root,
+        output=paths.report_path,
+        title=args.title,
+        mode=args.mode,
+        outcome=outcome,
+        office_hours_brief=paths.brief_path,
+        challenge_pass=challenge_pass_paths or [],
+        discovery_gate=paths.gate_path,
+        reframing_change=reframing_changes or [],
+        next_action=next_action,
+    )
+    return cmd_office_hours_report(report_args)
+
+
 def _gate_outcome(root: Path, review_path: str) -> str:
     taste_decisions = _extract_list_section(_read(root / review_path), "Taste Decisions")
     return "ask-user" if taste_decisions else "auto-clear"
+
+
+def _discovery_gate_outcome(root: Path, gate_path: str) -> str:
+    return _extract_section(_read(root / gate_path), "Outcome") or "reframe"
 
 
 def _run_ops_loop(args: argparse.Namespace, command: str, command_args: list[str]) -> int:
@@ -398,8 +457,10 @@ def cmd_review_run(args: argparse.Namespace) -> int:
         output_rel = str(Path(args.review_dir) / filename)
         role_args = SimpleNamespace(
             root=args.root,
+            mode="plan-review",
             role=role_name,
             plan_path=args.plan_path,
+            brief_path=None,
             output=output_rel,
         )
         rc = role_review.main_from_args(role_args)
@@ -872,6 +933,198 @@ def cmd_autoplan(args: argparse.Namespace) -> int:
     )
 
 
+def _office_hours_gate_fields(root: Path, brief_path: str, pass_paths: list[str]) -> SimpleNamespace:
+    brief = _read(root / brief_path)
+    problem = _extract_section(brief, "Problem Statement") or "Problem framing missing."
+    proposal = _extract_section(brief, "Current Proposal") or "Current proposal missing."
+    build_vs_buy = _extract_section(brief, "Build vs Buy Context") or "Build-vs-buy context missing."
+    assumptions = _extract_list_section(brief, "Assumptions To Challenge")
+
+    taste_decisions: list[str] = []
+    auto_decisions: list[str] = []
+    recommendations: list[str] = []
+    for relpath in pass_paths:
+        content = _read(root / relpath)
+        auto_decisions.extend(_extract_list_section(content, "Auto Decisions"))
+        taste_decisions.extend(_extract_list_section(content, "Taste Decisions"))
+        recommendation = _extract_section(content, "Recommendation")
+        if recommendation:
+            recommendations.append(recommendation)
+
+    lowered_problem = f"{problem}\n{proposal}".lower()
+    lowered_build_vs_buy = build_vs_buy.lower()
+
+    if any(token in lowered_build_vs_buy for token in ["budget", "legal", "procurement", "compliance"]):
+        outcome = "ask-user"
+        reframed_problem = f"Confirm the strategic boundary before planning: {problem}"
+        next_step = "Escalate the unresolved strategic tradeoff to the user before planning."
+    elif any(token in lowered_problem for token in ["all", "everything", "platform"]) or len(assumptions) >= 3:
+        outcome = "reframe"
+        reframed_problem = f"Reduce the first milestone to one critical path instead of the full proposal: {proposal}"
+        next_step = "Rewrite the brief around a narrower first milestone, then rerun office-hours."
+    elif taste_decisions:
+        outcome = "ask-user"
+        reframed_problem = f"Resolve the remaining cross-functional tradeoff before planning: {problem}"
+        next_step = "Bring the remaining taste decisions to the user before planning."
+    else:
+        outcome = "ready-for-plan"
+        reframed_problem = problem
+        next_step = "Proceed to plan creation using the reframed brief and challenge passes."
+
+    build_vs_buy_posture = (
+        "build-from-scratch remains under challenge"
+        if any(token in lowered_build_vs_buy for token in ["from scratch", "custom", "reinvent"])
+        else "current build-vs-buy posture is acceptable for planning"
+    )
+    recommendation = recommendations[-1] if recommendations else next_step
+    return SimpleNamespace(
+        outcome=outcome,
+        reframed_problem=reframed_problem,
+        build_vs_buy_posture=build_vs_buy_posture,
+        unresolved_tensions=taste_decisions,
+        auto_decisions=auto_decisions,
+        recommendation=recommendation,
+        next_step=next_step,
+    )
+
+
+def cmd_office_hours(args: argparse.Namespace) -> int:
+    artifact_dir = args.artifact_dir or "docs/plans/office-hours"
+    paths = _office_hours_paths(
+        artifact_dir=artifact_dir,
+        brief_path=args.office_hours_brief_path,
+        gate_path=args.discovery_gate_path,
+        report_path=args.office_hours_report_path,
+        pass_dir=args.challenge_pass_dir,
+    )
+
+    if args.mode == "prepare":
+        rc = _write_office_hours_report(
+            args,
+            paths,
+            outcome="in-review",
+            next_action=(
+                "Office-hours live role preparation is not wired yet. Use `office-hours --mode run`"
+                " for deterministic challenge passes in this tranche."
+            ),
+        )
+        if rc != 0:
+            return rc
+        return _update_board(args.root, args.board_path, "discovery", [args.title])
+
+    if args.mode == "collect":
+        rc = _write_office_hours_report(
+            args,
+            paths,
+            outcome="blocked",
+            next_action=(
+                "Office-hours collect mode is reserved for future live role execution. "
+                "Use `office-hours --mode run` in this tranche."
+            ),
+        )
+        if rc != 0:
+            return rc
+        return 1
+
+    if not (args.root / paths.brief_path).exists():
+        required_inputs = {
+            "problem statement": args.problem_statement,
+            "target user": args.target_user,
+            "current proposal": args.current_proposal,
+            "constraint": args.constraint,
+            "success criterion": args.success_criterion,
+            "build-vs-buy context": args.build_vs_buy_context,
+            "assumption to challenge": args.assumption_to_challenge,
+        }
+        missing = [name for name, value in required_inputs.items() if not value]
+        if missing:
+            rc = _write_office_hours_report(
+                args,
+                paths,
+                outcome="blocked",
+                next_action=(
+                    "Provide the missing office-hours inputs or an existing office-hours brief "
+                    "before running the deterministic lane."
+                ),
+            )
+            if rc != 0:
+                return rc
+            print(f"Missing office-hours inputs: {', '.join(missing)}", file=sys.stderr)
+            return 1
+
+        brief_args = SimpleNamespace(
+            root=args.root,
+            output=paths.brief_path,
+            title=args.title,
+            problem_statement=args.problem_statement,
+            target_user=args.target_user,
+            current_proposal=args.current_proposal,
+            constraint=args.constraint,
+            success_criterion=args.success_criterion,
+            build_vs_buy_context=args.build_vs_buy_context,
+            assumption_to_challenge=args.assumption_to_challenge,
+        )
+        rc = cmd_office_hours_brief(brief_args)
+        if rc != 0:
+            return rc
+
+    pass_dir = args.root / paths.pass_dir
+    pass_dir.mkdir(parents=True, exist_ok=True)
+    pass_paths: list[str] = []
+    for role_name, filename in OFFICE_HOURS_ROLE_FILES:
+        output_rel = str(Path(paths.pass_dir) / filename)
+        role_args = SimpleNamespace(
+            root=args.root,
+            mode="office-hours",
+            role=role_name,
+            brief_path=paths.brief_path,
+            output=output_rel,
+            plan_path=None,
+        )
+        rc = role_review.main_from_args(role_args)
+        if rc != 0:
+            return rc
+        pass_paths.append(output_rel)
+
+    gate_fields = _office_hours_gate_fields(args.root, paths.brief_path, pass_paths)
+    gate_args = SimpleNamespace(
+        root=args.root,
+        output=paths.gate_path,
+        title=args.title,
+        office_hours_brief=paths.brief_path,
+        challenge_pass=pass_paths,
+        reframed_problem_statement=gate_fields.reframed_problem,
+        build_vs_buy_posture=gate_fields.build_vs_buy_posture,
+        unresolved_tension=gate_fields.unresolved_tensions,
+        outcome=gate_fields.outcome,
+        next_step=gate_fields.next_step,
+    )
+    rc = cmd_discovery_gate(gate_args)
+    if rc != 0:
+        return rc
+
+    rc = _write_office_hours_report(
+        args,
+        paths,
+        outcome=gate_fields.outcome,
+        next_action=gate_fields.next_step,
+        reframing_changes=[
+            gate_fields.reframed_problem,
+            f"Build-vs-buy posture: {gate_fields.build_vs_buy_posture}",
+        ],
+        challenge_pass_paths=pass_paths,
+    )
+    if rc != 0:
+        return rc
+
+    stage = {
+        "ready-for-plan": "plan",
+        "ask-user": "approval-needed",
+        "reframe": "discovery",
+    }[_discovery_gate_outcome(args.root, paths.gate_path)]
+    return _update_board(args.root, args.board_path, stage, [args.title])
+
+
 def cmd_record_decision(args: argparse.Namespace) -> int:
     decision_args = SimpleNamespace(
         root=args.root,
@@ -924,6 +1177,37 @@ def build_parser() -> argparse.ArgumentParser:
     discover.add_argument("--discovery-path", required=True)
     discover.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     discover.set_defaults(func=cmd_discover)
+
+    office_hours = subparsers.add_parser(
+        "office-hours",
+        help="Run the office-hours discovery lane before planning",
+    )
+    office_hours.add_argument("--mode", choices=["run", "prepare", "collect"], default="run")
+    office_hours.add_argument("--title", required=True)
+    office_hours.add_argument("--artifact-dir", dest="artifact_dir")
+    office_hours.add_argument("--office-hours-brief-path", dest="office_hours_brief_path")
+    office_hours.add_argument("--discovery-gate-path", dest="discovery_gate_path")
+    office_hours.add_argument("--office-hours-report-path", dest="office_hours_report_path")
+    office_hours.add_argument("--challenge-pass-dir", dest="challenge_pass_dir")
+    office_hours.add_argument("--problem-statement", dest="problem_statement")
+    office_hours.add_argument("--target-user", dest="target_user")
+    office_hours.add_argument("--current-proposal", dest="current_proposal")
+    office_hours.add_argument("--constraint", action="append", default=[])
+    office_hours.add_argument(
+        "--success-criterion",
+        action="append",
+        default=[],
+        dest="success_criterion",
+    )
+    office_hours.add_argument("--build-vs-buy-context", dest="build_vs_buy_context")
+    office_hours.add_argument(
+        "--assumption-to-challenge",
+        action="append",
+        default=[],
+        dest="assumption_to_challenge",
+    )
+    office_hours.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    office_hours.set_defaults(func=cmd_office_hours)
 
     plan = subparsers.add_parser("plan", help="Create plan brief and move board to plan")
     plan.add_argument("--title", required=True)

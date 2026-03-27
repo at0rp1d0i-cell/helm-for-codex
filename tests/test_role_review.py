@@ -35,6 +35,25 @@ def seed_repo_state(tmp_path: Path) -> None:
     (tmp_path / "docs" / "plans" / "phase7-plan-brief.md").write_text(
         "# Plan Brief: Phase 7 orchestration slice\n\n## Goal\n\nRun Product, Architect, and Reviewer passes from canonical state.\n\n## Milestone\n\nPhase 7\n\n## Modules In Scope\n\nscripts/role_review.py, scripts/lead_loop.py, skills/team-lead/SKILL.md\n\n## Exit Criteria\n\nLive role review execution exists with tests and docs updates.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
     )
+    (tmp_path / "docs" / "plans" / "office-hours-brief.md").write_text(
+        "# Office-Hours Brief: Pixiu office hours\n\n"
+        "## Problem Statement\n\n"
+        "Pixiu needs a sharper experiment-creation loop.\n\n"
+        "## Target User Or Operator\n\n"
+        "ML engineer running local experiments.\n\n"
+        "## Current Proposal\n\n"
+        "Build a full experimentation platform for every workflow.\n\n"
+        "## Constraints\n\n"
+        "- First milestone must stay bounded.\n\n"
+        "## Success Criteria\n\n"
+        "- One experiment can be created and reviewed end to end.\n\n"
+        "## Build vs Buy Context\n\n"
+        "Building from scratch is possible but risky.\n\n"
+        "## Assumptions To Challenge\n\n"
+        "- Users need the whole platform immediately.\n"
+        "- Custom orchestration is better than integrating existing tooling.\n"
+        "- The first release must solve every workflow.\n"
+    )
 
 
 def test_role_review_runs_product_pass(tmp_path: Path) -> None:
@@ -95,3 +114,71 @@ def test_role_review_runs_reviewer_pass(tmp_path: Path) -> None:
     assert "# Review Pass: Reviewer review" in content
     assert "## Role\n\nReviewer" in content
     assert "Require verification before build" in content
+
+
+def test_role_review_runs_product_office_hours_pass(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_role_review(
+        tmp_path,
+        "--mode",
+        "office-hours",
+        "--role",
+        "Product",
+        "--brief-path",
+        "docs/plans/office-hours-brief.md",
+        "--output",
+        "docs/plans/challenge-pass-product.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    content = (tmp_path / "docs" / "plans" / "challenge-pass-product.md").read_text()
+    assert "# Review Pass: Product office-hours challenge" in content
+    assert "## Role\n\nProduct" in content
+    assert "target user pressure" in content.lower()
+    assert "narrow scope" in content.lower()
+
+
+def test_role_review_runs_design_office_hours_pass(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_role_review(
+        tmp_path,
+        "--mode",
+        "office-hours",
+        "--role",
+        "Design",
+        "--brief-path",
+        "docs/plans/office-hours-brief.md",
+        "--output",
+        "docs/plans/challenge-pass-design.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    content = (tmp_path / "docs" / "plans" / "challenge-pass-design.md").read_text()
+    assert "# Review Pass: Design office-hours challenge" in content
+    assert "## Role\n\nDesign" in content
+    assert "critical user or operator flow" in content.lower()
+
+
+def test_role_review_runs_architect_office_hours_pass(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_role_review(
+        tmp_path,
+        "--mode",
+        "office-hours",
+        "--role",
+        "Architect",
+        "--brief-path",
+        "docs/plans/office-hours-brief.md",
+        "--output",
+        "docs/plans/challenge-pass-architect.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    content = (tmp_path / "docs" / "plans" / "challenge-pass-architect.md").read_text()
+    assert "# Review Pass: Architect office-hours challenge" in content
+    assert "## Role\n\nArchitect" in content
+    assert "build-vs-buy" in content.lower()
+    assert "building from scratch is justified" in content.lower()
