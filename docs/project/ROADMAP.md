@@ -2,12 +2,16 @@
 
 ## Current Milestone
 
-Phase 21 in progress: make Helm4Codex upgrades explicit and predictable for installed repositories.
+Phase 22 in progress: close the productization gap with gstack, starting with ship/release workflow, browser-backed QA evidence, and a first-class autoplan lane.
 
 ## Later Milestones
 
 - complete plugin-backed bootstrap validation and treat it as a first-class install path
 - sharpen the external install story so users do not need source-repo knowledge to adopt or upgrade the team runtime
+- add a ship/release gate that turns bounded task execution into a real daily shipping loop
+- add browser-backed QA evidence and a report-only QA lane
+- productize an autoplan workflow on top of existing review passes and taste-decision gates
+- strengthen discovery with an office-hours style product reframing loop
 - expand validation from structural checks into richer behavior-aware orchestration checks
 - let the live `Ops Orchestrator` role own more of the dispatch path instead of relying on the remaining spawn bridge
 - drive more live dispatch through `scripts/role_bridge.py` rather than hand-written per-turn routing

@@ -4,15 +4,20 @@ _This file can be updated manually or via `scripts/team_state.py board`._
 
 ## Current Stage
 
-build
+plan
 
 ## Active Work
 
-- add a first-class upgrade path for installed Helm4Codex repositories
-- verify upgrade preserves canonical state while refreshing runtime-managed files
+- design and implement a first-class ship/release workflow on top of the current Lead -> Ops -> Specialists runtime
+- design browser-backed QA evidence so QA becomes a visible trust surface instead of a role contract only
 
 ## Completed
 
+- compare Helm4Codex against the latest gstack main branch and record the workflow gaps that still matter
+- update Pixiu to the latest Helm4Codex runtime after the gap assessment is recorded
+- add an installed-runtime self-check and wire it into upgrade guidance
+- add a first-class upgrade path for installed Helm4Codex repositories
+- verify upgrade preserves canonical state while refreshing runtime-managed files
 - canonical project-state docs
 - team lead skill
 - internal role skills

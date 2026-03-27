@@ -30,6 +30,13 @@ python3 plugins/helm4codex/scripts/bootstrap_repo.py --target /path/to/target-re
 Use team-lead. Adopt this repository and give me the next bounded task.
 ```
 
+4. If you want to validate the installed runtime before first use:
+
+```bash
+uv run python scripts/check_installed_runtime.py
+uv run python ops/checks/check_docs_freshness.py
+```
+
 ## Expected Runtime Surface
 
 The target repo should now contain:

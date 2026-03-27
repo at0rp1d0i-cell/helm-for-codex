@@ -24,6 +24,7 @@ MODULE_CONTRACT_DOCS = [
 ]
 
 TARGET_RUNTIME_SCRIPTS = [
+    "scripts/check_installed_runtime.py",
     "scripts/bridge_runner.py",
     "scripts/team_state.py",
     "scripts/lead_loop.py",

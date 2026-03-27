@@ -33,7 +33,7 @@ uv run python scripts/upgrade_runtime_pack.py --target /path/to/target-repo
 2. rerun checks in the target repository:
 
 ```bash
-uv run python scripts/check_repo.py
+uv run python scripts/check_installed_runtime.py
 uv run python ops/checks/check_docs_freshness.py
 ```
 

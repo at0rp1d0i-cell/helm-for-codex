@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 21 in progress: add a first-class upgrade path for already-installed Helm4Codex repositories, with explicit runtime metadata and migration guidance.
+Phase 22 in progress: close the productization gap with gstack without giving up Helm4Codex's stronger repo-backed orchestration model.
 
 ## Success Criteria
 
@@ -33,4 +33,6 @@ Phase 21 in progress: add a first-class upgrade path for already-installed Helm4
 - a plugin bootstrap path can install the same runtime surface as the direct installer
 - an explicit upgrade command exists for already-installed repositories
 - upgrades refresh runtime-managed files while preserving canonical project state
+- installed target repos have a runtime-scoped self-check instead of depending on source-only repo validation
+- a repo-backed gstack gap assessment exists and identifies the highest-value workflow gaps to close next
 - repo validation passes

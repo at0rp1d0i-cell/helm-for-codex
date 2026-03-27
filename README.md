@@ -73,6 +73,13 @@ uv run python scripts/upgrade_runtime_pack.py --target /path/to/target-repo
 
 This refreshes runtime-managed files while preserving the target repo's canonical project state. See [docs/UPGRADE.md](/home/torpedo/Workspace/codex_exploring/docs/UPGRADE.md).
 
+To validate an installed target repo after install or upgrade:
+
+```bash
+uv run python scripts/check_installed_runtime.py
+uv run python ops/checks/check_docs_freshness.py
+```
+
 ## Quick Start
 
 1. Install Helm4Codex into a target repository.

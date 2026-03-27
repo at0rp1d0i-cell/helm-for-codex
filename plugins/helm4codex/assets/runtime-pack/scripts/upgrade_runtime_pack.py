@@ -41,7 +41,7 @@ def main() -> int:
     print("preserved canonical state:")
     for relpath in PRESERVED_STATE:
         print(f"- {relpath}")
-    print("recommendation: restart Codex in the target repo and rerun repo checks after upgrading")
+    print("recommendation: restart Codex in the target repo and run the installed runtime checks after upgrading")
     return 0
 
 

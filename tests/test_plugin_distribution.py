@@ -46,7 +46,18 @@ def test_plugin_bootstrap_installs_runtime_into_target_repo(tmp_path: Path) -> N
     assert (target / ".agents" / "skills" / "team-lead" / "SKILL.md").exists()
     assert (target / ".codex" / "config.toml").exists()
     assert (target / "scripts" / "lead_loop.py").exists()
+    assert (target / "scripts" / "check_installed_runtime.py").exists()
     assert (target / "scripts" / "upgrade_runtime_pack.py").exists()
+
+    installed_check = subprocess.run(
+        [sys.executable, str(target / "scripts" / "check_installed_runtime.py")],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert installed_check.returncode == 0, installed_check.stderr
+    assert "installed runtime ok" in installed_check.stdout
 
     docs_check = subprocess.run(
         [sys.executable, str(target / "ops" / "checks" / "check_docs_freshness.py"), "--root", str(target)],

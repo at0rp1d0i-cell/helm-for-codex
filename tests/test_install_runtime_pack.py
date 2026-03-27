@@ -80,6 +80,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / ".agents" / "skills" / "team-lead" / "agents" / "openai.yaml").exists()
 
     assert (target / "scripts" / "team_state.py").exists()
+    assert (target / "scripts" / "check_installed_runtime.py").exists()
     assert (target / "scripts" / "bridge_runner.py").exists()
     assert (target / "scripts" / "lead_loop.py").exists()
     assert (target / "scripts" / "ops_loop.py").exists()
@@ -108,6 +109,16 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
 
     assert (target / "docs" / "plans").exists()
     assert (target / "docs" / "plans" / "archive").exists()
+
+    installed_check = subprocess.run(
+        [sys.executable, str(target / "scripts" / "check_installed_runtime.py")],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert installed_check.returncode == 0, installed_check.stderr
+    assert "installed runtime ok" in installed_check.stdout
 
 
 def test_installer_preserves_existing_canonical_state(tmp_path: Path) -> None:
