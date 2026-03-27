@@ -1,0 +1,8 @@
+id = "researcher"
+display_name = "Researcher"
+skill = ".agents/skills/researcher/SKILL.md"
+metadata = ".agents/skills/researcher/agents/openai.yaml"
+writeback_target = "docs/plans/office-hours/research-report.md"
+writeback_command = "uv run python scripts/team_state.py research-report --output docs/plans/office-hours/research-report.md --title <title> --problem-framing <text> --search-scope <text> --top-option <text> --recommendation <text> --build-vs-buy-posture <text> --adoption-note <text> --open-risk <text>"
+runtime_skill = ".agents/skills/researcher/SKILL.md"
+packaging_notes = "Installer places this skill under .agents/skills during onboarding."

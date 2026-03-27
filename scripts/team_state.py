@@ -83,6 +83,26 @@ def cmd_discovery_brief(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_research_brief(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    content = (
+        f"# Research Brief: {args.title}\n\n"
+        "## Problem Framing\n\n"
+        f"{args.problem_framing}\n\n"
+        "## Research Scope\n\n"
+        f"{args.research_scope}\n\n"
+        "## Known Constraints\n\n"
+        f"{args.known_constraints}\n\n"
+        "## Key Questions\n\n"
+        f"{args.key_questions}\n\n"
+        "## Recommendation Target\n\n"
+        f"{args.recommendation_target}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_office_hours_brief(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     constraints = "\n".join(f"- {item}" for item in args.constraint)
@@ -104,6 +124,33 @@ def cmd_office_hours_brief(args: argparse.Namespace) -> int:
         f"{args.build_vs_buy_context}\n\n"
         "## Assumptions To Challenge\n\n"
         f"{assumptions}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
+def cmd_research_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    top_options = "\n".join(f"- {item}" for item in args.top_option)
+    adoption_notes = "\n".join(f"- {item}" for item in args.adoption_note)
+    open_risks = "\n".join(f"- {item}" for item in args.open_risk)
+    content = (
+        f"# Research Report: {args.title}\n\n"
+        "## Problem Framing\n\n"
+        f"{args.problem_framing}\n\n"
+        "## Research Brief\n\n"
+        f"{args.research_brief}\n\n"
+        "## Top Options\n\n"
+        f"{top_options}\n\n"
+        "## Recommendation\n\n"
+        f"{args.recommendation}\n\n"
+        "## Build vs Buy Posture\n\n"
+        f"{args.build_vs_buy_posture}\n\n"
+        "## Adoption Notes\n\n"
+        f"{adoption_notes}\n\n"
+        "## Open Risks\n\n"
+        f"{open_risks}\n"
     )
     _write(out, content)
     print(f"wrote {out}")
@@ -630,6 +677,10 @@ def cmd_office_hours_report(args: argparse.Namespace) -> int:
         f"{args.outcome}\n\n"
         "## Office-Hours Brief\n\n"
         f"{args.office_hours_brief}\n\n"
+        "## Research Brief\n\n"
+        f"{args.research_brief or 'not written'}\n\n"
+        "## Research Report\n\n"
+        f"{args.research_report or 'not written'}\n\n"
         "## Challenge Passes\n\n"
         f"{challenge_passes}\n\n"
         "## Discovery Gate\n\n"
@@ -887,6 +938,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     discovery_brief.set_defaults(func=cmd_discovery_brief)
 
+    research_brief = subparsers.add_parser(
+        "research-brief",
+        help="Create office-hours research brief markdown",
+    )
+    research_brief.add_argument("--output", required=True)
+    research_brief.add_argument("--title", required=True)
+    research_brief.add_argument("--problem-framing", required=True, dest="problem_framing")
+    research_brief.add_argument("--research-scope", required=True, dest="research_scope")
+    research_brief.add_argument("--known-constraints", required=True, dest="known_constraints")
+    research_brief.add_argument("--key-questions", required=True, dest="key_questions")
+    research_brief.add_argument(
+        "--recommendation-target",
+        required=True,
+        dest="recommendation_target",
+    )
+    research_brief.set_defaults(func=cmd_research_brief)
+
     office_hours_brief = subparsers.add_parser(
         "office-hours-brief",
         help="Create office-hours discovery brief markdown",
@@ -917,6 +985,43 @@ def build_parser() -> argparse.ArgumentParser:
         dest="assumption_to_challenge",
     )
     office_hours_brief.set_defaults(func=cmd_office_hours_brief)
+
+    research_report = subparsers.add_parser(
+        "research-report",
+        help="Create office-hours research report markdown",
+    )
+    research_report.add_argument("--output", required=True)
+    research_report.add_argument("--title", required=True)
+    research_report.add_argument("--problem-framing", required=True, dest="problem_framing")
+    research_report.add_argument("--research-brief", required=True, dest="research_brief")
+    research_report.add_argument(
+        "--top-option",
+        action="append",
+        default=[],
+        required=True,
+        dest="top_option",
+    )
+    research_report.add_argument("--recommendation", required=True)
+    research_report.add_argument(
+        "--build-vs-buy-posture",
+        required=True,
+        dest="build_vs_buy_posture",
+    )
+    research_report.add_argument(
+        "--adoption-note",
+        action="append",
+        default=[],
+        required=True,
+        dest="adoption_note",
+    )
+    research_report.add_argument(
+        "--open-risk",
+        action="append",
+        default=[],
+        required=True,
+        dest="open_risk",
+    )
+    research_report.set_defaults(func=cmd_research_report)
 
     plan_brief = subparsers.add_parser("plan-brief", help="Create plan brief markdown")
     plan_brief.add_argument("--output", required=True)
@@ -1383,6 +1488,8 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         dest="office_hours_brief",
     )
+    office_hours_report.add_argument("--research-brief", dest="research_brief")
+    office_hours_report.add_argument("--research-report", dest="research_report")
     office_hours_report.add_argument(
         "--challenge-pass",
         action="append",

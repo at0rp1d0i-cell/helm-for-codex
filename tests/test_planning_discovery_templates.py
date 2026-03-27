@@ -33,3 +33,18 @@ def test_office_hours_template_exists_with_outcome_placeholders() -> None:
     assert "<discovery_gate_path>" in content
     assert "<reframing_changes>" in content
     assert "<next_action>" in content
+
+
+def test_research_report_template_exists_with_expected_placeholders() -> None:
+    template = ROOT / "planning" / "discovery" / "templates" / "research-report.md"
+    assert template.exists()
+
+    content = template.read_text()
+    assert "# Research Report: <title>" in content
+    assert "<problem_framing>" in content
+    assert "<research_brief_path>" in content
+    assert "<top_options>" in content
+    assert "<recommendation>" in content
+    assert "<build_vs_buy_posture>" in content
+    assert "<adoption_notes>" in content
+    assert "<open_risks>" in content

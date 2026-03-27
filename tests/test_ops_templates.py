@@ -22,6 +22,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "task-brief.md",
         ROOT / "ops" / "templates" / "discovery-brief.md",
         ROOT / "ops" / "templates" / "office-hours-brief.md",
+        ROOT / "ops" / "templates" / "research-brief.md",
         ROOT / "ops" / "templates" / "discovery-gate.md",
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "sprint-contract.md",
@@ -66,6 +67,14 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<success_criteria>" in office_hours_brief
     assert "<build_vs_buy_context>" in office_hours_brief
     assert "<assumptions_to_challenge>" in office_hours_brief
+
+    research_brief = (ROOT / "ops" / "templates" / "research-brief.md").read_text()
+    assert "# Research Brief: <title>" in research_brief
+    assert "<problem_framing>" in research_brief
+    assert "<research_scope>" in research_brief
+    assert "<known_constraints>" in research_brief
+    assert "<key_questions>" in research_brief
+    assert "<recommendation_target>" in research_brief
 
     discovery_gate = (ROOT / "ops" / "templates" / "discovery-gate.md").read_text()
     assert "# Discovery Gate: <title>" in discovery_gate
@@ -201,6 +210,16 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<hypotheses>" in deep_scan_plan
     assert "<probes>" in deep_scan_plan
     assert "<evidence>" in deep_scan_plan
+
+    research_report = (ROOT / "planning" / "discovery" / "templates" / "research-report.md").read_text()
+    assert "# Research Report: <title>" in research_report
+    assert "<problem_framing>" in research_report
+    assert "<research_brief_path>" in research_report
+    assert "<top_options>" in research_report
+    assert "<recommendation>" in research_report
+    assert "<build_vs_buy_posture>" in research_report
+    assert "<adoption_notes>" in research_report
+    assert "<open_risks>" in research_report
 
     qa_report = (ROOT / "ops" / "templates" / "qa-report.md").read_text()
     assert "# QA Report" in qa_report

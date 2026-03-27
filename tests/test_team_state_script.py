@@ -116,6 +116,76 @@ def test_office_hours_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Assumptions To Challenge" in content
 
 
+def test_research_brief_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "research-brief",
+        "--output",
+        "docs/plans/research-brief-demo.md",
+        "--title",
+        "Pixiu office-hours research",
+        "--problem-framing",
+        "The first milestone may be broader than necessary.",
+        "--research-scope",
+        "Survey adjacent experiment tracking and workflow tools.",
+        "--known-constraints",
+        "Keep the first slice repo-local and low-ceremony.",
+        "--key-questions",
+        "What should be built now versus adopted or deferred?",
+        "--recommendation-target",
+        "docs/plans/office-hours/office-hours-report.md",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "research-brief-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Research Brief: Pixiu office-hours research" in content
+    assert "## Problem Framing" in content
+    assert "## Research Scope" in content
+    assert "## Known Constraints" in content
+    assert "## Key Questions" in content
+    assert "## Recommendation Target" in content
+
+
+def test_research_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "research-report",
+        "--output",
+        "docs/plans/research-report-demo.md",
+        "--title",
+        "Pixiu office-hours research",
+        "--problem-framing",
+        "The first milestone may be broader than necessary.",
+        "--research-brief",
+        "docs/plans/research-brief-demo.md",
+        "--top-option",
+        "Adopt a simpler baseline workflow instead of a full platform.",
+        "--top-option",
+        "Keep the milestone repo-local and defer wider orchestration.",
+        "--recommendation",
+        "Proceed with a bounded, repo-local milestone.",
+        "--build-vs-buy-posture",
+        "Prefer a bounded local build with explicit reuse over a full greenfield platform.",
+        "--adoption-note",
+        "Keep integration seams obvious in the first plan.",
+        "--open-risk",
+        "The operator workflow may still be under-specified.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "research-report-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Research Report: Pixiu office-hours research" in content
+    assert "## Problem Framing" in content
+    assert "docs/plans/research-brief-demo.md" in content
+    assert "## Top Options" in content
+    assert "## Recommendation" in content
+    assert "## Build vs Buy Posture" in content
+    assert "## Adoption Notes" in content
+    assert "## Open Risks" in content
+
+
 def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
@@ -201,6 +271,10 @@ def test_office_hours_report_command_writes_markdown(tmp_path: Path) -> None:
         "ready-for-plan",
         "--office-hours-brief",
         "docs/plans/office-hours-brief-demo.md",
+        "--research-brief",
+        "docs/plans/research-brief-demo.md",
+        "--research-report",
+        "docs/plans/research-report-demo.md",
         "--challenge-pass",
         "docs/plans/challenge-passes/product.md",
         "--challenge-pass",
@@ -220,6 +294,8 @@ def test_office_hours_report_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Outcome" in content
     assert "ready-for-plan" in content
     assert "docs/plans/office-hours-brief-demo.md" in content
+    assert "docs/plans/research-brief-demo.md" in content
+    assert "docs/plans/research-report-demo.md" in content
     assert "docs/plans/discovery-gate-demo.md" in content
     assert "## Reframing Changes" in content
     assert "## Next Action" in content

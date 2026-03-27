@@ -37,6 +37,19 @@ def test_role_bridge_resolve_returns_bridge_metadata() -> None:
     assert payload["skill"] == ".agents/skills/implementation-worker/SKILL.md"
 
 
+def test_role_bridge_resolve_supports_researcher() -> None:
+    result = run_role_bridge("resolve", "researcher")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["logical_role"] == "researcher"
+    assert payload["display_name"] == "Researcher"
+    assert payload["agent_type"] == "explorer"
+    assert payload["model"] == "gpt-5.4"
+    assert payload["reasoning_effort"] == "medium"
+    assert payload["role_toml"] == "roles/researcher.toml"
+    assert payload["skill"] == ".agents/skills/researcher/SKILL.md"
+
+
 def test_role_bridge_list_covers_live_roles() -> None:
     result = run_role_bridge("list")
     assert result.returncode == 0, result.stderr
@@ -44,6 +57,7 @@ def test_role_bridge_list_covers_live_roles() -> None:
     roles = {entry["logical_role"] for entry in payload}
     assert roles == {
         "ops-orchestrator",
+        "researcher",
         "product-reviewer",
         "design-reviewer",
         "architect-reviewer",

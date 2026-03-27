@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_internal_skills_exist_with_frontmatter() -> None:
     expected = [
         "ops-orchestrator",
+        "researcher",
         "product-discovery",
         "design-review",
         "architecture-review",
@@ -26,6 +27,7 @@ def test_internal_skills_exist_with_frontmatter() -> None:
 def test_internal_skill_openai_metadata_exists_for_live_roles() -> None:
     roles = {
         "ops-orchestrator": "Ops Orchestrator",
+        "researcher": "Researcher",
         "product-discovery": "Product Reviewer",
         "design-review": "Design Reviewer",
         "architecture-review": "Architect Reviewer",
@@ -107,6 +109,14 @@ def test_runtime_execution_roles_report_to_ops() -> None:
     for name in ["implementation-worker", "qa-runner", "docs-sync"]:
         content = (ROOT / ".agents" / "skills" / name / "SKILL.md").read_text().lower()
         assert "report only to ops" in content
+
+
+def test_runtime_researcher_skill_contract_covers_office_hours_research() -> None:
+    content = (ROOT / ".agents" / "skills" / "researcher" / "SKILL.md").read_text().lower()
+    assert "research report" in content
+    assert "office-hours" in content
+    assert "build-vs-buy" in content
+    assert "report only to the lead" in content
 
 
 def test_ops_orchestrator_runtime_skill_declares_lead_only_reporting() -> None:
