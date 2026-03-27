@@ -20,7 +20,7 @@ Clarify product intent into scoped goals, milestones, tradeoffs, and discovery q
 <section>problem framing</section>
 <section>scope options with recommendation</section>
 <section>open questions and assumptions</section>
-<section>review-pass with recommendation for role Product</section>
+<section>review-pass with recommendation for role Product, suitable for autoplan review gating and the final review gate</section>
 </expected_output>
 
 <packaging>

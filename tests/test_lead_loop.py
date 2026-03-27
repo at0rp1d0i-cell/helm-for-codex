@@ -546,6 +546,132 @@ def test_plan_creates_plan_brief_and_updates_board(tmp_path: Path) -> None:
     assert "- Phase 4 orchestration slice" in board
 
 
+def test_autoplan_creates_repo_backed_lane_with_auto_clear_outcome(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(
+        "# Roadmap\n\n## Current Milestone\n\nPhase 14\n\n## Later Milestones\n\n- more automation\n"
+    )
+    (tmp_path / "docs" / "project" / "ARCHITECTURE.md").write_text(
+        "# Architecture\n\n## Layers\n\n- Lead layer\n- Ops layer\n- Worker layer\n\n## Modules\n\n- canonical docs\n- skills\n- repo checks\n\n## Constraints\n\n- single visible lead\n- repo as memory\n"
+    )
+    (tmp_path / "docs" / "project" / "QUALITY_BAR.md").write_text(
+        "# Quality Bar\n\n## Code\n\nPrefer modular, bounded, readable implementations.\n\n## Tests\n\nEvery structural rule added to the repo should have a validation check or test.\n\n## Docs\n\nCanonical project-state files must stay current when state changes.\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--title",
+        "Phase 14 autoplan",
+        "--problem",
+        "Need a first-class repo-backed planning gauntlet",
+        "--research-scope",
+        "Focus on planning and review contracts only",
+        "--open-questions",
+        "Which decisions can auto-clear before build?",
+        "--recommendation-target",
+        "docs/project/PROJECT_BRIEF.md",
+        "--goal",
+        "Package discovery, planning, and review into one lane",
+        "--milestone",
+        "Phase 14",
+        "--modules",
+        "scripts/lead_loop.py, scripts/team_state.py, skills/team-lead/SKILL.md",
+        "--exit-criteria",
+        "Autoplan writes repo-backed discovery, plan, review, tests, and docs artifacts.",
+        "--writeback",
+        "docs/status/EXECUTION_BOARD.md",
+        "--discovery-path",
+        "docs/plans/autoplan-discovery.md",
+        "--plan-path",
+        "docs/plans/autoplan-plan.md",
+        "--review-dir",
+        "docs/plans/autoplan-review-passes",
+        "--review-path",
+        "docs/plans/autoplan-review-gate.md",
+        "--autoplan-path",
+        "docs/plans/autoplan-report.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (tmp_path / "docs" / "plans" / "autoplan-discovery.md").exists()
+    assert (tmp_path / "docs" / "plans" / "autoplan-plan.md").exists()
+    assert (tmp_path / "docs" / "plans" / "autoplan-review-passes" / "product.md").exists()
+    assert (tmp_path / "docs" / "plans" / "autoplan-review-passes" / "architect.md").exists()
+    assert (tmp_path / "docs" / "plans" / "autoplan-review-passes" / "reviewer.md").exists()
+    assert (tmp_path / "docs" / "plans" / "autoplan-review-gate.md").exists()
+    autoplan = (tmp_path / "docs" / "plans" / "autoplan-report.md").read_text()
+    assert "# Autoplan Report: Phase 14 autoplan" in autoplan
+    assert "docs/plans/autoplan-discovery.md" in autoplan
+    assert "docs/plans/autoplan-plan.md" in autoplan
+    assert "docs/plans/autoplan-review-gate.md" in autoplan
+    assert "## Outcome\n\nauto-clear" in autoplan
+    assert "Proceed to build" in autoplan
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 14 autoplan" in board
+
+
+def test_autoplan_surfaces_taste_decisions_as_ask_user_outcome(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(
+        "# Roadmap\n\n## Current Milestone\n\nPhase 14\n\n## Later Milestones\n\n- more automation\n"
+    )
+    (tmp_path / "docs" / "project" / "ARCHITECTURE.md").write_text(
+        "# Architecture\n\n## Layers\n\n- Lead layer\n- Ops layer\n- Worker layer\n\n## Modules\n\n- canonical docs\n- skills\n- repo checks\n\n## Constraints\n\n- single visible lead\n- repo as memory\n"
+    )
+    (tmp_path / "docs" / "project" / "QUALITY_BAR.md").write_text(
+        "# Quality Bar\n\n## Code\n\nPrefer modular, bounded, readable implementations.\n\n## Tests\n\nEvery structural rule added to the repo should have a validation check or test.\n\n## Docs\n\nCanonical project-state files must stay current when state changes.\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--title",
+        "Phase 14 autoplan",
+        "--problem",
+        "Need a first-class repo-backed planning gauntlet",
+        "--research-scope",
+        "Focus on planning and review contracts only",
+        "--open-questions",
+        "Which decisions can auto-clear before build?",
+        "--recommendation-target",
+        "docs/project/PROJECT_BRIEF.md",
+        "--goal",
+        "Package discovery, planning, and review into one lane",
+        "--milestone",
+        "Phase 14",
+        "--modules",
+        "scripts/lead_loop.py, scripts/team_state.py, skills/team-lead/SKILL.md, skills/product-discovery/SKILL.md",
+        "--exit-criteria",
+        "Autoplan writes repo-backed discovery, plan, review, tests, and docs artifacts.",
+        "--writeback",
+        "docs/status/EXECUTION_BOARD.md",
+        "--discovery-path",
+        "docs/plans/autoplan-discovery.md",
+        "--plan-path",
+        "docs/plans/autoplan-plan.md",
+        "--review-dir",
+        "docs/plans/autoplan-review-passes",
+        "--review-path",
+        "docs/plans/autoplan-review-gate.md",
+        "--autoplan-path",
+        "docs/plans/autoplan-report.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    autoplan = (tmp_path / "docs" / "plans" / "autoplan-report.md").read_text()
+    assert "## Outcome\n\nask-user" in autoplan
+    assert "- Decide whether to narrow scope before build" in autoplan
+    assert "- Decide whether architecture coverage is sufficient for the current module set" in autoplan
+    assert "Resolve taste decisions before build." in autoplan
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\napproval-needed" in board
+    assert "- Phase 14 autoplan" in board
+
+
 def test_init_creates_onboarding_artifacts_and_moves_board_to_approval_needed(
     tmp_path: Path,
 ) -> None:
@@ -926,6 +1052,203 @@ def test_review_collect_converts_results_into_passes_and_gate(tmp_path: Path) ->
     board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
     assert "## Current Stage\n\nreview" in board
     assert "- Phase 9 review gate" in board
+
+
+def test_autoplan_run_writes_default_artifacts_and_marks_auto_clear(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(
+        "# Roadmap\n\n## Current Milestone\n\nPhase 22\n\n## Later Milestones\n\n- more automation\n"
+    )
+    (tmp_path / "docs" / "project" / "ARCHITECTURE.md").write_text(
+        "# Architecture\n\n## Layers\n\n- Lead layer\n- Ops layer\n- Worker layer\n\n## Modules\n\n- canonical docs\n- skills\n- ops templates\n- repo checks\n\n## Constraints\n\n- single visible lead\n- repo as memory\n"
+    )
+    (tmp_path / "docs" / "project" / "QUALITY_BAR.md").write_text(
+        "# Quality Bar\n\n## Code\n\nPrefer modular, bounded, readable implementations.\n\n## Tests\n\nEvery structural rule added to the repo should have a validation check or test.\n\n## Docs\n\nCanonical project-state files must stay current when state changes.\n"
+    )
+    (tmp_path / "docs" / "plans" / "phase22-plan-brief.md").write_text(
+        "# Plan Brief: Phase 22 autoplan slice\n\n## Goal\n\nProductize bounded autoplan.\n\n## Milestone\n\nPhase 22\n\n## Modules In Scope\n\nscripts/lead_loop.py, scripts/team_state.py, skills/team-lead/SKILL.md\n\n## Exit Criteria\n\nAutoplan writes tested review artifacts, explicit outcomes, and docs alignment notes.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--title",
+        "Phase 22 autoplan",
+        "--plan-path",
+        "docs/plans/phase22-plan-brief.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = tmp_path / "docs" / "plans" / "autoplan" / "autoplan-report.md"
+    assert report.exists()
+    report_content = report.read_text()
+    assert "# Autoplan Report: Phase 22 autoplan" in report_content
+    assert "## Outcome\n\nauto-clear" in report_content
+    assert "docs/plans/autoplan/review-passes/product.md" in report_content
+    assert "docs/plans/autoplan/review-gate.md" in report_content
+    assert "Proceed to build." in report_content
+
+    gate = tmp_path / "docs" / "plans" / "autoplan" / "review-gate.md"
+    assert gate.exists()
+    gate_content = gate.read_text()
+    assert "Product: Proceed on scope" in gate_content
+    assert "Architect: Proceed on architecture" in gate_content
+    assert "Reviewer: Proceed on review" in gate_content
+
+    pass_dir = tmp_path / "docs" / "plans" / "autoplan" / "review-passes"
+    assert (pass_dir / "product.md").exists()
+    assert (pass_dir / "architect.md").exists()
+    assert (pass_dir / "reviewer.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 22 autoplan" in board
+
+
+def test_autoplan_run_marks_ask_user_when_taste_decisions_remain(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "project" / "ROADMAP.md").write_text(
+        "# Roadmap\n\n## Current Milestone\n\nPhase 22\n\n## Later Milestones\n\n- more automation\n"
+    )
+    (tmp_path / "docs" / "project" / "ARCHITECTURE.md").write_text(
+        "# Architecture\n\n## Layers\n\n- Lead layer\n- Ops layer\n- Worker layer\n\n## Modules\n\n- canonical docs\n- skills\n- ops templates\n- repo checks\n\n## Constraints\n\n- single visible lead\n- repo as memory\n"
+    )
+    (tmp_path / "docs" / "project" / "QUALITY_BAR.md").write_text(
+        "# Quality Bar\n\n## Code\n\nPrefer modular, bounded, readable implementations.\n\n## Tests\n\nEvery structural rule added to the repo should have a validation check or test.\n\n## Docs\n\nCanonical project-state files must stay current when state changes.\n"
+    )
+    (tmp_path / "docs" / "plans" / "phase22-plan-brief.md").write_text(
+        "# Plan Brief: Phase 22 autoplan slice\n\n## Goal\n\nProductize bounded autoplan.\n\n## Milestone\n\nPhase 22\n\n## Modules In Scope\n\nscripts/lead_loop.py, scripts/team_state.py, skills/team-lead/SKILL.md, skills/product-discovery/SKILL.md\n\n## Exit Criteria\n\nAutoplan writes review artifacts.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--title",
+        "Phase 22 autoplan",
+        "--plan-path",
+        "docs/plans/phase22-plan-brief.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = (tmp_path / "docs" / "plans" / "autoplan" / "autoplan-report.md").read_text()
+    assert "## Outcome\n\nask-user" in report
+    assert "Resolve taste decisions before build." in report
+
+    gate = (tmp_path / "docs" / "plans" / "autoplan" / "review-gate.md").read_text()
+    assert "Decide whether to narrow scope before build" in gate
+    assert "Decide whether architecture coverage is sufficient for the current module set" in gate
+    assert "Decide whether the plan should explicitly require tests and docs before build" in gate
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\napproval-needed" in board
+    assert "- Phase 22 autoplan" in board
+
+
+def test_autoplan_prepare_writes_live_review_artifacts_and_marks_in_review(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "phase22-plan-brief.md").write_text(
+        "# Plan Brief: Phase 22 autoplan slice\n\n## Goal\n\nPrepare autoplan review.\n\n## Milestone\n\nPhase 22\n\n## Modules In Scope\n\nscripts/lead_loop.py, scripts/team_state.py\n\n## Exit Criteria\n\nReview packets exist with clear writeback targets.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--mode",
+        "prepare",
+        "--title",
+        "Phase 22 autoplan",
+        "--plan-path",
+        "docs/plans/phase22-plan-brief.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = (tmp_path / "docs" / "plans" / "autoplan" / "autoplan-report.md").read_text()
+    assert "## Outcome\n\nin-review" in report
+    assert "docs/plans/autoplan/review-packets/product.md" in report
+    assert "docs/plans/autoplan/invocation-specs/product.md" in report
+    assert "docs/plans/autoplan/review-results/product.md" in report
+    assert "Run Product, Architect, and Reviewer review packets" in report
+
+    packet_dir = tmp_path / "docs" / "plans" / "autoplan" / "review-packets"
+    invocation_dir = tmp_path / "docs" / "plans" / "autoplan" / "invocation-specs"
+    assert (packet_dir / "product.md").exists()
+    assert (packet_dir / "architect.md").exists()
+    assert (packet_dir / "reviewer.md").exists()
+    assert (invocation_dir / "product.md").exists()
+    assert (invocation_dir / "architect.md").exists()
+    assert (invocation_dir / "reviewer.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 22 autoplan" in board
+
+
+def test_autoplan_collect_converts_results_and_updates_report(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    (tmp_path / "docs" / "plans" / "phase22-plan-brief.md").write_text(
+        "# Plan Brief: Phase 22 autoplan slice\n\n## Goal\n\nCollect live review results.\n\n## Milestone\n\nPhase 22\n\n## Modules In Scope\n\nscripts/lead_loop.py, scripts/team_state.py\n\n## Exit Criteria\n\nReview gate exists after collecting live outputs.\n\n## Writeback Target\n\ndocs/status/EXECUTION_BOARD.md\n"
+    )
+    result_dir = tmp_path / "docs" / "plans" / "autoplan" / "review-results"
+    result_dir.mkdir(parents=True, exist_ok=True)
+    (result_dir / "product.md").write_text(
+        "# Review Result: Product\n\n## Role\n\nProduct\n\n## Focus\n\nScope coherence\n\n## Findings\n\n- Scope is coherent\n\n## Auto Decisions\n\n- Keep the milestone boundary\n\n## Taste Decisions\n\n- none\n\n## Recommendation\n\nProceed on scope\n"
+    )
+    (result_dir / "architect.md").write_text(
+        "# Review Result: Architect\n\n## Role\n\nArchitect\n\n## Focus\n\nModule boundaries\n\n## Findings\n\n- Module split is acceptable\n\n## Auto Decisions\n\n- Keep the current module split\n\n## Taste Decisions\n\n- none\n\n## Recommendation\n\nProceed on architecture\n"
+    )
+    (result_dir / "reviewer.md").write_text(
+        "# Review Result: Reviewer\n\n## Role\n\nReviewer\n\n## Focus\n\nVerification readiness\n\n## Findings\n\n- Verification scope is acceptable\n\n## Auto Decisions\n\n- Require verification before build\n\n## Taste Decisions\n\n- none\n\n## Recommendation\n\nProceed on review\n"
+    )
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--mode",
+        "collect",
+        "--title",
+        "Phase 22 autoplan",
+        "--plan-path",
+        "docs/plans/phase22-plan-brief.md",
+    )
+
+    assert result.returncode == 0, result.stderr
+    report = (tmp_path / "docs" / "plans" / "autoplan" / "autoplan-report.md").read_text()
+    assert "## Outcome\n\nauto-clear" in report
+    assert "docs/plans/autoplan/review-results/product.md" in report
+    assert "docs/plans/autoplan/review-gate.md" in report
+
+    pass_dir = tmp_path / "docs" / "plans" / "autoplan" / "review-passes"
+    assert (pass_dir / "product.md").exists()
+    assert (pass_dir / "architect.md").exists()
+    assert (pass_dir / "reviewer.md").exists()
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nreview" in board
+    assert "- Phase 22 autoplan" in board
+
+
+def test_autoplan_writes_blocked_report_when_required_inputs_are_missing(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+
+    result = run_lead_loop(
+        tmp_path,
+        "autoplan",
+        "--title",
+        "Phase 22 autoplan",
+        "--plan-path",
+        "docs/plans/missing-plan.md",
+    )
+
+    assert result.returncode != 0
+    report = tmp_path / "docs" / "plans" / "autoplan" / "autoplan-report.md"
+    assert report.exists()
+    content = report.read_text()
+    assert "## Outcome\n\nblocked" in content
+    assert "Missing required plan brief" in content
+
+    board = (tmp_path / "docs" / "status" / "EXECUTION_BOARD.md").read_text()
+    assert "## Current Stage\n\nplan" in board
+    assert "- define next task" in board
 
 
 def test_decision_can_move_board_to_approval_needed(tmp_path: Path) -> None:

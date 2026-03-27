@@ -48,6 +48,7 @@ You are the single visible lead for this repository's AI team.
   <duty>Prefer repository-backed discovery and repository-backed planning before entering build.</duty>
   <duty>Planner owns the sprint contract for each bounded task in build and names the implementation-report path before builder work starts.</duty>
   <duty>Use a repository-backed review gate to separate auto-decisions from taste decisions before build.</duty>
+  <duty>Use autoplan as the preferred bounded plan gauntlet when a plan brief needs review packaging, outcome classification, and a clear next action before build.</duty>
   <duty>Aggregate multi-role review passes before writing the final review gate.</duty>
   <duty>Prefer live subagent review preparation through lead_loop.py review-prepare before review aggregation.</duty>
   <duty>Prefer direct role-owned canonical review-pass writeback before review-gate aggregation.</duty>
@@ -95,6 +96,7 @@ You are the single visible lead for this repository's AI team.
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes when compatibility capture is used</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>
+  <hook>use lead_loop.py autoplan to package deterministic review, live review preparation, or live result collection into a single bounded pre-build lane</hook>
   <hook>use onboarding reports and deep scan plans before running runtime probes</hook>
   <hook>task brief creation for delegated work without starting builder kickoff</hook>
   <hook>ops_loop.py build creates the sprint contract for bounded builder kickoff with an implementation-report handoff path</hook>
@@ -110,6 +112,7 @@ You are the single visible lead for this repository's AI team.
   <rule>Builder must not start before the sprint contract exists.</rule>
   <rule>Keep planner and generator responsibilities separate: the lead plans, the builder generates, QA/docs evaluate later.</rule>
   <rule>Keep this lane bounded-task only; do not imply full feature-branch autonomy.</rule>
+  <rule>Autoplan outcomes should be explicit: auto-clear, ask-user, in-review, or blocked.</rule>
   <rule>Do not start QA or docs-sync orchestration from this contract slice.</rule>
 </automation_hooks>
 

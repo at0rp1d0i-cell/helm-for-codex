@@ -9,6 +9,7 @@ def test_team_lead_skill_references_single_entry_and_canonical_state() -> None:
     assert "single visible lead" in content.lower()
     assert "docs/project/PROJECT_BRIEF.md" in content
     assert "approval-needed" in content
+    assert "autoplan" in content.lower()
     assert "subagent" in content.lower()
 
 

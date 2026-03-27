@@ -303,6 +303,85 @@ def cmd_review_gate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_autoplan_report(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    review_passes = "\n".join(f"- {item}" for item in args.review_pass) if args.review_pass else "- none"
+    review_packets = (
+        "\n".join(f"- {item}" for item in args.review_packet)
+        if args.review_packet
+        else "- none"
+    )
+    invocation_specs = (
+        "\n".join(f"- {item}" for item in args.invocation_spec)
+        if args.invocation_spec
+        else "- none"
+    )
+    review_results = (
+        "\n".join(f"- {item}" for item in args.review_result)
+        if args.review_result
+        else "- none"
+    )
+    blocking_issues = (
+        "\n".join(f"- {item}" for item in args.blocking_issue)
+        if args.blocking_issue
+        else "- none"
+    )
+    auto_decisions = (
+        "\n".join(f"- {item}" for item in args.auto_decision)
+        if args.auto_decision
+        else "- none"
+    )
+    taste_decisions = (
+        "\n".join(f"- {item}" for item in args.taste_decision)
+        if args.taste_decision
+        else "- none"
+    )
+    next_action = (
+        getattr(args, "next_action", None)
+        or getattr(args, "next_step", None)
+        or "not provided"
+    )
+    next_step = (
+        getattr(args, "next_step", None)
+        or getattr(args, "next_action", None)
+        or "not provided"
+    )
+    content = (
+        f"# Autoplan Report: {args.title}\n\n"
+        "## Mode\n\n"
+        f"{args.mode}\n\n"
+        "## Outcome\n\n"
+        f"{args.outcome}\n\n"
+        "## Discovery Brief\n\n"
+        f"{args.discovery_brief or 'not written'}\n\n"
+        "## Plan Brief\n\n"
+        f"{args.plan_brief}\n\n"
+        "## Review Passes\n\n"
+        f"{review_passes}\n\n"
+        "## Review Packets\n\n"
+        f"{review_packets}\n\n"
+        "## Invocation Specs\n\n"
+        f"{invocation_specs}\n\n"
+        "## Review Results\n\n"
+        f"{review_results}\n\n"
+        "## Review Gate\n\n"
+        f"{args.review_gate or 'not written'}\n\n"
+        "## Auto Decisions\n\n"
+        f"{auto_decisions}\n\n"
+        "## Taste Decisions\n\n"
+        f"{taste_decisions}\n\n"
+        "## Blocking Issues\n\n"
+        f"{blocking_issues}\n\n"
+        "## Next Action\n\n"
+        f"{next_action}\n\n"
+        "## Next Step\n\n"
+        f"{next_step}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_pass(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     findings = "\n".join(f"- {item}" for item in args.finding)
@@ -701,6 +780,62 @@ def build_parser() -> argparse.ArgumentParser:
     review_gate.add_argument("--recommendation", required=True)
     review_gate.add_argument("--approval-target", required=True, dest="approval_target")
     review_gate.set_defaults(func=cmd_review_gate)
+
+    autoplan_report = subparsers.add_parser(
+        "autoplan-report",
+        help="Create autoplan status report markdown",
+    )
+    autoplan_report.add_argument("--output", required=True)
+    autoplan_report.add_argument("--title", required=True)
+    autoplan_report.add_argument("--mode", choices=["run", "prepare", "collect"], default="run")
+    autoplan_report.add_argument(
+        "--outcome",
+        choices=["auto-clear", "ask-user", "in-review", "blocked"],
+        required=True,
+    )
+    autoplan_report.add_argument("--discovery-brief", dest="discovery_brief")
+    autoplan_report.add_argument("--plan-brief", required=True, dest="plan_brief")
+    autoplan_report.add_argument("--review-pass", action="append", default=[], dest="review_pass")
+    autoplan_report.add_argument(
+        "--review-packet",
+        action="append",
+        default=[],
+        dest="review_packet",
+    )
+    autoplan_report.add_argument(
+        "--invocation-spec",
+        action="append",
+        default=[],
+        dest="invocation_spec",
+    )
+    autoplan_report.add_argument(
+        "--review-result",
+        action="append",
+        default=[],
+        dest="review_result",
+    )
+    autoplan_report.add_argument("--review-gate", dest="review_gate")
+    autoplan_report.add_argument(
+        "--auto-decision",
+        action="append",
+        default=[],
+        dest="auto_decision",
+    )
+    autoplan_report.add_argument(
+        "--taste-decision",
+        action="append",
+        default=[],
+        dest="taste_decision",
+    )
+    autoplan_report.add_argument(
+        "--blocking-issue",
+        action="append",
+        default=[],
+        dest="blocking_issue",
+    )
+    autoplan_report.add_argument("--next-action", dest="next_action")
+    autoplan_report.add_argument("--next-step", dest="next_step")
+    autoplan_report.set_defaults(func=cmd_autoplan_report)
 
     review_pass = subparsers.add_parser("review-pass", help="Create review pass markdown")
     review_pass.add_argument("--output", required=True)

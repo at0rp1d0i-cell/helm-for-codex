@@ -110,6 +110,59 @@ def test_plan_brief_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Writeback Target" in content
 
 
+def test_autoplan_report_command_writes_markdown_with_discovery_and_decisions(
+    tmp_path: Path,
+) -> None:
+    result = run_team_state(
+        tmp_path,
+        "autoplan-report",
+        "--output",
+        "docs/plans/autoplan-demo.md",
+        "--title",
+        "Phase 14 autoplan",
+        "--mode",
+        "run",
+        "--discovery-brief",
+        "docs/plans/discovery-demo.md",
+        "--plan-brief",
+        "docs/plans/plan-demo.md",
+        "--review-pass",
+        "docs/plans/review-passes/product.md",
+        "--review-pass",
+        "docs/plans/review-passes/architect.md",
+        "--review-pass",
+        "docs/plans/review-passes/reviewer.md",
+        "--review-gate",
+        "docs/plans/review-gate-demo.md",
+        "--outcome",
+        "ask-user",
+        "--auto-decision",
+        "Keep the current milestone boundary",
+        "--taste-decision",
+        "Decide whether to narrow scope before build",
+        "--next-step",
+        "Resolve taste decisions before build.",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "autoplan-demo.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Autoplan Report: Phase 14 autoplan" in content
+    assert "## Discovery Brief" in content
+    assert "docs/plans/discovery-demo.md" in content
+    assert "## Plan Brief" in content
+    assert "docs/plans/plan-demo.md" in content
+    assert "## Review Passes" in content
+    assert "docs/plans/review-passes/product.md" in content
+    assert "## Review Gate" in content
+    assert "docs/plans/review-gate-demo.md" in content
+    assert "## Outcome" in content
+    assert "ask-user" in content
+    assert "## Auto Decisions" in content
+    assert "## Taste Decisions" in content
+    assert "## Next Step" in content
+
+
 def test_sprint_contract_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,
@@ -412,6 +465,47 @@ def test_review_gate_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Taste Decisions" in content
     assert "## Recommendation" in content
     assert "## Approval Target" in content
+
+
+def test_autoplan_report_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "autoplan-report",
+        "--output",
+        "docs/plans/autoplan/report.md",
+        "--title",
+        "Phase 22 autoplan",
+        "--mode",
+        "run",
+        "--outcome",
+        "auto-clear",
+        "--plan-brief",
+        "docs/plans/phase22-plan.md",
+        "--review-pass",
+        "docs/plans/autoplan/review-passes/product.md",
+        "--review-pass",
+        "docs/plans/autoplan/review-passes/architect.md",
+        "--review-gate",
+        "docs/plans/autoplan/review-gate.md",
+        "--next-step",
+        "Proceed to bounded builder kickoff",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "autoplan" / "report.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Autoplan Report: Phase 22 autoplan" in content
+    assert "## Mode" in content
+    assert "## Outcome" in content
+    assert "auto-clear" in content
+    assert "## Plan Brief" in content
+    assert "docs/plans/phase22-plan.md" in content
+    assert "## Review Passes" in content
+    assert "docs/plans/autoplan/review-passes/product.md" in content
+    assert "## Review Gate" in content
+    assert "docs/plans/autoplan/review-gate.md" in content
+    assert "## Next Step" in content
+    assert "Proceed to bounded builder kickoff" in content
 
 
 def test_review_pass_command_writes_markdown(tmp_path: Path) -> None:

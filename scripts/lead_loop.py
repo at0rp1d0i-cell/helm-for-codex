@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from role_bridge import resolve_role
 import role_review
 from team_state import (
+    cmd_autoplan_report,
     cmd_board,
     cmd_decision,
     cmd_discovery_brief,
@@ -22,6 +23,12 @@ from team_state import (
     cmd_task_brief,
     cmd_deep_scan_plan,
 )
+
+AUTOPLAN_ROLE_FILES = [
+    ("Product", "product.md"),
+    ("Architect", "architect.md"),
+    ("Reviewer", "reviewer.md"),
+]
 
 
 def _read(path: Path) -> str:
@@ -76,6 +83,75 @@ def _update_board(root: Path, path: str, stage: str, active: list[str]) -> int:
         completed=[],
     )
     return cmd_board(board_args)
+
+
+def _autoplan_paths(
+    *,
+    artifact_dir: str,
+    review_dir: str | None = None,
+    review_path: str | None = None,
+    autoplan_path: str | None = None,
+) -> SimpleNamespace:
+    base = Path(artifact_dir)
+    return SimpleNamespace(
+        artifact_dir=str(base),
+        report_path=autoplan_path or str(base / "autoplan-report.md"),
+        review_path=review_path or str(base / "review-gate.md"),
+        review_dir=str(base / "review-packets"),
+        invocation_dir=str(base / "invocation-specs"),
+        pass_dir=review_dir or str(base / "review-passes"),
+        result_dir=str(base / "review-results"),
+        review_pass_paths=[
+            str(Path(review_dir or str(base / "review-passes")) / filename)
+            for _, filename in AUTOPLAN_ROLE_FILES
+        ],
+        review_packet_paths=[str(base / "review-packets" / filename) for _, filename in AUTOPLAN_ROLE_FILES],
+        invocation_paths=[str(base / "invocation-specs" / filename) for _, filename in AUTOPLAN_ROLE_FILES],
+        review_result_paths=[str(base / "review-results" / filename) for _, filename in AUTOPLAN_ROLE_FILES],
+    )
+
+
+def _write_autoplan_report(
+    args: argparse.Namespace,
+    paths: SimpleNamespace,
+    *,
+    outcome: str,
+    next_step: str,
+    discovery_path: str | None = None,
+    auto_decisions: list[str] | None = None,
+    blocking_issues: list[str] | None = None,
+    taste_decisions: list[str] | None = None,
+    review_pass_paths: list[str] | None = None,
+    review_packet_paths: list[str] | None = None,
+    invocation_paths: list[str] | None = None,
+    review_result_paths: list[str] | None = None,
+    review_path: str | None = None,
+) -> int:
+    report_args = SimpleNamespace(
+        root=args.root,
+        output=paths.report_path,
+        title=args.title,
+        mode=args.mode,
+        outcome=outcome,
+        discovery_brief=discovery_path,
+        plan_brief=args.plan_path,
+        review_pass=review_pass_paths or [],
+        review_packet=review_packet_paths or [],
+        invocation_spec=invocation_paths or [],
+        review_result=review_result_paths or [],
+        review_gate=review_path,
+        auto_decision=auto_decisions or [],
+        taste_decision=taste_decisions or [],
+        blocking_issue=blocking_issues or [],
+        next_action=next_step,
+        next_step=next_step,
+    )
+    return cmd_autoplan_report(report_args)
+
+
+def _gate_outcome(root: Path, review_path: str) -> str:
+    taste_decisions = _extract_list_section(_read(root / review_path), "Taste Decisions")
+    return "ask-user" if taste_decisions else "auto-clear"
 
 
 def _run_ops_loop(args: argparse.Namespace, command: str, command_args: list[str]) -> int:
@@ -620,6 +696,182 @@ def cmd_review(args: argparse.Namespace) -> int:
     return _update_board(args.root, args.board_path, stage, [args.title])
 
 
+def cmd_autoplan(args: argparse.Namespace) -> int:
+    artifact_dir = args.artifact_dir
+    if not artifact_dir:
+        if args.autoplan_path:
+            artifact_dir = str(Path(args.autoplan_path).parent)
+        elif args.review_path:
+            artifact_dir = str(Path(args.review_path).parent)
+        elif args.review_dir:
+            artifact_dir = str(Path(args.review_dir).parent)
+        else:
+            artifact_dir = "docs/plans/autoplan"
+
+    paths = _autoplan_paths(
+        artifact_dir=artifact_dir,
+        review_dir=args.review_dir,
+        review_path=args.review_path,
+        autoplan_path=args.autoplan_path,
+    )
+    plan_exists = (args.root / args.plan_path).exists()
+
+    if not plan_exists:
+        required_inputs = {
+            "problem": args.problem,
+            "research scope": args.research_scope,
+            "open questions": args.open_questions,
+            "recommendation target": args.recommendation_target,
+            "discovery path": args.discovery_path,
+            "goal": args.goal,
+            "milestone": args.milestone,
+            "modules": args.modules,
+            "exit criteria": args.exit_criteria,
+            "writeback": args.writeback,
+        }
+        missing_inputs = [name for name, value in required_inputs.items() if not value]
+        if missing_inputs:
+            blocking_issue = f"Missing required plan brief: {args.plan_path}"
+            _write_autoplan_report(
+                args,
+                paths,
+                outcome="blocked",
+                next_step=(
+                    "Create or point autoplan at a plan brief before running the lane."
+                ),
+                discovery_path=args.discovery_path,
+                blocking_issues=[blocking_issue, *[f"Missing {name} for autoplan bootstrap" for name in missing_inputs]],
+            )
+            print(blocking_issue, file=sys.stderr)
+            return 1
+
+        discover_args = SimpleNamespace(
+            root=args.root,
+            title=args.title,
+            problem=args.problem,
+            research_scope=args.research_scope,
+            open_questions=args.open_questions,
+            recommendation_target=args.recommendation_target,
+            discovery_path=args.discovery_path,
+            board_path=args.board_path,
+        )
+        rc = cmd_discover(discover_args)
+        if rc != 0:
+            return rc
+
+        plan_args = SimpleNamespace(
+            root=args.root,
+            title=args.title,
+            goal=args.goal,
+            milestone=args.milestone,
+            modules=args.modules,
+            exit_criteria=args.exit_criteria,
+            writeback=args.writeback,
+            plan_path=args.plan_path,
+            board_path=args.board_path,
+        )
+        rc = cmd_plan(plan_args)
+        if rc != 0:
+            return rc
+
+    if args.mode == "prepare":
+        prepare_args = SimpleNamespace(
+            root=args.root,
+            title=args.title,
+            plan_path=args.plan_path,
+            review_dir=paths.review_dir,
+            invocation_dir=paths.invocation_dir,
+            pass_dir=paths.pass_dir,
+            result_dir=paths.result_dir,
+            board_path=args.board_path,
+        )
+        rc = cmd_review_prepare(prepare_args)
+        if rc != 0:
+            return rc
+        return _write_autoplan_report(
+            args,
+            paths,
+            outcome="in-review",
+            next_step=(
+                "Run Product, Architect, and Reviewer review packets, write results under "
+                f"{paths.result_dir}, then rerun `lead_loop.py autoplan --mode collect`."
+            ),
+            discovery_path=args.discovery_path,
+            review_pass_paths=paths.review_pass_paths,
+            review_packet_paths=paths.review_packet_paths,
+            invocation_paths=paths.invocation_paths,
+            review_result_paths=paths.review_result_paths,
+        )
+
+    if args.mode == "collect":
+        missing_results = [
+            relpath for relpath in paths.review_result_paths if not (args.root / relpath).exists()
+        ]
+        if missing_results:
+            _write_autoplan_report(
+                args,
+                paths,
+                outcome="blocked",
+                next_step=(
+                    "Write Product, Architect, and Reviewer review results under "
+                    f"{paths.result_dir} before collecting autoplan."
+                ),
+                discovery_path=args.discovery_path,
+                blocking_issues=[f"Missing review result: {relpath}" for relpath in missing_results],
+                review_result_paths=paths.review_result_paths,
+            )
+            print(
+                f"Missing required review results under {paths.result_dir}",
+                file=sys.stderr,
+            )
+            return 1
+
+        collect_args = SimpleNamespace(
+            root=args.root,
+            title=args.title,
+            result_path=paths.review_result_paths,
+            pass_dir=paths.pass_dir,
+            review_path=paths.review_path,
+            board_path=args.board_path,
+        )
+        rc = cmd_review_collect(collect_args)
+        if rc != 0:
+            return rc
+    else:
+        run_args = SimpleNamespace(
+            root=args.root,
+            title=args.title,
+            plan_path=args.plan_path,
+            review_dir=paths.pass_dir,
+            review_path=paths.review_path,
+            board_path=args.board_path,
+        )
+        rc = cmd_review_run(run_args)
+        if rc != 0:
+            return rc
+
+    outcome = _gate_outcome(args.root, paths.review_path)
+    auto_decisions = _extract_list_section(_read(args.root / paths.review_path), "Auto Decisions")
+    taste_decisions = _extract_list_section(_read(args.root / paths.review_path), "Taste Decisions")
+    next_step = (
+        "Resolve taste decisions before build."
+        if outcome == "ask-user"
+        else "Proceed to build. Proceed to bounded builder kickoff."
+    )
+    return _write_autoplan_report(
+        args,
+        paths,
+        outcome=outcome,
+        next_step=next_step,
+        discovery_path=args.discovery_path,
+        auto_decisions=auto_decisions,
+        taste_decisions=taste_decisions,
+        review_pass_paths=paths.review_pass_paths,
+        review_result_paths=paths.review_result_paths if args.mode == "collect" else [],
+        review_path=paths.review_path,
+    )
+
+
 def cmd_record_decision(args: argparse.Namespace) -> int:
     decision_args = SimpleNamespace(
         root=args.root,
@@ -909,6 +1161,30 @@ def build_parser() -> argparse.ArgumentParser:
     review_run.add_argument("--review-path", required=True)
     review_run.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
     review_run.set_defaults(func=cmd_review_run)
+
+    autoplan = subparsers.add_parser(
+        "autoplan",
+        help="Run the first-class bounded autoplan lane over existing review primitives",
+    )
+    autoplan.add_argument("--mode", choices=["run", "prepare", "collect"], default="run")
+    autoplan.add_argument("--title", required=True)
+    autoplan.add_argument("--plan-path", required=True)
+    autoplan.add_argument("--artifact-dir", dest="artifact_dir")
+    autoplan.add_argument("--problem")
+    autoplan.add_argument("--research-scope", dest="research_scope")
+    autoplan.add_argument("--open-questions", dest="open_questions")
+    autoplan.add_argument("--recommendation-target", dest="recommendation_target")
+    autoplan.add_argument("--discovery-path", dest="discovery_path")
+    autoplan.add_argument("--goal")
+    autoplan.add_argument("--milestone")
+    autoplan.add_argument("--modules")
+    autoplan.add_argument("--exit-criteria", dest="exit_criteria")
+    autoplan.add_argument("--writeback")
+    autoplan.add_argument("--review-dir", dest="review_dir")
+    autoplan.add_argument("--review-path", dest="review_path")
+    autoplan.add_argument("--autoplan-path", dest="autoplan_path")
+    autoplan.add_argument("--board-path", default="docs/status/EXECUTION_BOARD.md")
+    autoplan.set_defaults(func=cmd_autoplan)
 
     review = subparsers.add_parser("review", help="Create review gate and update board")
     review.add_argument("--title", required=True)

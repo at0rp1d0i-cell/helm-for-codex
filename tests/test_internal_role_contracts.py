@@ -105,6 +105,12 @@ def test_review_roles_can_write_structured_review_passes() -> None:
         assert ".agents/skills" in content, f"{role} contract should refer to runtime packaging target"
 
 
+def test_product_discovery_contract_mentions_autoplan_lane() -> None:
+    content = (ROOT / "skills" / "product-discovery" / "SKILL.md").read_text().lower()
+    assert "autoplan" in content
+    assert "review gate" in content
+
+
 def test_codex_role_files_bind_live_skills_and_writeback_paths() -> None:
     expected = {
         ROOT / ".codex" / "roles" / "ops-orchestrator.toml": (
