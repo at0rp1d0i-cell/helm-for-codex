@@ -6,7 +6,7 @@ Build a Codex-native AI team with a single lead interface and strong internal ex
 
 ## Current Goal
 
-Phase 18 baseline complete: the repository now compiles packet plus invocation-spec pairs through a reusable bridge runner, so Ops can hand the last-hop specialist launch to a shared runtime instead of reconstructing generic-agent payloads lane by lane.
+Phase 19 baseline complete: the repository now records execution receipts after bridge launches, so Ops can track specialist launch outcomes and writeback status in repo-backed artifacts instead of leaving launch results in transient chat.
 
 ## Success Criteria
 
@@ -27,4 +27,5 @@ Phase 18 baseline complete: the repository now compiles packet plus invocation-s
 - execution dispatch packets and live review packets now get paired invocation specs for the final bridge hop
 - a reusable `scripts/bridge_runner.py` can validate packet/spec pairs and render a last-hop launch payload
 - `lead_loop.py bridge-launch` and `ops_loop.py bridge-launch` expose that bridge runner without pulling dispatch ownership back into the Lead
+- `team_state.py execution-receipt`, `bridge_runner.py receipt`, and `ops_loop.py bridge-receipt` now persist launch outcomes as repo-backed execution receipts
 - repo validation passes

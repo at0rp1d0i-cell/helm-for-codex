@@ -189,3 +189,43 @@ def test_bridge_runner_rejects_mismatched_invocation_spec(tmp_path: Path) -> Non
 
     assert result.returncode != 0
     assert "Expected writeback target mismatch" in result.stderr
+
+
+def test_bridge_runner_receipt_writes_execution_receipt(tmp_path: Path) -> None:
+    _seed_packet_and_spec(tmp_path)
+    render = run_bridge_runner(
+        tmp_path,
+        "render",
+        "--packet-path",
+        "docs/plans/builder-dispatch-demo.md",
+        "--invocation-spec-path",
+        "docs/plans/builder-dispatch-demo-invocation.md",
+        "--output",
+        "docs/plans/bridge-launches/builder.json",
+    )
+    assert render.returncode == 0, render.stderr
+
+    receipt = run_bridge_runner(
+        tmp_path,
+        "receipt",
+        "--packet-path",
+        "docs/plans/builder-dispatch-demo.md",
+        "--invocation-spec-path",
+        "docs/plans/builder-dispatch-demo-invocation.md",
+        "--launch-payload-path",
+        "docs/plans/bridge-launches/builder.json",
+        "--execution-status",
+        "succeeded",
+        "--writeback-status",
+        "written",
+        "--specialist-note",
+        "Implementation report written.",
+    )
+    assert receipt.returncode == 0, receipt.stderr
+    out = tmp_path / "docs" / "plans" / "builder-dispatch-demo-receipt.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Execution Receipt: Implementation Worker execution receipt" in content
+    assert "docs/plans/bridge-launches/builder.json" in content
+    assert "succeeded" in content
+    assert "written" in content

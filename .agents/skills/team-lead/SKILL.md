@@ -91,6 +91,7 @@ You are the single visible lead for this repository's AI team.
   <hook>use lead_loop.py review-prepare to generate Product, Architect, and Reviewer review packets with direct review-pass writeback commands</hook>
   <hook>emit paired invocation specs from build, qa-prepare, docs-sync-prepare, and review-prepare so the final bridge hop is repo-backed rather than chat-only</hook>
   <hook>use ops_loop.py bridge-launch plus scripts/bridge_runner.py to compile a packet plus invocation spec into the reusable last-hop launch payload</hook>
+  <hook>use lead_loop.py bridge-receipt after a live specialist attempt so Ops can record a repo-backed execution receipt without collapsing dispatch ownership back into the Lead</hook>
   <hook>use repo-scoped Codex role config to launch Product, Architect, and Reviewer review roles during live review</hook>
   <hook>use lead_loop.py review-collect to convert Product, Architect, and Reviewer review results into canonical review passes when compatibility capture is used</hook>
   <hook>use lead_loop.py review-pass to record structured Product, Architect, and Reviewer passes</hook>

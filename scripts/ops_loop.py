@@ -394,6 +394,24 @@ def cmd_bridge_launch(args: argparse.Namespace) -> int:
     return cmd_render_bridge_launch(render_args)
 
 
+def cmd_bridge_receipt(args: argparse.Namespace) -> int:
+    from bridge_runner import cmd_receipt as cmd_write_bridge_receipt
+
+    receipt_args = SimpleNamespace(
+        root=args.root,
+        packet_path=args.packet_path,
+        invocation_spec_path=args.invocation_spec_path,
+        launch_payload_path=args.launch_payload_path,
+        output=args.output,
+        title=args.title,
+        execution_status=args.execution_status,
+        writeback_status=args.writeback_status,
+        specialist_note=args.specialist_note,
+        follow_up=args.follow_up,
+    )
+    return cmd_write_bridge_receipt(receipt_args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Explicit ops orchestration loop")
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="Repository root")
@@ -530,6 +548,21 @@ def build_parser() -> argparse.ArgumentParser:
     bridge_launch.add_argument("--invocation-spec-path", dest="invocation_spec_path")
     bridge_launch.add_argument("--output")
     bridge_launch.set_defaults(func=cmd_bridge_launch)
+
+    bridge_receipt = subparsers.add_parser(
+        "bridge-receipt",
+        help="Record a repo-backed execution receipt after a bridge-launch payload has been used",
+    )
+    bridge_receipt.add_argument("--packet-path", required=True, dest="packet_path")
+    bridge_receipt.add_argument("--invocation-spec-path", dest="invocation_spec_path")
+    bridge_receipt.add_argument("--launch-payload-path", dest="launch_payload_path")
+    bridge_receipt.add_argument("--output")
+    bridge_receipt.add_argument("--title")
+    bridge_receipt.add_argument("--execution-status", required=True, dest="execution_status")
+    bridge_receipt.add_argument("--writeback-status", required=True, dest="writeback_status")
+    bridge_receipt.add_argument("--specialist-note", required=True, dest="specialist_note")
+    bridge_receipt.add_argument("--follow-up", action="append", default=[], dest="follow_up")
+    bridge_receipt.set_defaults(func=cmd_bridge_receipt)
 
     return parser
 

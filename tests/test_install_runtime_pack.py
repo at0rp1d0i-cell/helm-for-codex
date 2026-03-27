@@ -73,6 +73,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
     assert (target / "ops" / "templates" / "task-brief.md").exists()
     assert (target / "ops" / "templates" / "dispatch-packet.md").exists()
     assert (target / "ops" / "templates" / "invocation-spec.md").exists()
+    assert (target / "ops" / "templates" / "execution-receipt.md").exists()
     assert (target / "ops" / "templates" / "onboarding-state.md").exists()
     assert (target / "ops" / "templates" / "deep-scan-plan.md").exists()
     assert (target / "ops" / "checks" / "check_docs_freshness.py").exists()
@@ -267,6 +268,22 @@ def test_installed_runtime_supports_build_to_qa_to_docs_sync_handoff(tmp_path: P
     )
     assert bridge_launch.returncode == 0, bridge_launch.stderr
     assert (target / "docs" / "plans" / "bridge-launches" / "builder.json").exists()
+    bridge_receipt = run_runtime_lead_loop(
+        target,
+        "bridge-receipt",
+        "--packet-path",
+        "docs/plans/builder-dispatch-phase13-task3.md",
+        "--launch-payload-path",
+        "docs/plans/bridge-launches/builder.json",
+        "--execution-status",
+        "succeeded",
+        "--writeback-status",
+        "written",
+        "--specialist-note",
+        "Implementation report written successfully.",
+    )
+    assert bridge_receipt.returncode == 0, bridge_receipt.stderr
+    assert (target / "docs" / "plans" / "builder-dispatch-phase13-task3-receipt.md").exists()
 
     docs_sync = run_runtime_lead_loop(
         target,

@@ -25,6 +25,7 @@ def required_paths() -> list[Path]:
         ROOT / "ops" / "templates" / "plan-brief.md",
         ROOT / "ops" / "templates" / "dispatch-packet.md",
         ROOT / "ops" / "templates" / "invocation-spec.md",
+        ROOT / "ops" / "templates" / "execution-receipt.md",
         ROOT / "ops" / "templates" / "onboarding-state.md",
         ROOT / "ops" / "templates" / "onboarding-report.md",
         ROOT / "ops" / "templates" / "deep-scan-plan.md",

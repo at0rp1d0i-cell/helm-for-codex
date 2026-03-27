@@ -8,7 +8,7 @@ ship-ready
 
 ## Active Work
 
-- Turn bridge-launch payloads into live specialist execution receipts so Ops can track real launch outcomes, not just launch compilation
+- Let Ops use execution receipts to influence stage advancement and failure handling instead of treating them as passive evidence
 
 ## Completed
 
@@ -68,3 +68,4 @@ ship-ready
 - extend role bridge coverage to live review packets
 - add paired invocation specs for execution and review packets
 - add a reusable bridge runner for packet plus invocation-spec pairs
+- add repo-backed execution receipts for bridge launches

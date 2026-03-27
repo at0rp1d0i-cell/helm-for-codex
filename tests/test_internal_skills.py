@@ -111,6 +111,7 @@ def test_ops_orchestrator_runtime_skill_declares_lead_only_reporting() -> None:
     assert "spawn bridge" in content
     assert "role_bridge.py" in content
     assert "bridge_runner.py" in content
+    assert "execution receipts" in content
     assert ".codex/role_bridge.toml" in content
     assert "do not address the user directly" in content
     assert "dispatch packets" in content

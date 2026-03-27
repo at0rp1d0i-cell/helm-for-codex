@@ -243,6 +243,37 @@ def cmd_invocation_spec(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_execution_receipt(args: argparse.Namespace) -> int:
+    out = _resolve_path(args.root, args.output)
+    follow_ups = "\n".join(f"- {item}" for item in args.follow_up) if args.follow_up else "- none"
+    content = (
+        f"# Execution Receipt: {args.title}\n\n"
+        "## Role\n\n"
+        f"{args.role}\n\n"
+        "## Logical Role\n\n"
+        f"{args.logical_role}\n\n"
+        "## Source Packet\n\n"
+        f"{args.source_packet}\n\n"
+        "## Invocation Spec\n\n"
+        f"{args.invocation_spec}\n\n"
+        "## Launch Payload\n\n"
+        f"{args.launch_payload}\n\n"
+        "## Execution Status\n\n"
+        f"{args.execution_status}\n\n"
+        "## Expected Writeback Target\n\n"
+        f"{args.expected_writeback_target}\n\n"
+        "## Writeback Status\n\n"
+        f"{args.writeback_status}\n\n"
+        "## Specialist Note\n\n"
+        f"{args.specialist_note}\n\n"
+        "## Follow-Ups\n\n"
+        f"{follow_ups}\n"
+    )
+    _write(out, content)
+    print(f"wrote {out}")
+    return 0
+
+
 def cmd_review_gate(args: argparse.Namespace) -> int:
     out = _resolve_path(args.root, args.output)
     review_passes = "\n".join(f"- {item}" for item in args.review_pass)
@@ -637,6 +668,28 @@ def build_parser() -> argparse.ArgumentParser:
         dest="expected_writeback_command",
     )
     invocation_spec.set_defaults(func=cmd_invocation_spec)
+
+    execution_receipt = subparsers.add_parser(
+        "execution-receipt",
+        help="Create an execution receipt for a live bridge-backed specialist run",
+    )
+    execution_receipt.add_argument("--output", required=True)
+    execution_receipt.add_argument("--title", required=True)
+    execution_receipt.add_argument("--role", required=True)
+    execution_receipt.add_argument("--logical-role", required=True, dest="logical_role")
+    execution_receipt.add_argument("--source-packet", required=True, dest="source_packet")
+    execution_receipt.add_argument("--invocation-spec", required=True, dest="invocation_spec")
+    execution_receipt.add_argument("--launch-payload", required=True, dest="launch_payload")
+    execution_receipt.add_argument("--execution-status", required=True, dest="execution_status")
+    execution_receipt.add_argument(
+        "--expected-writeback-target",
+        required=True,
+        dest="expected_writeback_target",
+    )
+    execution_receipt.add_argument("--writeback-status", required=True, dest="writeback_status")
+    execution_receipt.add_argument("--specialist-note", required=True, dest="specialist_note")
+    execution_receipt.add_argument("--follow-up", action="append", default=[], dest="follow_up")
+    execution_receipt.set_defaults(func=cmd_execution_receipt)
 
     review_gate = subparsers.add_parser("review-gate", help="Create review gate markdown")
     review_gate.add_argument("--output", required=True)

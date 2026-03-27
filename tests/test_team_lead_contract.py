@@ -79,6 +79,7 @@ def test_team_lead_skill_has_phase2_orchestration_contract() -> None:
         "qa-prepare",
         "docs-sync-prepare",
         "bridge-launch",
+        "bridge-receipt",
         "delegate",
         "review-prepare",
         "review-collect",

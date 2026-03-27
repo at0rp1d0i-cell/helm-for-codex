@@ -272,3 +272,58 @@ def test_ops_loop_bridge_launch_renders_launch_payload(tmp_path: Path) -> None:
     assert payload["logical_role"] == "implementation-worker"
     assert payload["agent_type"] == "worker"
     assert "builder-dispatch-ops-launch.md" in payload["launch_message"]
+
+
+def test_ops_loop_bridge_receipt_writes_execution_receipt(tmp_path: Path) -> None:
+    seed_repo_state(tmp_path)
+    build = run_ops_loop(
+        tmp_path,
+        "build",
+        "--title",
+        "Ops receipt task",
+        "--planner",
+        "Lead approved a bounded task.",
+        "--generator",
+        "Builder implements the approved task.",
+        "--evaluator",
+        "QA and docs-sync evaluate the handoff chain.",
+        "--scope",
+        "Exercise bridge receipt runtime.",
+        "--acceptance",
+        "Ops can record a specialist execution receipt.",
+        "--implementation-report-path",
+        "docs/plans/implementation-report-ops-receipt.md",
+        "--sprint-contract-path",
+        "docs/plans/sprint-contract-ops-receipt.md",
+        "--builder-packet-path",
+        "docs/plans/builder-dispatch-ops-receipt.md",
+    )
+    assert build.returncode == 0, build.stderr
+    launch = run_ops_loop(
+        tmp_path,
+        "bridge-launch",
+        "--packet-path",
+        "docs/plans/builder-dispatch-ops-receipt.md",
+        "--output",
+        "docs/plans/bridge-launches/builder.json",
+    )
+    assert launch.returncode == 0, launch.stderr
+
+    receipt = run_ops_loop(
+        tmp_path,
+        "bridge-receipt",
+        "--packet-path",
+        "docs/plans/builder-dispatch-ops-receipt.md",
+        "--launch-payload-path",
+        "docs/plans/bridge-launches/builder.json",
+        "--execution-status",
+        "succeeded",
+        "--writeback-status",
+        "written",
+        "--specialist-note",
+        "Implementation report written successfully.",
+    )
+    assert receipt.returncode == 0, receipt.stderr
+    out = (tmp_path / "docs" / "plans" / "builder-dispatch-ops-receipt-receipt.md").read_text()
+    assert "Execution Receipt" in out
+    assert "written" in out

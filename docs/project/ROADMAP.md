@@ -2,7 +2,7 @@
 
 ## Current Milestone
 
-Phase 18 baseline complete: the repository can now compile execution and live review packet/spec pairs into reusable bridge-launch payloads through a shared runner.
+Phase 19 baseline complete: the repository can now persist bridge-launch outcomes as execution receipts with writeback status and specialist notes.
 
 ## Later Milestones
 
@@ -12,6 +12,7 @@ Phase 18 baseline complete: the repository can now compile execution and live re
 - extend direct live role dispatch beyond packet generation and into more autonomous specialist execution
 - let the live `Ops Orchestrator` consume packet plus invocation-spec pairs and hand the last-hop execution to the reusable bridge runner by default
 - promote bridge-runner payloads from static launch plans into live specialist execution receipts
+- let Ops tie execution receipts back into stage advancement and failure handling rather than recording them as side-channel evidence only
 - execute the first bounded execution-handoff slice (delegate -> builder -> QA -> docs-sync -> board update) with installed-runtime verification from day one
 - add fresh-repo smoke validation for installed runtime packs
 - deepen onboarding into project-specific deep-scan tranches and runtime evidence capture

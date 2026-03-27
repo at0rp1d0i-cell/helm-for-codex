@@ -294,6 +294,57 @@ def test_invocation_spec_command_writes_markdown(tmp_path: Path) -> None:
     assert "## Expected Writeback Command" in content
 
 
+def test_execution_receipt_command_writes_markdown(tmp_path: Path) -> None:
+    result = run_team_state(
+        tmp_path,
+        "execution-receipt",
+        "--output",
+        "docs/plans/execution-receipts/builder.md",
+        "--title",
+        "Task 1 builder receipt",
+        "--role",
+        "Implementation Worker",
+        "--logical-role",
+        "implementation-worker",
+        "--source-packet",
+        "docs/plans/builder-dispatch-demo.md",
+        "--invocation-spec",
+        "docs/plans/builder-dispatch-demo-invocation.md",
+        "--launch-payload",
+        "docs/plans/bridge-launches/builder.json",
+        "--execution-status",
+        "succeeded",
+        "--expected-writeback-target",
+        "docs/plans/implementation-report-demo.md",
+        "--writeback-status",
+        "written",
+        "--specialist-note",
+        "Implementation report written successfully.",
+        "--follow-up",
+        "None",
+    )
+    assert result.returncode == 0, result.stderr
+    out = tmp_path / "docs" / "plans" / "execution-receipts" / "builder.md"
+    assert out.exists()
+    content = out.read_text()
+    assert "# Execution Receipt: Task 1 builder receipt" in content
+    assert "## Logical Role" in content
+    assert "implementation-worker" in content
+    assert "## Source Packet" in content
+    assert "docs/plans/builder-dispatch-demo.md" in content
+    assert "## Invocation Spec" in content
+    assert "docs/plans/builder-dispatch-demo-invocation.md" in content
+    assert "## Launch Payload" in content
+    assert "docs/plans/bridge-launches/builder.json" in content
+    assert "## Execution Status" in content
+    assert "succeeded" in content
+    assert "## Expected Writeback Target" in content
+    assert "docs/plans/implementation-report-demo.md" in content
+    assert "## Writeback Status" in content
+    assert "written" in content
+    assert "## Specialist Note" in content
+
+
 def test_docs_sync_report_command_writes_markdown(tmp_path: Path) -> None:
     result = run_team_state(
         tmp_path,

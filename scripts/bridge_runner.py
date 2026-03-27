@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from role_bridge import resolve_role
+from team_state import cmd_execution_receipt
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +68,13 @@ def _default_launch_output(packet_path: str) -> str:
     if packet.parent.name.endswith("packets"):
         return str(packet.parent.parent / "bridge-launches" / f"{packet.stem}.json")
     return str(packet.with_name(f"{packet.stem}-launch.json"))
+
+
+def _default_receipt_output(packet_path: str) -> str:
+    packet = Path(packet_path)
+    if packet.parent.name.endswith("packets"):
+        return str(packet.parent.parent / "execution-receipts" / packet.name)
+    return str(packet.with_name(f"{packet.stem}-receipt{packet.suffix or '.md'}"))
 
 
 def _derive_default_invocation_spec(packet_path: str) -> str:
@@ -244,6 +252,20 @@ def build_launch_payload(root: Path, packet_path: str, invocation_spec_path: str
     }
 
 
+def _load_launch_payload(root: Path, launch_payload_path: str) -> dict[str, object]:
+    payload_path = _resolve_path(root, launch_payload_path)
+    content = _read(payload_path)
+    if not content:
+        raise FileNotFoundError(f"Missing launch payload: {payload_path}")
+    data = json.loads(content)
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected object payload in {payload_path}")
+    normalized: dict[str, object] = {}
+    for key, value in data.items():
+        normalized[str(key)] = value
+    return normalized
+
+
 def cmd_assert_pair(args: argparse.Namespace) -> int:
     build_launch_payload(
         args.root,
@@ -270,6 +292,48 @@ def cmd_render(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_receipt(args: argparse.Namespace) -> int:
+    invocation_spec_path = args.invocation_spec_path or _derive_default_invocation_spec(args.packet_path)
+    payload = build_launch_payload(args.root, args.packet_path, invocation_spec_path)
+    launch_payload_path = args.launch_payload_path or _default_launch_output(args.packet_path)
+    if args.launch_payload_path:
+        persisted_payload = _load_launch_payload(args.root, args.launch_payload_path)
+        for key in [
+            "logical_role",
+            "agent_type",
+            "model",
+            "reasoning_effort",
+            "runtime_skill",
+            "metadata",
+            "packet_path",
+            "invocation_spec_path",
+            "expected_writeback_target",
+            "expected_writeback_command",
+        ]:
+            _require_equal(
+                f"Launch payload {key}",
+                str(persisted_payload.get(key, "")),
+                str(payload.get(key, "")),
+            )
+
+    receipt_args = argparse.Namespace(
+        root=args.root,
+        output=args.output or _default_receipt_output(args.packet_path),
+        title=args.title or f"{payload['role']} execution receipt",
+        role=str(payload["role"]),
+        logical_role=str(payload["logical_role"]),
+        source_packet=args.packet_path,
+        invocation_spec=invocation_spec_path,
+        launch_payload=launch_payload_path,
+        execution_status=args.execution_status,
+        expected_writeback_target=str(payload["expected_writeback_target"]),
+        writeback_status=args.writeback_status,
+        specialist_note=args.specialist_note,
+        follow_up=args.follow_up,
+    )
+    return cmd_execution_receipt(receipt_args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Compile repo-backed role packets into a last-hop launch payload")
     parser.add_argument("--root", type=Path, default=ROOT, help="Repository root")
@@ -291,6 +355,21 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--invocation-spec-path", dest="invocation_spec_path")
     render.add_argument("--output")
     render.set_defaults(func=cmd_render)
+
+    receipt = subparsers.add_parser(
+        "receipt",
+        help="Record a repo-backed execution receipt for a launch compiled through the bridge runner",
+    )
+    receipt.add_argument("--packet-path", required=True, dest="packet_path")
+    receipt.add_argument("--invocation-spec-path", dest="invocation_spec_path")
+    receipt.add_argument("--launch-payload-path", dest="launch_payload_path")
+    receipt.add_argument("--output")
+    receipt.add_argument("--title")
+    receipt.add_argument("--execution-status", required=True, dest="execution_status")
+    receipt.add_argument("--writeback-status", required=True, dest="writeback_status")
+    receipt.add_argument("--specialist-note", required=True, dest="specialist_note")
+    receipt.add_argument("--follow-up", action="append", default=[], dest="follow_up")
+    receipt.set_defaults(func=cmd_receipt)
 
     return parser
 

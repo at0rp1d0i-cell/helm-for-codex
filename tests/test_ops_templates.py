@@ -25,6 +25,7 @@ def test_ops_templates_and_checks_exist() -> None:
         ROOT / "ops" / "templates" / "sprint-contract.md",
         ROOT / "ops" / "templates" / "dispatch-packet.md",
         ROOT / "ops" / "templates" / "invocation-spec.md",
+        ROOT / "ops" / "templates" / "execution-receipt.md",
         ROOT / "ops" / "templates" / "implementation-report.md",
         ROOT / "ops" / "templates" / "onboarding-state.md",
         ROOT / "ops" / "templates" / "onboarding-report.md",
@@ -94,6 +95,18 @@ def test_ops_templates_and_checks_exist() -> None:
     assert "<consumed_artifacts>" in invocation_spec
     assert "<expected_writeback_target>" in invocation_spec
     assert "<expected_writeback_command>" in invocation_spec
+
+    execution_receipt = (ROOT / "ops" / "templates" / "execution-receipt.md").read_text()
+    assert "# Execution Receipt: <title>" in execution_receipt
+    assert "<logical_role>" in execution_receipt
+    assert "<source_packet>" in execution_receipt
+    assert "<invocation_spec>" in execution_receipt
+    assert "<launch_payload>" in execution_receipt
+    assert "<execution_status>" in execution_receipt
+    assert "<expected_writeback_target>" in execution_receipt
+    assert "<writeback_status>" in execution_receipt
+    assert "<specialist_note>" in execution_receipt
+    assert "<follow_ups>" in execution_receipt
 
     implementation_report = (ROOT / "ops" / "templates" / "implementation-report.md").read_text()
     assert "# Implementation Report: <title>" in implementation_report

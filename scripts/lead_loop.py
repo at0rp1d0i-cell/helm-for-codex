@@ -524,6 +524,34 @@ def cmd_bridge_launch(args: argparse.Namespace) -> int:
     return _run_ops_loop(args, "bridge-launch", command_args)
 
 
+def cmd_bridge_receipt(args: argparse.Namespace) -> int:
+    command_args = [
+        "--packet-path",
+        args.packet_path,
+        *(
+            ["--invocation-spec-path", args.invocation_spec_path]
+            if args.invocation_spec_path
+            else []
+        ),
+        *(
+            ["--launch-payload-path", args.launch_payload_path]
+            if args.launch_payload_path
+            else []
+        ),
+        *(["--output", args.output] if args.output else []),
+        *(["--title", args.title] if args.title else []),
+        "--execution-status",
+        args.execution_status,
+        "--writeback-status",
+        args.writeback_status,
+        "--specialist-note",
+        args.specialist_note,
+    ]
+    for follow_up in args.follow_up:
+        command_args.extend(["--follow-up", follow_up])
+    return _run_ops_loop(args, "bridge-receipt", command_args)
+
+
 def cmd_docs_sync(args: argparse.Namespace) -> int:
     command_args = [
         "--title",
@@ -796,6 +824,21 @@ def build_parser() -> argparse.ArgumentParser:
     bridge_launch.add_argument("--invocation-spec-path", dest="invocation_spec_path")
     bridge_launch.add_argument("--output")
     bridge_launch.set_defaults(func=cmd_bridge_launch)
+
+    bridge_receipt = subparsers.add_parser(
+        "bridge-receipt",
+        help="Route a bridge execution result through Ops and record a repo-backed execution receipt",
+    )
+    bridge_receipt.add_argument("--packet-path", required=True, dest="packet_path")
+    bridge_receipt.add_argument("--invocation-spec-path", dest="invocation_spec_path")
+    bridge_receipt.add_argument("--launch-payload-path", dest="launch_payload_path")
+    bridge_receipt.add_argument("--output")
+    bridge_receipt.add_argument("--title")
+    bridge_receipt.add_argument("--execution-status", required=True, dest="execution_status")
+    bridge_receipt.add_argument("--writeback-status", required=True, dest="writeback_status")
+    bridge_receipt.add_argument("--specialist-note", required=True, dest="specialist_note")
+    bridge_receipt.add_argument("--follow-up", action="append", default=[], dest="follow_up")
+    bridge_receipt.set_defaults(func=cmd_bridge_receipt)
 
     docs_sync = subparsers.add_parser(
         "docs-sync",
