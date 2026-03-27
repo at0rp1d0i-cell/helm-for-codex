@@ -31,11 +31,18 @@ def test_readme_describes_team_model_and_granularity() -> None:
     required = [
         "# Codex-Native AI Team",
         "## Team Model",
+        "## Runtime Layout",
+        "## Install Paths",
+        "## Install Via Plugin",
+        "## Distribution Surface",
         "## Agent Work Granularity",
         "bounded task",
         "feature slice",
         "feature branch",
         "Lead",
+        ".agents/skills",
+        ".codex/config.toml",
+        "plugins/codex-ai-team",
     ]
     for token in required:
         if token.islower():

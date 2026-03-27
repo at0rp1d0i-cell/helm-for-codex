@@ -37,6 +37,7 @@ def test_installer_populates_runtime_dirs(tmp_path: Path) -> None:
 
     assert (target / "AGENTS.md").exists()
     assert (target / ".codex" / "config.toml").exists()
+    assert (target / ".codex" / "README.md").exists()
     assert (target / ".codex" / "role_bridge.toml").exists()
     assert (target / ".codex" / "roles" / "ops-orchestrator.toml").exists()
     assert (target / ".codex" / "roles" / "product-reviewer.toml").exists()

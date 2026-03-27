@@ -1,0 +1,13 @@
+[roles]
+"ops-orchestrator" = "roles/ops-orchestrator.toml"
+"product-reviewer" = "roles/product-reviewer.toml"
+"architect-reviewer" = "roles/architect-reviewer.toml"
+"code-reviewer" = "roles/code-reviewer.toml"
+"implementation-worker" = "roles/implementation-worker.toml"
+"qa-runner" = "roles/qa-runner.toml"
+"docs-sync" = "roles/docs-sync.toml"
+
+[packages]
+default_skill_path = ".agents/skills"
+onboarding_state = "docs/status/ONBOARDING_STATE.md"
+role_bridge = "role_bridge.toml"

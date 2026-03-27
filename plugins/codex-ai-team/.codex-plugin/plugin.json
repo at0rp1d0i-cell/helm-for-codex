@@ -1,0 +1,26 @@
+{
+  "name": "codex-ai-team",
+  "version": "0.1.0",
+  "description": "Bootstrap the Codex-native AI team runtime into a repository.",
+  "keywords": [
+    "codex",
+    "agent-team",
+    "bootstrap"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex AI Team",
+    "shortDescription": "Install a Lead -> Ops -> Specialists runtime into a repo.",
+    "longDescription": "Bootstraps repo-local skills, roles, runtime scripts, and canonical docs so Codex can operate as a disciplined development team inside any repository.",
+    "developerName": "codex_exploring",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Bootstrap the Codex AI Team runtime into this repository."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

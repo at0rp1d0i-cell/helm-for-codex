@@ -1,0 +1,3 @@
+display_name: Ops Orchestrator
+description: Internal orchestration role for dispatch, gate validation, and stage advancement behind the Team Lead
+allow_implicit_invocation: false

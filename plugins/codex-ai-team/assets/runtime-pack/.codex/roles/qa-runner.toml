@@ -1,0 +1,8 @@
+id = "qa-runner"
+display_name = "QA Runner"
+skill = ".agents/skills/qa-runner/SKILL.md"
+metadata = ".agents/skills/qa-runner/agents/openai.yaml"
+writeback_target = "docs/plans/qa-report-<task>.md"
+writeback_command = "uv run python scripts/ops_loop.py qa --title <title> --sprint-contract-path <path> --implementation-report-path <path> --qa-report-path <path> --environment <environment> --scenario <scenario> --verification-status <passed|failed>"
+runtime_skill = ".agents/skills/qa-runner/SKILL.md"
+packaging_notes = "Runtime pack installs this skill and metadata into .agents/skills during onboarding."

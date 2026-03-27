@@ -1,0 +1,3 @@
+display_name: Implementation Worker
+description: Internal builder role for bounded-task implementation handoffs owned by Ops
+allow_implicit_invocation: false

@@ -1,0 +1,3 @@
+display_name: Docs Sync
+description: Internal docs consistency evaluator role for canonical writeback after QA passes
+allow_implicit_invocation: false

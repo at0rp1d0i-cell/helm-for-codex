@@ -1,0 +1,46 @@
+[bridge]
+description = "Canonical mapping from repo role names to the currently available generic agent API types."
+tool_api = "spawn_agent"
+fallback_note = "Current tool sessions still resolve logical roles to generic agent types such as worker or explorer at the last hop."
+
+[roles.ops-orchestrator]
+role_toml = "roles/ops-orchestrator.toml"
+agent_type = "worker"
+model = "gpt-5.4"
+reasoning_effort = "high"
+
+[roles.product-reviewer]
+role_toml = "roles/product-reviewer.toml"
+agent_type = "explorer"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+
+[roles.architect-reviewer]
+role_toml = "roles/architect-reviewer.toml"
+agent_type = "explorer"
+model = "gpt-5.4"
+reasoning_effort = "high"
+
+[roles.code-reviewer]
+role_toml = "roles/code-reviewer.toml"
+agent_type = "explorer"
+model = "gpt-5.4"
+reasoning_effort = "high"
+
+[roles.implementation-worker]
+role_toml = "roles/implementation-worker.toml"
+agent_type = "worker"
+model = "gpt-5.4"
+reasoning_effort = "high"
+
+[roles.qa-runner]
+role_toml = "roles/qa-runner.toml"
+agent_type = "worker"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+
+[roles.docs-sync]
+role_toml = "roles/docs-sync.toml"
+agent_type = "worker"
+model = "gpt-5.4"
+reasoning_effort = "medium"

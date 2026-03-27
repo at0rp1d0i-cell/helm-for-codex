@@ -3,6 +3,11 @@
 This repository is both the **source** and the **dogfooding runtime** for a Codex-powered development team.  
 It keeps the plans, tests, runtime scripts, repo-local skills, and canonical state that let Codex behave not as a single super-context assistant but as a disciplined, accountable engineering team.
 
+It now ships in two forms:
+
+- a **runtime pack** for direct installation into a repository
+- a **Codex plugin** that bootstraps that runtime pack for users who want a cleaner install surface
+
 ## Team Model
 
 The user talks only to the `Lead`. The lead stays user-facing, translates intent into approved work, and routes internal execution through `Ops`. `Ops` then dispatches the narrower specialist roles:
@@ -19,6 +24,28 @@ The user talks only to the `Lead`. The lead stays user-facing, translates intent
 - `Release Manager`: wraps up the final rollout, push, and verification steps.
 
 Roles are codified as repo-local Codex skills under `.agents/skills`, and the `Lead` routes each task through `Ops` without forcing you to address multiple agents directly.
+
+## Runtime Layout
+
+The runtime is split on purpose:
+
+- `.agents/skills/` is the canonical repo-local skill surface that Codex discovers at runtime.
+- `.codex/` holds `config.toml`, `roles/*.toml`, `role_bridge.toml`, and other project-scoped runtime configuration.
+
+This is not cosmetic. Repo skills stay in `.agents/skills` because that is the official Codex discovery path; `.codex` is reserved for configuration and role metadata.
+
+## Install Paths
+
+Choose one of these:
+
+1. **Direct runtime-pack install**
+   - best when you already have this repo locally
+   - installs the full runtime directly into a target repo
+2. **Plugin bootstrap**
+   - best when you want a Codex-facing install surface
+   - the plugin bootstraps the same runtime pack into the target repo
+
+In both cases, the installed repo runtime is the real execution surface. The plugin is a packaging and bootstrap layer, not a replacement for the installed repo-local runtime.
 
 ## What the Workflow Does
 
@@ -62,6 +89,24 @@ uv run python scripts/install_runtime_pack.py --target /path/to/target-repo
 
 It bootstraps `AGENTS.md`, `.codex/config.toml` + roles, `.agents/skills`, runtime scripts, ops templates/checks, and canonical docs. Runtime-managed files refresh while existing canonical state stays intact, so rerunning the installer does not wipe a target repo’s `PROJECT_BRIEF`, `EXECUTION_BOARD`, `ONBOARDING_STATE`, or `AGENTS.md`.
 
+## Install Via Plugin
+
+This repo now includes a local Codex plugin at [`plugins/codex-ai-team`](/home/torpedo/Workspace/codex_exploring/plugins/codex-ai-team) and a repo marketplace entry at [`.agents/plugins/marketplace.json`](/home/torpedo/Workspace/codex_exploring/.agents/plugins/marketplace.json).
+
+The plugin contains:
+
+- a bootstrap skill
+- a bootstrap script
+- a bundled runtime-pack payload under `assets/runtime-pack/`
+
+The bootstrap entrypoint is:
+
+```bash
+python3 plugins/codex-ai-team/scripts/bootstrap_repo.py --target /path/to/target-repo
+```
+
+That path installs the same runtime surface as the direct installer.
+
 ## First Contact And Onboarding
 
 Onboarding follows `detect → shallow-scan → deep-scan-plan → waiting-user-alignment → deep-scan → adopt`.  
@@ -80,3 +125,16 @@ When installed, Codex only relies on:
 - canonical docs under `docs/project/` and `docs/status/` for state  
 
 Plans, tests, and design docs stay in the source repo so this runtime pack can keep evolving without dragging every historical artifact into target projects.
+
+## Distribution Surface
+
+For external users, the repository now has three layers:
+
+- `plugins/codex-ai-team/`
+  - public Codex plugin surface
+- `.agents/plugins/marketplace.json`
+  - local marketplace metadata for Codex plugin discovery during development
+- `scripts/install_runtime_pack.py`
+  - direct installer for the full repo runtime
+
+The plugin exists to make installation and discovery easier. The installed runtime pack remains the canonical team runtime that users actually work inside.

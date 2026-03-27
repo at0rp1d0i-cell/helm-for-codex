@@ -1,0 +1,20 @@
+{
+  "name": "codex-exploring-local",
+  "interface": {
+    "displayName": "Codex Exploring Local"
+  },
+  "plugins": [
+    {
+      "name": "codex-ai-team",
+      "source": {
+        "source": "local",
+        "path": "./plugins/codex-ai-team"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
